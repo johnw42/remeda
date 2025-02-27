@@ -25,6 +25,11 @@ describe("invalid types", () => {
     // @ts-expect-error [ts2769] undefined is only allowed with strings
     isEmpty({} as Record<string, string> | undefined);
   });
+
+  test("sets and maps", () => {
+    expectTypeOf(isEmpty(new Set())).toBeNever();
+    expectTypeOf(isEmpty(new Map())).toBeNever();
+  });
 });
 
 describe("objects", () => {

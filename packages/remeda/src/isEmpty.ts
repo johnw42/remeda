@@ -1,5 +1,6 @@
 import type { IterableContainer } from "./internal/types/IterableContainer";
 
+// eslint-disable-next-line jsdoc/require-returns-check
 /**
  * A function that checks if the passed parameter is empty.
  *
@@ -25,6 +26,9 @@ import type { IterableContainer } from "./internal/types/IterableContainer";
  *    R.isEmpty({ length: 0 }) //=> false
  * @category Guard
  */
+export function isEmpty(
+  data: ReadonlyMap<unknown, unknown> | ReadonlySet<unknown>,
+): never;
 export function isEmpty<T extends string | undefined>(
   data: T,
 ): data is

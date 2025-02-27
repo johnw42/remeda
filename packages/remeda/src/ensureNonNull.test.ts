@@ -1,16 +1,17 @@
-import { ensureNotNull } from "./ensureNotNull";
+import { ensureNonNull } from "./ensureNonNull";
 
-describe("ensureNotNull", () => {
+describe("ensureNonNull", () => {
   it("should return the value if it is not null", () => {
-    expect(ensureNotNull(5)).toBe(5);
+    expect(ensureNonNull(5)).toBe(5);
+    expect(ensureNonNull(undefined)).toBeUndefined();
   });
 
   it("should throw an error if the value is null", () => {
-    expect(() => ensureNotNull(null)).toThrow("Value is null");
+    expect(() => ensureNonNull(null)).toThrow("Value is null");
   });
 
   it("should return a function that ensures the value is not null", () => {
-    const fn = ensureNotNull<number>();
+    const fn = ensureNonNull<number>();
 
     expect(fn(5)).toBe(5);
     expect(() => fn(null)).toThrow("Value is null");

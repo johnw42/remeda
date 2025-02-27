@@ -3,6 +3,7 @@ import { ensureDefined } from "./ensureDefined";
 describe("ensureDefined", () => {
   it("should return the value if it is defined", () => {
     expect(ensureDefined(5)).toBe(5);
+    expect(ensureDefined(null)).toBeNull();
   });
 
   it("should throw an error if the value is undefined", () => {

@@ -7,19 +7,19 @@ import { purry } from "./purry";
  * @param message - The message to throw if the value is null.
  * @returns The value if it is not null.
  * @signature
- *   R.ensureNotNull(value, message)
+ *   R.ensureNonNull(value, message)
  * @example
- *   R.ensureNotNull(5) // => 5
- *   R.ensureNotNull(null) // => throws Error("Value is null")
+ *   R.ensureNonNull(5) // => 5
+ *   R.ensureNonNull(null) // => throws Error("Value is null")
  * @category Assertions
  */
 
-export function ensureNotNull<T>(value: T | null): T;
-export function ensureNotNull<T>(): (value: T | null) => T;
-export function ensureNotNull(...args: ReadonlyArray<unknown>): unknown {
-  return purry(ensureNotNullImplementation, args);
+export function ensureNonNull<T>(value: T | null): T;
+export function ensureNonNull<T>(): (value: T | null) => T;
+export function ensureNonNull(...args: ReadonlyArray<unknown>): unknown {
+  return purry(ensureNonNullImplementation, args);
 }
-function ensureNotNullImplementation<T>(value: T | null): T {
+function ensureNonNullImplementation<T>(value: T | null): T {
   if (value === null) {
     throw new Error("Value is null");
   }

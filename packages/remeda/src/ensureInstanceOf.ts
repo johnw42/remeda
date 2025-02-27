@@ -10,26 +10,26 @@ import { purry } from "./purry";
  * @param message - The message to throw if the value is not an instance of the
  * constructor.
  * @signature
- *   R.ensureInstance(value, constructor, message)
+ *   R.ensureInstanceOf(value, constructor, message)
  * @example
- *   R.ensureInstance(new Date(), Date) // => Date instance
- *   R.ensureInstance({}, Date) // => throws TypeError("Value is not an instance of Date")
+ *   R.ensureInstanceOf(new Date(), Date) // => Date instance
+ *   R.ensureInstanceOf({}, Date) // => throws TypeError("Value is not an instance of Date")
  * @dataFirst
  * @category Assertions
  */
 
-export function ensureInstance<T>(
+export function ensureInstanceOf<T>(
   value: unknown,
   constructor: new (...args: ReadonlyArray<unknown>) => T,
 ): T;
 
-export function ensureInstance<T>(
+export function ensureInstanceOf<T>(
   constructor: new (...args: ReadonlyArray<unknown>) => T,
 ): (value: unknown) => T;
-export function ensureInstance(...args: ReadonlyArray<unknown>): unknown {
-  return purry(ensureInstanceImplementation, args);
+export function ensureInstanceOf(...args: ReadonlyArray<unknown>): unknown {
+  return purry(ensureInstanceOfImplementation, args);
 }
-function ensureInstanceImplementation<T>(
+function ensureInstanceOfImplementation<T>(
   value: unknown,
   constructor: new (...args: ReadonlyArray<unknown>) => T,
 ): T {

@@ -1,5 +1,7 @@
 import { unfold } from "./unfold";
 import { constant } from "./constant";
+import { take } from "./take";
+import { pipe } from "./pipe";
 
 describe("unfold", () => {
   it("should generate a sequence of numbers", () => {
@@ -37,5 +39,12 @@ describe("unfold", () => {
     const result = curriedUnfold(0);
 
     expect(result).toStrictEqual([0, 1, 2, 3, 4]);
+  });
+
+  it.todo("should work lazily", () => {
+    const fn = vi.fn<(n: number) => [number, number]>((n) => [n, n + 1]);
+
+    expect(pipe(0, unfold(fn), take(3))).toStrictEqual([0, 1, 2]);
+    expect(fn).toHaveBeenCalledTimes(3);
   });
 });

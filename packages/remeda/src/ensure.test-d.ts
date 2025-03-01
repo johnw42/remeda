@@ -2,11 +2,15 @@ import { ensure } from "./ensure";
 import { expectTypeOf } from "expect-type";
 
 test("ensure", () => {
-  // Test that ensure returns the value if the predicate is true
-  expectTypeOf(ensure(5, (x) => x > 0)).toEqualTypeOf<number>();
+  expectTypeOf(
+    ensure(5 as unknown, { test: (x) => typeof x === "number" }),
+  ).toEqualTypeOf<number>();
+  expectTypeOf(ensure(5, { test: (x) => x > 0 })).toEqualTypeOf<number>();
 
-  const ensureFn = ensure<number>((x) => x > 0);
-
-  // Test that ensure returns a function that ensures the value
-  expectTypeOf(ensureFn(5)).toEqualTypeOf<number>();
+  expectTypeOf(
+    ensure({ test: (x: unknown) => typeof x === "number" })(5 as unknown),
+  ).toEqualTypeOf<number>();
+  expectTypeOf(
+    ensure({ test: (x: number) => x > 0 })(5),
+  ).toEqualTypeOf<number>();
 });

@@ -29,13 +29,6 @@ describe("ensure", () => {
     );
   });
 
-  it("should return the value from handleEnsureError if the predicate returns false and extra options are passed", () => {
-    const opts = { default: handleEnsureErrorResult as unknown as number };
-
-    expect(ensure(5, (x) => x < 0, opts)).toBe(handleEnsureErrorResult);
-    expect(handleEnsureError).toHaveBeenCalledWith(5, opts, "Invalid value");
-  });
-
   it("should return the value if the `test` predicate returns true", () => {
     expect(ensure(5, { test: (x) => x > 0 })).toBe(5);
     expect(handleEnsureError).not.toHaveBeenCalled();

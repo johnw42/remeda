@@ -3,19 +3,28 @@ import { handleEnsureError } from "./handleEnsureError";
 import type { EnsureOpts } from "./types/EnsureOpts";
 
 describe("handleEnsureError", () => {
-  it("should return the default value if opts.default is provided", () => {
+  it("should return the default value if opts.else is provided", () => {
     const value = "test";
-    const opts: EnsureOpts<string> = { default: "defaultValue" };
+    const opts: EnsureOpts<string, string> = { else: "defaultValue" };
     const result = handleEnsureError(value, opts, "defaultMessage");
 
     expect(result).toBe("defaultValue");
   });
 
-  it("should throw an error with the default message if opts is undefined", () => {
+  it("should throw an error with the default message if opts.else is a function", () => {
     const value = "test";
     const defaultMessage = "defaultMessage";
 
-    expect(() => handleEnsureError(value, undefined, defaultMessage)).toThrow(
+    expect(() => handleEnsureError(value, () => false, defaultMessage)).toThrow(
+      defaultMessage,
+    );
+  });
+
+  it("should throw an error with the default message if opts is empty", () => {
+    const value = "test";
+    const defaultMessage = "defaultMessage";
+
+    expect(() => handleEnsureError(value, {}, defaultMessage)).toThrow(
       defaultMessage,
     );
   });

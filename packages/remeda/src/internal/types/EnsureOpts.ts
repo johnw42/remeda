@@ -1,13 +1,13 @@
-type EnsureOptsElse<Input, Else> = {
+export type EnsureOptsWithElse<Input, Else> = {
   readonly else: Else | ((value: Input) => Else);
 };
 
-type EnsureOptsNotElse<Input> = {
+export type EnsureOptsWithoutElse<Input> = {
   readonly message?: string | ((value: Input) => string);
 };
 
 export type EnsureOpts<Input, Else = never> =
-  | EnsureOptsNotElse<Input>
-  | EnsureOptsElse<Input, Else>;
+  | EnsureOptsWithoutElse<Input>
+  | EnsureOptsWithElse<Input, Else>;
 
 export default EnsureOpts;

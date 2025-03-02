@@ -21,14 +21,46 @@ describe("ensure", () => {
     expectTypeOf(
       ensure(5 as unknown, {
         test: (x) => typeof x === "number",
-        else: (_value: unknown) => 0,
+        else: () => 0,
       }),
     ).toEqualTypeOf<number>();
+
+    // Narrowing conversion with else of different type.
+    expectTypeOf(
+      ensure(5 as unknown, {
+        test: (x) => typeof x === "number",
+        else: "0",
+      }),
+    ).toEqualTypeOf<number | string>();
+    expectTypeOf(
+      ensure(5 as unknown, {
+        test: (x) => typeof x === "number",
+        else: () => "0",
+      }),
+    ).toEqualTypeOf<number | string>();
 
     // Boolean test.
     expectTypeOf(ensure(5, (x) => x > 0)).toEqualTypeOf<number>();
     expectTypeOf(ensure(5, { test: (x) => x > 0 })).toEqualTypeOf<number>();
     expectTypeOf(ensure(5, { not: (x) => x < 0 })).toEqualTypeOf<number>();
+
+    // Boolean test with else.
+    expectTypeOf(ensure(5, (x) => x > 0)).toEqualTypeOf<number>();
+    expectTypeOf(
+      ensure(5, { test: (x) => x > 0, else: 0 }),
+    ).toEqualTypeOf<number>();
+    expectTypeOf(
+      ensure(5, { not: (x) => x < 0, else: () => 0 }),
+    ).toEqualTypeOf<number>();
+
+    // Boolean test with else of different type.
+    expectTypeOf(ensure(5, (x) => x > 0)).toEqualTypeOf<number>();
+    expectTypeOf(ensure(5, { test: (x) => x > 0, else: "0" })).toEqualTypeOf<
+      number | string
+    >();
+    expectTypeOf(
+      ensure(5, { not: (x) => x < 0, else: () => "0" }),
+    ).toEqualTypeOf<number | string>();
 
     // Typeof test.
     expectTypeOf(
@@ -45,9 +77,23 @@ describe("ensure", () => {
     expectTypeOf(
       ensure(5 as unknown, {
         type: "number",
-        else: (_value: unknown) => 0,
+        else: () => 0,
       }),
     ).toEqualTypeOf<number>();
+
+    // Typeof test with else of different type.
+    expectTypeOf(
+      ensure(5 as unknown, {
+        type: "number",
+        else: "0",
+      }),
+    ).toEqualTypeOf<number | string>();
+    expectTypeOf(
+      ensure(5 as unknown, {
+        type: "number",
+        else: () => "0",
+      }),
+    ).toEqualTypeOf<number | string>();
   });
 
   test("data last", () => {
@@ -69,9 +115,23 @@ describe("ensure", () => {
     expectTypeOf(
       ensure({
         test: (x) => typeof x === "number",
-        else: (_value: unknown) => 0,
+        else: () => 0,
       })(5 as unknown),
     ).toEqualTypeOf<number>();
+
+    // Narrowing conversion with else of different type.
+    expectTypeOf(
+      ensure({
+        test: (x) => typeof x === "number",
+        else: "0",
+      })(5 as unknown),
+    ).toEqualTypeOf<number | string>();
+    expectTypeOf(
+      ensure({
+        test: (x) => typeof x === "number",
+        else: () => "0",
+      })(5 as unknown),
+    ).toEqualTypeOf<number | string>();
 
     // Boolean test.
     expectTypeOf(ensure((x: number) => x > 0)(5)).toEqualTypeOf<number>();
@@ -81,6 +141,22 @@ describe("ensure", () => {
     expectTypeOf(
       ensure({ not: (x: number) => x < 0 })(5),
     ).toEqualTypeOf<number>();
+
+    // Boolean test with else.
+    expectTypeOf(
+      ensure({ test: (x: number) => x > 0, else: 0 })(5),
+    ).toEqualTypeOf<number>();
+    expectTypeOf(
+      ensure({ not: (x: number) => x < 0, else: () => 0 })(5),
+    ).toEqualTypeOf<number>();
+
+    // Boolean test with else of different type.
+    expectTypeOf(
+      ensure({ test: (x: number) => x > 0, else: "0" })(5),
+    ).toEqualTypeOf<number | string>();
+    expectTypeOf(
+      ensure({ not: (x: number) => x < 0, else: () => "0" })(5),
+    ).toEqualTypeOf<number | string>();
 
     // Typeof test.
     expectTypeOf(
@@ -97,8 +173,22 @@ describe("ensure", () => {
     expectTypeOf(
       ensure({
         type: "number",
-        else: (_value: unknown) => 0,
+        else: () => 0,
       })(5 as unknown),
     ).toEqualTypeOf<number>();
+
+    // Typeof test with else of different type.
+    expectTypeOf(
+      ensure({
+        type: "number",
+        else: "0",
+      })(5 as unknown),
+    ).toEqualTypeOf<number | string>();
+    expectTypeOf(
+      ensure({
+        type: "number",
+        else: () => "0",
+      })(5 as unknown),
+    ).toEqualTypeOf<number | string>();
   });
 });

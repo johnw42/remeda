@@ -1,5 +1,8 @@
 import { handleEnsureError } from "./internal/handleEnsureError";
-import type { EnsureOpts } from "./internal/types/EnsureOpts";
+import type {
+  EnsureOpts,
+  EnsureOptsWithElse,
+} from "./internal/types/EnsureOpts";
 
 type PrimitiveTypes = {
   string: string;
@@ -50,14 +53,31 @@ type PrimitiveTypes = {
  * @dataFirst
  * @category Assertions
  */
+export function ensure<Input, Output extends Input, Else>(
+  value: Input,
+  opts: EnsureOptsWithElse<Input, Else> &
+    (
+      | ((value: Input) => value is Output)
+      | { readonly test: (value: Input) => value is Output }
+    ),
+): Output | Else;
 export function ensure<Input, Output extends Input>(
   value: Input,
-  opts: EnsureOpts<Input, Output> &
+  opts: EnsureOpts<Input> &
     (
       | ((value: Input) => value is Output)
       | { readonly test: (value: Input) => value is Output }
     ),
 ): Output;
+export function ensure<Input, Else>(
+  value: Input,
+  opts: EnsureOptsWithElse<Input, Else> &
+    (
+      | ((value: Input) => boolean)
+      | { readonly test: (value: Input) => boolean }
+      | { readonly not: (value: Input) => boolean }
+    ),
+): Input | Else;
 export function ensure<Input>(
   value: Input,
   opts: EnsureOpts<Input> &
@@ -67,9 +87,15 @@ export function ensure<Input>(
       | { readonly not: (value: Input) => boolean }
     ),
 ): Input;
+export function ensure<Input, Key extends keyof PrimitiveTypes, Else>(
+  value: unknown,
+  opts: EnsureOptsWithElse<Input, Else> & {
+    readonly type: Key;
+  },
+): PrimitiveTypes[Key] | Else;
 export function ensure<Input, Key extends keyof PrimitiveTypes>(
   value: unknown,
-  opts: EnsureOpts<Input, PrimitiveTypes[Key]> & {
+  opts: EnsureOpts<Input> & {
     readonly type: Key;
   },
 ): PrimitiveTypes[Key];
@@ -92,13 +118,28 @@ export function ensure<Input, Key extends keyof PrimitiveTypes>(
  * @dataLast
  * @category Assertions
  */
+export function ensure<Input, Output extends Input, Else>(
+  opts: EnsureOptsWithElse<Input, Else> &
+    (
+      | ((value: Input) => value is Output)
+      | { readonly test: (value: Input) => value is Output }
+    ),
+): (value: Input) => Output | Else;
 export function ensure<Input, Output extends Input>(
-  opts: EnsureOpts<Input, Output> &
+  opts: EnsureOpts<Input> &
     (
       | ((value: Input) => value is Output)
       | { readonly test: (value: Input) => value is Output }
     ),
 ): (value: Input) => Output;
+export function ensure<Input, Else>(
+  opts: EnsureOptsWithElse<Input, Else> &
+    (
+      | ((value: Input) => boolean)
+      | { readonly test: (value: Input) => boolean }
+      | { readonly not: (value: Input) => boolean }
+    ),
+): (value: Input) => Input | Else;
 export function ensure<Input>(
   opts: EnsureOpts<Input> &
     (
@@ -107,6 +148,11 @@ export function ensure<Input>(
       | { readonly not: (value: Input) => boolean }
     ),
 ): (value: Input) => Input;
+export function ensure<Key extends keyof PrimitiveTypes, Else>(
+  opts: EnsureOptsWithElse<unknown, Else> & {
+    readonly type: Key;
+  },
+): (value: unknown) => PrimitiveTypes[Key] | Else;
 export function ensure<Key extends keyof PrimitiveTypes>(
   opts: EnsureOpts<unknown, PrimitiveTypes[Key]> & {
     readonly type: Key;

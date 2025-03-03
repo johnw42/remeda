@@ -60,17 +60,14 @@ export function ensure<Data, Arg extends EnsureArg<Data>>(
 ): EnsureResult<Arg>;
 
 /**
- * Ensures the predicate is true for the given value.  Refer to the dataFirst signature for more details.
+ * Ensures the predicate is true for the given value.  Refer to the data-first signature for more details.
  *
  * @param opts - Options for testing and handling test failures, or a predicate function.
  * @signature
  *   R.ensure(predicate)(data);
- *   R.ensure({ test: predicate })(data);
- *   R.ensure({ test: predicate, default: defaultValue })(data);
- *   R.ensure({ test: predicate, message: message })(data);
- *   R.ensure({ test: predicate, message: (data) => message })(data);
- *   R.ensure({ not: predicate })(data);
- *   R.ensure({ type: typename })(data);
+ *   R.ensure({ test: predicate, ...options })(data);
+ *   R.ensure({ not: predicate, ...options })(data);
+ *   R.ensure({ type: typename, ...options })(data);
  * @example
  *   R.ensure({ test: x => x > 0 })(5) // => 5
  *   R.ensure({ test: x => x < 0 })(5) // => throws Error("Invalid value")

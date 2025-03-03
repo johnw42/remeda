@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { handleEnsureError } from "./handleEnsureError";
-import type { EnsureOpts } from "./types/EnsureOpts";
+import type { EnsureOpts } from "./types/ensure";
 
 describe("handleEnsureError", () => {
   it("should return the default value if opts.else is provided", () => {

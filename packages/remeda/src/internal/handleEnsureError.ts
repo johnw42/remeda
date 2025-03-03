@@ -1,4 +1,4 @@
-import type EnsureOpts from "./types/EnsureOpts";
+import type EnsureOpts from "./types/ensure";
 
 export function handleEnsureError<Input, Output>(
   value: Input,

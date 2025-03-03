@@ -101,10 +101,10 @@ describe("ensure", () => {
   test("data last", () => {
     // Narrowing conversion.
     expectTypeOf(
-      ensure({ test: (x) => typeof x === "number" })(u5),
+      ensure({ test: (x: unknown) => typeof x === "number" })(u5),
     ).toEqualTypeOf<number>();
     expectTypeOf(
-      ensure({ test: (x) => typeof x === "number" })(u5),
+      ensure({ test: (x: unknown) => typeof x === "number" })(u5),
     ).toEqualTypeOf<number>();
 
     expectTypeOf<EnsureArg<unknown>>().toMatchTypeOf<EnsureArg<number>>();
@@ -126,13 +126,13 @@ describe("ensure", () => {
     // Narrowing conversion with else of different type.
     expectTypeOf(
       ensure({
-        test: (x) => typeof x === "number",
+        test: (x: unknown) => typeof x === "number",
         else: "0",
       })(u5),
     ).toEqualTypeOf<number | string>();
     expectTypeOf(
       ensure({
-        test: (x) => typeof x === "number",
+        test: (x: unknown) => typeof x === "number",
         else: () => "0",
       })(u5),
     ).toEqualTypeOf<number | string>();

@@ -1,10 +1,10 @@
-import type EnsureOpts from "./types/ensure";
+import type { EnsureOpts } from "./types/ensure";
 
-export function handleEnsureError<Input, Output>(
-  value: Input,
-  opts: EnsureOpts<Input, Output> | ((value: Input) => boolean),
+export function handleEnsureError<Data, Output>(
+  value: Data,
+  opts: EnsureOpts<Data, Output> | ((value: Data) => boolean),
   defaultMessage: string,
-): Input | Output {
+): Data | Output {
   let message: string = defaultMessage;
   if (typeof opts !== "function") {
     if ("message" in opts) {
@@ -12,7 +12,7 @@ export function handleEnsureError<Input, Output>(
         typeof opts.message === "function" ? opts.message(value) : opts.message;
     } else if ("else" in opts) {
       return typeof opts.else === "function"
-        ? (opts.else as (value: Input) => Output)(value)
+        ? (opts.else as (value: Data) => Output)(value)
         : opts.else;
     }
   }

@@ -1,9 +1,10 @@
 /* eslint-disable unicorn/filename-case */
-export type EnsureOptsWithElse<Data, Else> = {
+
+type EnsureOptsWithElse<Data, Else> = {
   readonly else: Else | ((data: Data) => Else);
 };
 
-export type EnsureOptsWithoutElse<Data> = {
+type EnsureOptsWithoutElse<Data> = {
   readonly message?: string | ((data: Data) => string);
 };
 
@@ -23,16 +24,16 @@ type PrimitiveTypes = {
   function: Function;
 };
 
-export type EnsureNarrowingArg<Data, Output extends Data> =
+type EnsureNarrowingArg<Data, Output extends Data> =
   | ((data: Data) => data is Output)
   | { readonly test: (data: Data) => data is Output };
 
-export type EnsureBooleanArg<Data> =
+type EnsureBooleanArg<Data> =
   | ((data: Data) => boolean)
   | { readonly test: (data: Data) => boolean }
   | { readonly not: (data: Data) => boolean };
 
-export type EnsureTypeArg<Key extends keyof PrimitiveTypes> = {
+type EnsureTypeArg<Key extends keyof PrimitiveTypes> = {
   readonly type: Key;
 };
 
@@ -55,7 +56,7 @@ type EnsureResultWithoutElse<Arg extends EnsureArg<never>> =
         ? PrimitiveTypes[Key]
         : never;
 
-export type EnsureData<Arg> = Arg extends EnsureArg<infer Data> ? Data : never;
+type EnsureData<Arg> = Arg extends EnsureArg<infer Data> ? Data : never;
 
 export type EnsureResult<Arg extends EnsureArg<never>> =
   | EnsureResultWithoutElse<Arg>

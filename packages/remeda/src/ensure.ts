@@ -18,24 +18,25 @@ type PrimitiveTypes = {
 };
 
 /**
- * Tests a condition on a given value.
+ * Tests a condition on a given data value.
  *
  * Four kinds of tests can be performed:
- * - If `opts.test` is a function, tests that it that returns true on the value.
- * - If `opts.not` is a function, tests that it that returns false on the value.
- * - If `opts.type` is a string, tests that the value has the given type using `typeof`.
+ * - If `opts.test` is a function, tests that it that returns true on the data.
+ * - If `opts.not` is a function, tests that it that returns false on the data.
+ * - If `opts.type` is a string, tests that the data has the given type using `typeof`.
  *
  * By by passing one of the `is*` functions from Remeda, you can construct a wide variety of tests.
  *
- * If the test succeeds, the value is returned.
+ * If the test succeeds, `data` is returned.
  *
  * If the test fails, one of four things can happen:
- * - If `"default" in opts`, the default value is returned.
+ * - If `opts.else` is a function, returns `opts.else(data)`.
+ * - If `opts.else` is a non-function, returns `opts.else`.
  * - If `opts.message` is a string, an error is thrown with the provided message.
- * - If `opts.message` is a function, an error is thrown with the message returned by calling the function with the tested value.
- * - If neither a default value nor a message is provided, an error is thrown with a default message.
+ * - If `opts.message` is a function, an error is thrown with the message `opts.message(data)`.
+ * - If neither `else` nor `message` is provided, an error is thrown with a default message.
  *
- * @param data - The data to ensure.
+ * @param data - The data to check.
  * @param opts - Options for testing and handling test failures, or a predicate function.
  * @signature
  *   R.ensure(data, predicate);
@@ -60,7 +61,8 @@ export function ensure<Data, Arg extends EnsureArg<Data>>(
 ): EnsureResult<Arg>;
 
 /**
- * Ensures the predicate is true for the given value.  Refer to the data-first signature for more details.
+ * Tests a condition on a given data value.
+ * Refer to the data-first signature for more details.
  *
  * @param opts - Options for testing and handling test failures, or a predicate function.
  * @signature

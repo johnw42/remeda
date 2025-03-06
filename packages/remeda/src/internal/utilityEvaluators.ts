@@ -1,20 +1,39 @@
-import type { LazyTransducer } from "./types/LazyEvaluator";
+import type {
+  LazyProducer,
+  LazyReducer,
+  LazyTransducer,
+} from "./types/LazyFunc";
 
 /**
- * A singleton value for skipping an item in a lazy evaluator.
+ * A singleton value for skipping an item in a lazy transducer.
  */
 export const SKIP_TRANSDUCER_ITEM = {
   value: [],
-} as const satisfies IteratorResult<Array<never>, Array<never>>;
+} as const satisfies ReturnType<LazyTransducer<never>>;
 
+/**
+ * A singleton value for skipping an item in a lazy producer.
+ */
+export const SKIP_PRODUCER_ITEM = SKIP_TRANSDUCER_ITEM satisfies ReturnType<
+  LazyReducer<never>
+>;
+
+/**
+ * A singleton value for skipping an item in a lazy reducer.
+ */
 export const SKIP_REDUCER_ITEM = {
   value: undefined,
-} as const satisfies IteratorResult<void, Array<never>>;
+} as const satisfies ReturnType<LazyReducer<never>>;
 
 export const EMPTY_RESULT = {
   done: true,
   value: [],
-} as const satisfies IteratorResult<Array<never>, Array<never>>;
+} as const satisfies ReturnType<LazyTransducer<never>>;
+
+export const STOP_PRODUCER = {
+  done: true,
+  value: [],
+} as const satisfies ReturnType<LazyProducer<never>>;
 
 /**
  * A helper evaluator when we want to return an empty result.

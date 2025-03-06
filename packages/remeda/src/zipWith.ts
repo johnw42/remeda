@@ -1,6 +1,6 @@
 import { lazyDataLastImpl } from "./internal/lazyDataLastImpl";
 import type { IterableContainer } from "./internal/types/IterableContainer";
-import type { LazyTransducer } from "./internal/types/LazyEvaluator";
+import type { LazyTransducer } from "./internal/types/LazyFunc";
 import { simplifyCallback } from "./internal/utilityEvaluators";
 
 type ZippingFunction<

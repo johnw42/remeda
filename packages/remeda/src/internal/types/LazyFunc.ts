@@ -1,15 +1,21 @@
-import type { ReadonlyDeep } from "type-fest";
-import type {
-  LazyProducer,
-  LazyReducer,
-  LazyTransducer,
-} from "./LazyEvaluator";
+export type LazyProducer<R = unknown> = () => IteratorResult<
+  ReadonlyArray<R>,
+  ReadonlyArray<R>
+>;
+
+export type LazyTransducer<T = unknown, R = T> = (
+  data: T,
+) => IteratorResult<ReadonlyArray<R>, ReadonlyArray<R>>;
+
+export type LazyReducer<T = unknown, R = T> = (
+  data: T,
+) => IteratorResult<void, R>;
 
 export type EagerProducerImpl<
   Data,
   Args extends ReadonlyArray<unknown>,
   Result,
-> = (data: Data, ...args: Args) => Array<Result>;
+> = (data: Data, ...args: Args) => Iterable<Result>;
 
 export type EagerTransducerImpl<
   Data,
@@ -76,11 +82,3 @@ export type ReducerFunc<Data = unknown, Result = unknown> = DataLastReducerFunc<
   readonly lazyKind: "reducer";
   readonly lazy: LazyReducer<Data, Result>;
 };
-
-export type LazyFunc<Data = unknown, Result = unknown> = ReadonlyDeep<
-  | ProducerFunc<Data, Result>
-  | TransducerFunc<Data, Result>
-  | ReducerFunc<Data, Result>
->;
-
-export default LazyFunc;

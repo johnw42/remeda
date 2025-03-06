@@ -1,5 +1,5 @@
 import doTransduce from "./internal/doTransduce";
-import type { LazyTransducer } from "./internal/types/LazyEvaluator";
+import type { LazyTransducer } from "./internal/types/LazyFunc";
 import { SKIP_TRANSDUCER_ITEM } from "./internal/utilityEvaluators";
 
 type Comparator<TFirst, TSecond> = (a: TFirst, b: TSecond) => boolean;

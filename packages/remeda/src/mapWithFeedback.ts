@@ -1,6 +1,6 @@
 import doTransduce from "./internal/doTransduce";
 import type { IterableContainer } from "./internal/types/IterableContainer";
-import type { LazyTransducer } from "./internal/types/LazyEvaluator";
+import type { LazyTransducer } from "./internal/types/LazyFunc";
 import type { Mapped } from "./internal/types/Mapped";
 import { simplifyCallback2 } from "./internal/utilityEvaluators";
 

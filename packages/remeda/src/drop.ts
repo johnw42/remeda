@@ -1,7 +1,7 @@
 import type { IsInteger, IsNegative, Subtract } from "type-fest";
 import type { CoercedArray } from "./internal/types/CoercedArray";
 import type { IterableContainer } from "./internal/types/IterableContainer";
-import type { LazyTransducer } from "./internal/types/LazyEvaluator";
+import type { LazyTransducer } from "./internal/types/LazyFunc";
 import type { NTuple } from "./internal/types/NTuple";
 import type { TupleParts } from "./internal/types/TupleParts";
 import {

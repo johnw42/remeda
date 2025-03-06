@@ -1,7 +1,7 @@
 import type { IsNumericLiteral } from "type-fest";
 import { lazyDataLastImpl } from "./internal/lazyDataLastImpl";
 import type { IterableContainer } from "./internal/types/IterableContainer";
-import type { LazyTransducer } from "./internal/types/LazyEvaluator";
+import type { LazyTransducer } from "./internal/types/LazyFunc";
 import { lazyIdentityEvaluator } from "./internal/utilityEvaluators";
 
 type FlatArray<

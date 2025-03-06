@@ -4,7 +4,7 @@
  */
 
 import doTransduce from "./doTransduce";
-import type { LazyTransducer } from "./types/LazyEvaluator";
+import type { LazyTransducer } from "./types/LazyFunc";
 
 test("throws on wrong number of arguments", () => {
   expect(() =>

@@ -5,13 +5,20 @@ import type {
   LazyProducer,
   LazyReducer,
   LazyTransducer,
-} from "./internal/types/LazyEvaluator";
-import type LazyFunc from "./internal/types/LazyFunc";
+  ProducerFunc,
+  ReducerFunc,
+  TransducerFunc,
+} from "./internal/types/LazyFunc";
 import { EMPTY_RESULT } from "./internal/utilityEvaluators";
 
 type EagerFunc = ((input: unknown) => unknown) & {
   readonly lazyKind?: undefined;
 };
+
+type LazyFunc<Data = unknown, Result = unknown> =
+  | ProducerFunc<Data, Result>
+  | TransducerFunc<Data, Result>
+  | ReducerFunc<Data, Result>;
 
 class LazyPipeline<T> {
   public readonly producer: ((data: T) => LazyProducer<T>) | undefined =

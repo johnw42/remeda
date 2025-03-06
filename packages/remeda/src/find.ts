@@ -1,5 +1,5 @@
 import doReduce from "./internal/doReduce";
-import type { LazyReducer } from "./internal/types/LazyEvaluator";
+import type { LazyReducer } from "./internal/types/LazyFunc";
 import {
   simplifyCallback,
   SKIP_REDUCER_ITEM,

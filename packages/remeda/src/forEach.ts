@@ -1,6 +1,6 @@
 import type { Writable } from "type-fest";
 import type { IterableContainer } from "./internal/types/IterableContainer";
-import type { LazyTransducer } from "./internal/types/LazyEvaluator";
+import type { LazyTransducer } from "./internal/types/LazyFunc";
 import doTransduce from "./internal/doTransduce";
 import { simplifyCallback } from "./internal/utilityEvaluators";
 

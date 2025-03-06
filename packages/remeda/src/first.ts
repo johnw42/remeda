@@ -1,6 +1,6 @@
 import doReduce from "./internal/doReduce";
 import type { IterableContainer } from "./internal/types/IterableContainer";
-import type { LazyReducer } from "./internal/types/LazyEvaluator";
+import type { LazyReducer } from "./internal/types/LazyFunc";
 
 type First<T extends IterableContainer> = T extends []
   ? undefined

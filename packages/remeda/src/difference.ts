@@ -1,5 +1,5 @@
-import { purryFromLazy } from "./internal/purryFromLazy";
-import type { LazyEvaluator } from "./internal/types/LazyEvaluator";
+import transduce from "./internal/transduce";
+import type { LazyTransducer } from "./internal/types/LazyEvaluator";
 import { SKIP_ITEM, lazyIdentityEvaluator } from "./internal/utilityEvaluators";
 
 /**
@@ -43,12 +43,12 @@ export function difference<T>(
 ): (data: ReadonlyArray<T>) => Array<T>;
 
 export function difference(...args: ReadonlyArray<unknown>): unknown {
-  return purryFromLazy(lazyImplementation, args);
+  return transduce(undefined, lazyImplementation, args);
 }
 
-function lazyImplementation<T>(other: ReadonlyArray<T>): LazyEvaluator<T> {
+function lazyImplementation<T>(other: ReadonlyArray<T>): LazyTransducer<T, T> {
   if (other.length === 0) {
-    return lazyIdentityEvaluator;
+    return lazyIdentityEvaluator();
   }
 
   // We need to build a more efficient data structure that would allow us to
@@ -58,19 +58,25 @@ function lazyImplementation<T>(other: ReadonlyArray<T>): LazyEvaluator<T> {
     remaining.set(value, (remaining.get(value) ?? 0) + 1);
   }
 
-  return (value) => {
-    const copies = remaining.get(value);
+  return {
+    [Symbol.iterator]() {
+      return {
+        next(value: T) {
+          const copies = remaining.get(value);
 
-    if (copies === undefined || copies === 0) {
-      // The item is either not part of the other array or we've dropped enough
-      // copies of it so we return it.
-      return { done: false, hasNext: true, next: value };
-    }
+          if (copies === undefined || copies === 0) {
+            // The item is either not part of the other array or we've dropped enough
+            // copies of it so we return it.
+            return { done: false, value: [value] };
+          }
 
-    // The item is equal to an item in the other array and there are still
-    // copies of it to "account" for so we skip this one and remove it from our
-    // ongoing tally.
-    remaining.set(value, copies - 1);
-    return SKIP_ITEM;
+          // The item is equal to an item in the other array and there are still
+          // copies of it to "account" for so we skip this one and remove it from our
+          // ongoing tally.
+          remaining.set(value, copies - 1);
+          return SKIP_ITEM;
+        },
+      };
+    },
   };
 }

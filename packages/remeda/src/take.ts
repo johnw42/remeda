@@ -1,7 +1,6 @@
+import transduce from "./internal/transduce";
 import type { IterableContainer } from "./internal/types/IterableContainer";
-import type { LazyEvaluator } from "./internal/types/LazyEvaluator";
-import { lazyEmptyEvaluator } from "./internal/utilityEvaluators";
-import { purry } from "./purry";
+import type { LazyTransducer } from "./internal/types/LazyEvaluator";
 
 /**
  * Returns the first `n` elements of `array`.
@@ -38,7 +37,7 @@ export function take(
 ): <T extends IterableContainer>(array: T) => Array<T[number]>;
 
 export function take(...args: ReadonlyArray<unknown>): unknown {
-  return purry(takeImplementation, args, lazyImplementation);
+  return transduce(takeImplementation, lazyImplementation, args);
 }
 
 const takeImplementation = <T extends IterableContainer>(
@@ -46,14 +45,21 @@ const takeImplementation = <T extends IterableContainer>(
   n: number,
 ): Array<T[number]> => (n < 0 ? [] : array.slice(0, n));
 
-function lazyImplementation<T>(n: number): LazyEvaluator<T> {
-  if (n <= 0) {
-    return lazyEmptyEvaluator;
-  }
-
+function lazyImplementation<T>(n: number): LazyTransducer<T> {
   let remaining = n;
-  return (value) => {
-    remaining -= 1;
-    return { done: remaining <= 0, hasNext: true, next: value };
+  return {
+    [Symbol.iterator]() {
+      return {
+        next(...args) {
+          if (args.length === 0) {
+            throw new Error("No arguments provided");
+          }
+          remaining -= 1;
+          return remaining <= 0
+            ? { done: true, value: undefined }
+            : { done: false, value: args };
+        },
+      };
+    },
   };
 }

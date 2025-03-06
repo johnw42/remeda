@@ -1,20 +1,89 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable jsdoc/check-param-names, jsdoc/require-param -- we don't document the op params, it'd be redundant */
 
-import type { LazyDefinition } from "./internal/types/LazyDefinition";
-import type { LazyEvaluator } from "./internal/types/LazyEvaluator";
-import type { LazyResult } from "./internal/types/LazyResult";
-import { SKIP_ITEM } from "./internal/utilityEvaluators";
+import type {
+  LazyProducer,
+  LazyReducer,
+  LazyTransducer,
+} from "./internal/types/LazyEvaluator";
+import type LazyFunc from "./internal/types/LazyFunc";
 
-type PreparedLazyOperation = LazyEvaluator & {
-  readonly isSingle: boolean;
-
-  // These are intentionally mutable, they maintain the lazy piped state.
-  index: number;
-  items: Array<unknown>;
+type EagerFunc = ((input: unknown) => unknown) & {
+  readonly lazyKind?: undefined;
 };
 
-type LazyOp = LazyDefinition & ((input: unknown) => unknown);
+class LazyPipeline {
+  public readonly producer: LazyProducer | undefined = undefined;
+  public readonly transducers: Array<LazyTransducer> = [];
+  public readonly reducer: LazyReducer | undefined = undefined;
+  public readonly length: number;
+
+  public constructor(
+    operations: ReadonlyArray<LazyFunc | EagerFunc>,
+    startIndex: number,
+  ) {
+    let i: number;
+    for (i = startIndex; i < operations.length; i++) {
+      const lazyOp = operations[i]!;
+      let breakLoop = false;
+      switch (lazyOp.lazyKind) {
+        case undefined:
+          breakLoop = true;
+          break;
+        case "producer":
+          if (this.producer === undefined) {
+            this.producer = lazyOp.lazy;
+          } else {
+            breakLoop = true;
+          }
+          break;
+        case "transducer":
+          this.transducers.push(lazyOp.lazy);
+          break;
+        case "reducer":
+          this.reducer = lazyOp.lazy;
+          breakLoop = true;
+          break;
+      }
+      if (breakLoop) {
+        break;
+      }
+    }
+    this.length = i - startIndex;
+  }
+
+  public run(input: unknown): unknown {
+    let tInput: Iterable<unknown> =
+      this.producer === undefined
+        ? (input as Iterable<unknown>)
+        : this.producer(input);
+    for (const transducer of this.transducers) {
+      const tIter = transducer[Symbol.iterator]();
+      const tOutput: Array<unknown> = [];
+      for (const value of tInput) {
+        const tNext = tIter.next(value);
+        if (tNext.done ?? false) {
+          break;
+        }
+        tOutput.push(...tNext.value);
+      }
+      tInput = tOutput;
+    }
+    if (this.reducer === undefined) {
+      return [...tInput];
+    }
+    const rIter = this.reducer[Symbol.iterator]();
+    let rOutput: unknown;
+    for (const value of tInput) {
+      const rNext = rIter.next(value);
+      rOutput = rNext.value;
+      if (rNext.done ?? false) {
+        break;
+      }
+    }
+    return rOutput;
+  }
+}
 
 /**
  * Perform left-to-right function composition.
@@ -209,113 +278,27 @@ export function pipe<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P>(
 
 export function pipe(
   input: unknown,
-  ...operations: ReadonlyArray<LazyOp | ((value: any) => unknown)>
+  ...operations: ReadonlyArray<LazyFunc | EagerFunc>
 ): any {
   let output = input;
 
-  const lazyOperations = operations.map((op) =>
-    "lazy" in op ? prepareLazyOperation(op) : undefined,
-  );
-
-  let operationIndex = 0;
-  while (operationIndex < operations.length) {
-    const lazyOperation = lazyOperations[operationIndex];
-    if (lazyOperation === undefined || !isIterable(output)) {
-      const operation = operations[operationIndex]!;
-      output = operation(output);
-      operationIndex += 1;
+  let opIndex = 0;
+  while (opIndex < operations.length) {
+    const op = operations[opIndex]!;
+    if (
+      op.lazyKind === undefined ||
+      (op.lazyKind !== "producer" && !isIterable(output))
+    ) {
+      output = (op as EagerFunc)(output);
+      opIndex += 1;
       continue;
     }
 
-    const lazySequence: Array<PreparedLazyOperation> = [];
-    for (let index = operationIndex; index < operations.length; index++) {
-      const lazyOp = lazyOperations[index];
-      if (lazyOp === undefined) {
-        break;
-      }
-
-      lazySequence.push(lazyOp);
-      if (lazyOp.isSingle) {
-        break;
-      }
-    }
-
-    const accumulator: Array<unknown> = [];
-
-    for (const value of output) {
-      const shouldExitEarly = processItem(value, accumulator, lazySequence);
-      if (shouldExitEarly) {
-        break;
-      }
-    }
-
-    const { isSingle } = lazySequence.at(-1)!;
-    output = isSingle ? accumulator[0] : accumulator;
-    operationIndex += lazySequence.length;
+    const lazyPipeline = new LazyPipeline(operations, opIndex);
+    output = lazyPipeline.run(output);
+    opIndex += lazyPipeline.length;
   }
   return output;
-}
-
-function processItem(
-  item: unknown,
-  // eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types -- Intentionally mutable, we use the accumulator directly to accumulate the results.
-  accumulator: Array<unknown>,
-  // eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types -- Intentionally mutable, the lazy sequence is stateful and contains the state needed to compute the next value lazily.
-  lazySequence: ReadonlyArray<PreparedLazyOperation>,
-): boolean {
-  if (lazySequence.length === 0) {
-    accumulator.push(item);
-    return false;
-  }
-
-  let currentItem = item;
-
-  let lazyResult: LazyResult<any> = SKIP_ITEM;
-  let isDone = false;
-  for (const [operationsIndex, lazyFn] of lazySequence.entries()) {
-    const { index, items } = lazyFn;
-    items.push(currentItem);
-    lazyResult = lazyFn(currentItem, index, items);
-    lazyFn.index += 1;
-    if (lazyResult.hasNext) {
-      if (lazyResult.hasMany ?? false) {
-        for (const subItem of lazyResult.next as ReadonlyArray<unknown>) {
-          const subResult = processItem(
-            subItem,
-            accumulator,
-            lazySequence.slice(operationsIndex + 1),
-          );
-          if (subResult) {
-            return true;
-          }
-        }
-        return isDone;
-      }
-      currentItem = lazyResult.next;
-    }
-    if (!lazyResult.hasNext) {
-      break;
-    }
-    // process remaining functions in the pipe
-    // but don't process remaining elements in the input array
-    if (lazyResult.done) {
-      isDone = true;
-    }
-  }
-  if (lazyResult.hasNext) {
-    accumulator.push(currentItem);
-  }
-  return isDone;
-}
-
-function prepareLazyOperation(op: LazyOp): PreparedLazyOperation {
-  const { lazy, lazyArgs } = op;
-  const fn = lazy(...lazyArgs);
-  return Object.assign(fn, {
-    isSingle: lazy.single ?? false,
-    index: 0,
-    items: [] as Array<unknown>,
-  });
 }
 
 function isIterable(something: unknown): something is Iterable<unknown> {

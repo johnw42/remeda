@@ -1,4 +1,4 @@
-import { purryFromLazy } from "./internal/purryFromLazy";
+import transduce from "./internal/transduce";
 import type { LazyEvaluator } from "./internal/types/LazyEvaluator";
 import { SKIP_ITEM } from "./internal/utilityEvaluators";
 
@@ -57,15 +57,18 @@ export function differenceWith<TFirst, TSecond>(
 ): (array: ReadonlyArray<TFirst>) => Array<TFirst>;
 
 export function differenceWith(...args: ReadonlyArray<unknown>): unknown {
-  return purryFromLazy(lazyImplementation, args);
+  return transduce(undefined, lazyImplementation, args);
 }
 
-const lazyImplementation =
-  <TFirst, TSecond>(
-    other: ReadonlyArray<TSecond>,
-    isEquals: IsEquals<TFirst, TSecond>,
-  ): LazyEvaluator<TFirst> =>
-  (value) =>
-    other.every((otherValue) => !isEquals(value, otherValue))
-      ? { done: false, hasNext: true, next: value }
-      : SKIP_ITEM;
+function lazyImplementation<TFirst, TSecond>(
+  other: ReadonlyArray<TSecond>,
+  isEquals: IsEquals<TFirst, TSecond>,
+): LazyEvaluator<TFirst> {
+  return {
+    next(value: TFirst) {
+      return other.every((otherValue) => !isEquals(value, otherValue))
+        ? { done: false, value: [value] }
+        : SKIP_ITEM;
+    },
+  };
+}

@@ -21,10 +21,10 @@ type LazyFunc<Data = unknown, Result = unknown> =
   | ReducerFunc<Data, Result>;
 
 class LazyPipeline<T> {
-  public readonly producer: ((data: T) => LazyProducer<T>) | undefined =
+  private readonly producer: ((data: T) => LazyProducer<T>) | undefined =
     undefined;
-  public readonly transducers: Array<LazyTransducer<T>> = [];
-  public readonly reducer: LazyReducer<T> | undefined = undefined;
+  private readonly transducers: Array<LazyTransducer<T>> = [];
+  private readonly reducer: LazyReducer<T> | undefined = undefined;
   public readonly length: number;
 
   public constructor(

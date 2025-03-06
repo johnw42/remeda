@@ -40,9 +40,14 @@ describe("data first", () => {
   it("should track index and provide entire items array", () => {
     const data = [1, 2, 3, 4, 5];
 
-    const mockedReducer = vi.fn<(acc: number, x: number) => number>(
-      (acc, x) => acc + x,
-    );
+    const mockedReducer = vi.fn<
+      (
+        acc: number,
+        x: number,
+        index: number,
+        data: ReadonlyArray<number>,
+      ) => number
+    >((acc, x, _index, _data) => acc + x);
 
     mapWithFeedback(data, mockedReducer, 100);
 

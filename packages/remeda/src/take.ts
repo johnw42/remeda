@@ -1,6 +1,7 @@
-import transduce from "./internal/transduce";
+import doTransduce from "./internal/doTransduce";
 import type { IterableContainer } from "./internal/types/IterableContainer";
 import type { LazyTransducer } from "./internal/types/LazyEvaluator";
+import { lazyEmptyEvaluator } from "./internal/utilityEvaluators";
 
 /**
  * Returns the first `n` elements of `array`.
@@ -37,7 +38,7 @@ export function take(
 ): <T extends IterableContainer>(array: T) => Array<T[number]>;
 
 export function take(...args: ReadonlyArray<unknown>): unknown {
-  return transduce(takeImplementation, lazyImplementation, args);
+  return doTransduce(takeImplementation, lazyImplementation, args);
 }
 
 const takeImplementation = <T extends IterableContainer>(
@@ -46,6 +47,9 @@ const takeImplementation = <T extends IterableContainer>(
 ): Array<T[number]> => (n < 0 ? [] : array.slice(0, n));
 
 function lazyImplementation<T>(n: number): LazyTransducer<T> {
+  if (n <= 0) {
+    return lazyEmptyEvaluator;
+  }
   let remaining = n;
   return (value) => {
     remaining -= 1;

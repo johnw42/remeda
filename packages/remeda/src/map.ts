@@ -1,7 +1,8 @@
-import transduce from "./internal/transduce";
+import doTransduce from "./internal/doTransduce";
 import type { IterableContainer } from "./internal/types/IterableContainer";
 import type { LazyTransducer } from "./internal/types/LazyEvaluator";
 import type { Mapped } from "./internal/types/Mapped";
+import { simplifyCallback } from "./internal/utilityEvaluators";
 
 /**
  * Creates a new array populated with the results of calling a provided function
@@ -50,7 +51,7 @@ export function map<T extends IterableContainer, U>(
 ): (data: T) => Mapped<T, U>;
 
 export function map(...args: ReadonlyArray<unknown>): unknown {
-  return transduce(mapImplementation, lazyImplementation, args);
+  return doTransduce(mapImplementation, lazyImplementation, args);
 }
 
 const mapImplementation = <T, U>(
@@ -61,11 +62,8 @@ const mapImplementation = <T, U>(
 const lazyImplementation = <T, U>(
   callbackfn: (value: T, index: number, data: ReadonlyArray<T>) => U,
 ): LazyTransducer<T, U> => {
-  const data: Array<T> = [];
-  return (value) => {
-    data.push(value);
-    return {
-      value: [callbackfn(value, data.length - 1, data)],
-    };
-  };
+  const simpleCallback = simplifyCallback(callbackfn);
+  return (value) => ({
+    value: [simpleCallback(value)],
+  });
 };

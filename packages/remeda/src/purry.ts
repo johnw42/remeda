@@ -47,13 +47,17 @@ export function purry(
   args: ReadonlyArray<unknown>,
   lazy?: (...args: any) => LazyEvaluator,
 ): unknown {
+  if (lazy) {
+    throw new Error("Not supported");
+  }
+
   const diff = fn.length - args.length;
   if (diff === 0) {
     return fn(...args);
   }
 
   if (diff === 1) {
-    return lazyDataLastImpl(fn, args, lazy);
+    return (data: unknown) => fn(data, ...args);
   }
 
   throw new Error("Wrong number of arguments");

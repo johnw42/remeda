@@ -1,6 +1,9 @@
-import transduce from "./internal/transduce";
+import doTransduce from "./internal/doTransduce";
 import type { LazyTransducer } from "./internal/types/LazyEvaluator";
-import { SKIP_ITEM, lazyIdentityEvaluator } from "./internal/utilityEvaluators";
+import {
+  SKIP_TRANSDUCER_ITEM,
+  lazyIdentityEvaluator,
+} from "./internal/utilityEvaluators";
 
 /**
  * Excludes the values from `other` array. The output maintains the same order
@@ -43,7 +46,7 @@ export function difference<T>(
 ): (data: ReadonlyArray<T>) => Array<T>;
 
 export function difference(...args: ReadonlyArray<unknown>): unknown {
-  return transduce(undefined, lazyImplementation, args);
+  return doTransduce(undefined, lazyImplementation, args);
 }
 
 function lazyImplementation<T>(other: ReadonlyArray<T>): LazyTransducer<T, T> {
@@ -71,6 +74,6 @@ function lazyImplementation<T>(other: ReadonlyArray<T>): LazyTransducer<T, T> {
     // copies of it to "account" for so we skip this one and remove it from our
     // ongoing tally.
     remaining.set(value, copies - 1);
-    return SKIP_ITEM;
+    return SKIP_TRANSDUCER_ITEM;
   };
 }

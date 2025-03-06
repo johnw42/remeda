@@ -1,6 +1,9 @@
-import type { LazyEvaluator } from "./internal/types/LazyEvaluator";
-import { SKIP_ITEM } from "./internal/utilityEvaluators";
-import { purry } from "./purry";
+import doTransduce from "./internal/doTransduce";
+import type { LazyTransducer } from "./internal/types/LazyEvaluator";
+import {
+  SKIP_TRANSDUCER_ITEM,
+  simplifyCallback,
+} from "./internal/utilityEvaluators";
 
 /**
  * Creates a shallow copy of a portion of a given array, filtered down to just
@@ -56,7 +59,7 @@ export function filter<T>(
 ): (data: ReadonlyArray<T>) => Array<T>;
 
 export function filter(...args: ReadonlyArray<unknown>): unknown {
-  return purry(filterImplementation, args, lazyImplementation);
+  return doTransduce(filterImplementation, lazyImplementation, args);
 }
 
 const filterImplementation = <T>(
@@ -64,11 +67,10 @@ const filterImplementation = <T>(
   predicate: (value: T, index: number, array: ReadonlyArray<T>) => boolean,
 ): Array<T> => data.filter(predicate);
 
-const lazyImplementation =
-  <T>(
-    predicate: (value: T, index: number, data: ReadonlyArray<T>) => boolean,
-  ): LazyEvaluator<T> =>
-  (value, index, data) =>
-    predicate(value, index, data)
-      ? { done: false, hasNext: true, next: value }
-      : SKIP_ITEM;
+const lazyImplementation = <T>(
+  predicate: (value: T, index: number, data: ReadonlyArray<T>) => boolean,
+): LazyTransducer<T> => {
+  const simplePredicate = simplifyCallback(predicate);
+  return (value) =>
+    simplePredicate(value) ? { value: [value] } : SKIP_TRANSDUCER_ITEM;
+};

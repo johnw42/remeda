@@ -3,7 +3,7 @@ import type { BrandedReturn } from "./internal/types/BrandedReturn";
 import type { Deduped } from "./internal/types/Deduped";
 import type { IterableContainer } from "./internal/types/IterableContainer";
 import type { LazyEvaluator } from "./internal/types/LazyEvaluator";
-import { SKIP_ITEM } from "./internal/utilityEvaluators";
+import { SKIP_TRANSDUCER_ITEM } from "./internal/utilityEvaluators";
 
 /**
  * Returns a new array containing only one copy of each element in the original
@@ -62,7 +62,7 @@ function lazyImplementation<T>(
   return (value, index, data) => {
     const key = brandedKeyFunction(value, index, data);
     if (set.has(key)) {
-      return SKIP_ITEM;
+      return SKIP_TRANSDUCER_ITEM;
     }
 
     set.add(key);

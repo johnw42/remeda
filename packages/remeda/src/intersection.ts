@@ -1,6 +1,9 @@
-import { purryFromLazy } from "./internal/purryFromLazy";
-import type { LazyEvaluator } from "./internal/types/LazyEvaluator";
-import { SKIP_ITEM, lazyEmptyEvaluator } from "./internal/utilityEvaluators";
+import doTransduce from "./internal/doTransduce";
+import type { LazyTransducer } from "./internal/types/LazyEvaluator";
+import {
+  SKIP_TRANSDUCER_ITEM,
+  lazyEmptyEvaluator,
+} from "./internal/utilityEvaluators";
 
 /**
  * Returns a list of elements that exist in both array. The output maintains the
@@ -43,12 +46,12 @@ export function intersection<S>(
 ): <T>(data: ReadonlyArray<T>) => Array<S & T>;
 
 export function intersection(...args: ReadonlyArray<unknown>): unknown {
-  return purryFromLazy(lazyImplementation, args);
+  return doTransduce(undefined, lazyImplementation, args);
 }
 
 function lazyImplementation<T, S>(
   other: ReadonlyArray<S>,
-): LazyEvaluator<T, S & T> {
+): LazyTransducer<T, S & T> {
   if (other.length === 0) {
     return lazyEmptyEvaluator;
   }
@@ -66,7 +69,7 @@ function lazyImplementation<T, S>(
     if (copies === undefined || copies === 0) {
       // The item is either not part of the other array or we've "used" enough
       // copies of it so we skip the remaining values.
-      return SKIP_ITEM;
+      return SKIP_TRANSDUCER_ITEM;
     }
 
     // The item is equal to an item in the other array and there are still
@@ -79,10 +82,9 @@ function lazyImplementation<T, S>(
     }
 
     return {
-      hasNext: true,
       // We can safely cast here because if value was in the `remaining` map, it
       // has to be of type S (that's just how we built it).
-      next: value as S & T,
+      value: [value as S & T],
       // We can stop the iteration if the remaining map is empty.
       done: remaining.size === 0,
     };

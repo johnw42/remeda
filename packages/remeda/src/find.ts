@@ -1,7 +1,9 @@
-import { toSingle } from "./internal/toSingle";
-import type { LazyEvaluator } from "./internal/types/LazyEvaluator";
-import { SKIP_ITEM } from "./internal/utilityEvaluators";
-import { purry } from "./purry";
+import doReduce from "./internal/doReduce";
+import type { LazyReducer } from "./internal/types/LazyEvaluator";
+import {
+  simplifyCallback,
+  SKIP_REDUCER_ITEM,
+} from "./internal/utilityEvaluators";
 
 /**
  * Returns the first element in the provided array that satisfies the provided
@@ -76,7 +78,7 @@ export function find<T>(
 ): (data: ReadonlyArray<T>) => T | undefined;
 
 export function find(...args: ReadonlyArray<unknown>): unknown {
-  return purry(findImplementation, args, toSingle(lazyImplementation));
+  return doReduce(findImplementation, lazyImplementation, args);
 }
 
 const findImplementation = <T, S extends T>(
@@ -84,11 +86,12 @@ const findImplementation = <T, S extends T>(
   predicate: (value: T, index: number, data: ReadonlyArray<T>) => value is S,
 ): S | undefined => data.find(predicate);
 
-const lazyImplementation =
-  <T, S extends T>(
-    predicate: (value: T, index: number, data: ReadonlyArray<T>) => value is S,
-  ): LazyEvaluator<T, S> =>
-  (value, index, data) =>
-    predicate(value, index, data)
-      ? { done: true, hasNext: true, next: value }
-      : SKIP_ITEM;
+const lazyImplementation = <T, S extends T>(
+  predicate: (value: T, index: number, data: ReadonlyArray<T>) => value is S,
+): LazyReducer<T, S> => {
+  const simplePredicate = simplifyCallback(predicate);
+  return (value: T) =>
+    simplePredicate(value)
+      ? { done: true, value: value as S }
+      : SKIP_REDUCER_ITEM;
+};

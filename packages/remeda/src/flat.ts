@@ -1,8 +1,7 @@
 import type { IsNumericLiteral } from "type-fest";
 import { lazyDataLastImpl } from "./internal/lazyDataLastImpl";
 import type { IterableContainer } from "./internal/types/IterableContainer";
-import type { LazyEvaluator } from "./internal/types/LazyEvaluator";
-import type { LazyResult } from "./internal/types/LazyResult";
+import type { LazyTransducer } from "./internal/types/LazyEvaluator";
 import { lazyIdentityEvaluator } from "./internal/utilityEvaluators";
 
 type FlatArray<
@@ -119,29 +118,24 @@ export function flat(
 }
 
 const flatImplementation = (
-  data: IterableContainer,
+  data: ReadonlyArray<unknown>,
   depth?: number,
-): IterableContainer => (depth === undefined ? data.flat() : data.flat(depth));
+): Array<unknown> => (depth === undefined ? data.flat() : data.flat(depth));
 
-const lazyImplementation = (depth?: number): LazyEvaluator =>
+const lazyImplementation = (depth?: number): LazyTransducer =>
   depth === undefined || depth === 1
     ? lazyShallow
     : depth <= 0
-      ? lazyIdentityEvaluator
+      ? lazyIdentityEvaluator()
       : (value) =>
           Array.isArray(value)
             ? {
-                next: value.flat(depth - 1),
-                hasNext: true,
-                hasMany: true,
-                done: false,
+                value: value.flat(depth - 1) as Array<unknown>,
               }
-            : { next: value, hasNext: true, done: false };
+            : { value: [value] };
 
 // This function is pulled out so that we don't generate a new arrow function
 // each time. Because it doesn't need to run with recursion it could be pulled
 // out from the lazyImplementation and be reused for all invocations.
-const lazyShallow = <T>(value: T): LazyResult<T> =>
-  Array.isArray(value)
-    ? { next: value, hasNext: true, hasMany: true, done: false }
-    : { next: value, hasNext: true, done: false };
+const lazyShallow: LazyTransducer = (data: unknown) =>
+  Array.isArray(data) ? { value: data as Array<unknown> } : { value: [data] };

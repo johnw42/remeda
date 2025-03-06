@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import type { LazyEvaluator } from "./types/LazyEvaluator";
+import type {
+  DataLastTransducerFunc,
+  EagerTransducerImpl,
+  LazyTransducerImpl,
+} from "./types/LazyFunc";
 
 /**
  * Use this helper function to build the data last implementation together with
@@ -9,15 +13,22 @@ import type { LazyEvaluator } from "./types/LazyEvaluator";
  * that isn't the number of arguments provided. This is useful for implementing
  * functions with optional or variadic arguments.
  */
-export function lazyDataLastImpl(
-  fn: (...args: any) => unknown,
+export function lazyDataLastImpl<
+  Data,
+  Rest extends ReadonlyArray<unknown>,
+  Result,
+>(
+  eager: EagerTransducerImpl<Data, Rest, Result>,
   args: ReadonlyArray<unknown>,
-  lazy?: (...args: any) => LazyEvaluator,
-  // TODO: We can probably provide better typing to the return type...
-): unknown {
-  const dataLast = (data: unknown): unknown => fn(data, ...args);
+  lazy?: LazyTransducerImpl<Data, Rest, Result>,
+): DataLastTransducerFunc<Data, Result> {
+  const dataLast: DataLastTransducerFunc<Data, Result> = (data) =>
+    eager(data, ...(args as Rest));
 
   return lazy === undefined
     ? dataLast
-    : Object.assign(dataLast, { lazy, lazyArgs: args });
+    : Object.assign(dataLast, {
+        lazy: lazy(...(args as Rest)),
+        lazyKind: "transducer",
+      });
 }

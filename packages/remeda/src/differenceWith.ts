@@ -1,6 +1,6 @@
-import transduce from "./internal/transduce";
-import type { LazyEvaluator } from "./internal/types/LazyEvaluator";
-import { SKIP_ITEM } from "./internal/utilityEvaluators";
+import doTransduce from "./internal/doTransduce";
+import type { LazyTransducer } from "./internal/types/LazyEvaluator";
+import { SKIP_TRANSDUCER_ITEM } from "./internal/utilityEvaluators";
 
 type IsEquals<TFirst, TSecond> = (a: TFirst, b: TSecond) => boolean;
 
@@ -57,18 +57,15 @@ export function differenceWith<TFirst, TSecond>(
 ): (array: ReadonlyArray<TFirst>) => Array<TFirst>;
 
 export function differenceWith(...args: ReadonlyArray<unknown>): unknown {
-  return transduce(undefined, lazyImplementation, args);
+  return doTransduce(undefined, lazyImplementation, args);
 }
 
 function lazyImplementation<TFirst, TSecond>(
   other: ReadonlyArray<TSecond>,
   isEquals: IsEquals<TFirst, TSecond>,
-): LazyEvaluator<TFirst> {
-  return {
-    next(value: TFirst) {
-      return other.every((otherValue) => !isEquals(value, otherValue))
-        ? { done: false, value: [value] }
-        : SKIP_ITEM;
-    },
-  };
+): LazyTransducer<TFirst> {
+  return (value: TFirst) =>
+    other.every((otherValue) => !isEquals(value, otherValue))
+      ? { value: [value] }
+      : SKIP_TRANSDUCER_ITEM;
 }

@@ -27,7 +27,7 @@ export type LazyProducerImpl<
   Data,
   Args extends ReadonlyArray<unknown>,
   Result,
-> = (...args: Args) => LazyProducer<Data, Result>;
+> = (data: Data, ...args: Args) => LazyProducer<Result>;
 
 export type LazyTransducerImpl<
   Data,
@@ -58,7 +58,7 @@ export type ProducerFunc<
   Result = unknown,
 > = DataLastProducerFunc<Data, Result> & {
   readonly lazyKind: "producer";
-  readonly lazy: LazyProducer<Data, Result>;
+  readonly lazy: (data: Data) => LazyProducer<Result>;
 };
 
 export type TransducerFunc<

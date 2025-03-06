@@ -1,7 +1,8 @@
-import { purryFromLazy } from "./internal/purryFromLazy";
+import doTransduce from "./internal/doTransduce";
 import type { IterableContainer } from "./internal/types/IterableContainer";
-import type { LazyEvaluator } from "./internal/types/LazyEvaluator";
+import type { LazyTransducer } from "./internal/types/LazyEvaluator";
 import type { Mapped } from "./internal/types/Mapped";
+import { simplifyCallback2 } from "./internal/utilityEvaluators";
 
 /**
  * Applies a function on each element of the array, using the result of the
@@ -69,7 +70,7 @@ export function mapWithFeedback<T extends IterableContainer, U>(
 ): (data: T) => Mapped<T, U>;
 
 export function mapWithFeedback(...args: ReadonlyArray<unknown>): unknown {
-  return purryFromLazy(lazyImplementation, args);
+  return doTransduce(undefined, lazyImplementation, args);
 }
 
 const lazyImplementation = <T, U>(
@@ -80,10 +81,11 @@ const lazyImplementation = <T, U>(
     data: ReadonlyArray<T>,
   ) => U,
   initialValue: U,
-): LazyEvaluator<T, U> => {
+): LazyTransducer<T, U> => {
+  const simpleReducer = simplifyCallback2(reducer);
   let previousValue = initialValue;
-  return (currentValue, index, data) => {
-    previousValue = reducer(previousValue, currentValue, index, data);
-    return { done: false, hasNext: true, next: previousValue };
+  return (currentValue) => {
+    previousValue = simpleReducer(previousValue, currentValue);
+    return { value: [previousValue] };
   };
 };

@@ -7,15 +7,17 @@ import type {
   LazyTransducer,
 } from "./internal/types/LazyEvaluator";
 import type LazyFunc from "./internal/types/LazyFunc";
+import { EMPTY_RESULT } from "./internal/utilityEvaluators";
 
 type EagerFunc = ((input: unknown) => unknown) & {
   readonly lazyKind?: undefined;
 };
 
-class LazyPipeline {
-  public readonly producer: LazyProducer | undefined = undefined;
-  public readonly transducers: Array<LazyTransducer> = [];
-  public readonly reducer: LazyReducer | undefined = undefined;
+class LazyPipeline<T> {
+  public readonly producer: ((data: T) => LazyProducer<T>) | undefined =
+    undefined;
+  public readonly transducers: Array<LazyTransducer<T>> = [];
+  public readonly reducer: LazyReducer<T> | undefined = undefined;
   public readonly length: number;
 
   public constructor(
@@ -32,16 +34,16 @@ class LazyPipeline {
           break;
         case "producer":
           if (this.producer === undefined) {
-            this.producer = lazyOp.lazy;
+            this.producer = lazyOp.lazy as (data: T) => LazyProducer<T>;
           } else {
             breakLoop = true;
           }
           break;
         case "transducer":
-          this.transducers.push(lazyOp.lazy);
+          this.transducers.push(lazyOp.lazy as LazyTransducer<T>);
           break;
         case "reducer":
-          this.reducer = lazyOp.lazy;
+          this.reducer = lazyOp.lazy as LazyReducer<T>;
           breakLoop = true;
           break;
       }
@@ -49,20 +51,31 @@ class LazyPipeline {
         break;
       }
     }
-    this.length = i - startIndex;
+    this.length =
+      Number(this.producer !== undefined) +
+      this.transducers.length +
+      Number(this.reducer !== undefined);
   }
 
   public run(input: unknown): unknown {
-    const inputSeq: Iterable<unknown> =
+    const producer: LazyProducer<T> =
       this.producer === undefined
-        ? (input as Iterable<unknown>)
-        : this.producer(input);
+        ? iterableToProducer(input as Array<T>)
+        : this.producer(input as T);
 
     const accum: Array<unknown> = [];
 
-    const runTransducers = (start: number, valueIn: unknown): boolean => {
+    const runTransducers = (start: number, valueIn: T): boolean => {
       if (start >= this.transducers.length) {
-        accum.push(valueIn);
+        if (this.reducer === undefined) {
+          accum.push(valueIn);
+          return false;
+        }
+        const rResult = this.reducer(valueIn);
+        if (rResult.done === true) {
+          accum.push(rResult.value);
+          return true;
+        }
         return false;
       }
 
@@ -79,27 +92,33 @@ class LazyPipeline {
       return false;
     };
 
-    for (const value of inputSeq) {
-      if (runTransducers(0, value)) {
+    for (;;) {
+      let breakLoop = false;
+      const pResult = producer();
+      for (const value of pResult.value) {
+        if (runTransducers(0, value)) {
+          breakLoop = true;
+          break;
+        }
+      }
+      if (breakLoop || pResult.done === true) {
         break;
       }
     }
 
-    if (this.reducer === undefined) {
-      return accum;
-    }
-
-    const rIter = this.reducer[Symbol.iterator]();
-    let rOutput: unknown;
-    for (const value of inputSeq) {
-      const rNext = rIter.next(value);
-      rOutput = rNext.value;
-      if (rNext.done === true) {
-        break;
-      }
-    }
-    return rOutput;
+    return this.reducer === undefined ? accum : accum[0];
   }
+}
+
+function iterableToProducer<T>(input: Iterable<T>): LazyProducer<T> {
+  const iter = input[Symbol.iterator]();
+  return () => {
+    const next = iter.next();
+    if (next.done === true) {
+      return EMPTY_RESULT;
+    }
+    return { value: [next.value] };
+  };
 }
 
 /**

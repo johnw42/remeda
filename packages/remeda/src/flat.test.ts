@@ -96,7 +96,7 @@ describe("dataLast", () => {
       map(beforeMock),
       flat(1),
       map(afterMock),
-      find((x) => x - 1 === 2),
+      find((x) => x === 3),
     );
 
     expect(beforeMock).toHaveBeenCalledTimes(2);

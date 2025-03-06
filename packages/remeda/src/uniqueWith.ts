@@ -2,7 +2,7 @@ import { purryFromLazy } from "./internal/purryFromLazy";
 import type { Deduped } from "./internal/types/Deduped";
 import type { IterableContainer } from "./internal/types/IterableContainer";
 import type { LazyEvaluator } from "./internal/types/LazyEvaluator";
-import { SKIP_ITEM } from "./internal/utilityEvaluators";
+import { SKIP_TRANSDUCER_ITEM } from "./internal/utilityEvaluators";
 
 type IsEquals<T> = (a: T, b: T) => boolean;
 
@@ -66,5 +66,5 @@ const lazyImplementation =
     // skip items that aren't at the first equal index.
     return firstEqualIndex === index
       ? { done: false, hasNext: true, next: value }
-      : SKIP_ITEM;
+      : SKIP_TRANSDUCER_ITEM;
   };

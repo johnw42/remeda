@@ -1,7 +1,6 @@
-import { toSingle } from "./internal/toSingle";
+import doReduce from "./internal/doReduce";
 import type { IterableContainer } from "./internal/types/IterableContainer";
-import type { LazyEvaluator } from "./internal/types/LazyEvaluator";
-import { purry } from "./purry";
+import type { LazyReducer } from "./internal/types/LazyEvaluator";
 
 type First<T extends IterableContainer> = T extends []
   ? undefined
@@ -47,13 +46,13 @@ export function first<T extends IterableContainer>(data: T): First<T>;
 export function first(): <T extends IterableContainer>(data: T) => First<T>;
 
 export function first(...args: ReadonlyArray<unknown>): unknown {
-  return purry(firstImplementation, args, toSingle(lazyImplementation));
+  return doReduce(firstImplementation, lazyImplementation, args);
 }
 
 const firstImplementation = <T>([item]: ReadonlyArray<T>): T | undefined =>
   item;
 
-const lazyImplementation = (): LazyEvaluator => firstLazy;
-
-const firstLazy = <T>(value: T) =>
-  ({ hasNext: true, next: value, done: true }) as const;
+const lazyImplementation =
+  <T>(): LazyReducer<T> =>
+  (data: T) =>
+    ({ value: data, done: true }) as const;

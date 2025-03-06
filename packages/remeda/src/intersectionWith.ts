@@ -1,6 +1,6 @@
-import { purryFromLazy } from "./internal/purryFromLazy";
-import type { LazyEvaluator } from "./internal/types/LazyEvaluator";
-import { SKIP_ITEM } from "./internal/utilityEvaluators";
+import doTransduce from "./internal/doTransduce";
+import type { LazyTransducer } from "./internal/types/LazyEvaluator";
+import { SKIP_TRANSDUCER_ITEM } from "./internal/utilityEvaluators";
 
 type Comparator<TFirst, TSecond> = (a: TFirst, b: TSecond) => boolean;
 
@@ -62,15 +62,15 @@ export function intersectionWith<TFirst, TSecond>(
 ): (array: ReadonlyArray<TFirst>) => Array<TFirst>;
 
 export function intersectionWith(...args: ReadonlyArray<unknown>): unknown {
-  return purryFromLazy(lazyImplementation, args);
+  return doTransduce(undefined, lazyImplementation, args);
 }
 
 const lazyImplementation =
   <TFirst, TSecond>(
     other: ReadonlyArray<TSecond>,
     comparator: Comparator<TFirst, TSecond>,
-  ): LazyEvaluator<TFirst> =>
+  ): LazyTransducer<TFirst> =>
   (value) =>
     other.some((otherValue) => comparator(value, otherValue))
-      ? { done: false, hasNext: true, next: value }
-      : SKIP_ITEM;
+      ? { value: [value] }
+      : SKIP_TRANSDUCER_ITEM;

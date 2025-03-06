@@ -1,6 +1,7 @@
+import doTransduce from "./internal/doTransduce";
 import type { IterableContainer } from "./internal/types/IterableContainer";
-import type { LazyEvaluator } from "./internal/types/LazyEvaluator";
-import { purry } from "./purry";
+import type { LazyTransducer } from "./internal/types/LazyEvaluator";
+import { simplifyCallback } from "./internal/utilityEvaluators";
 
 type Zipped<Left extends IterableContainer, Right extends IterableContainer> =
   // If the array is empty the output is empty, no surprises
@@ -61,7 +62,7 @@ export function zip<S extends IterableContainer>(
 ): <F extends IterableContainer>(first: F) => Zipped<F, S>;
 
 export function zip(...args: ReadonlyArray<unknown>): unknown {
-  return purry(zipImplementation, args, lazyImplementation);
+  return doTransduce(zipImplementation, lazyImplementation, args);
 }
 
 const zipImplementation = <
@@ -75,12 +76,13 @@ const zipImplementation = <
     ? first.map((item, index) => [item, second[index]])
     : second.map((item, index) => [first[index], item])) as Zipped<F, S>;
 
-const lazyImplementation =
-  <F extends IterableContainer, S extends IterableContainer>(
-    second: S,
-  ): LazyEvaluator<F[number], [F[number], S[number]]> =>
-  (value, index) => ({
-    hasNext: true,
-    next: [value, second[index]],
+const lazyImplementation = <
+  F extends IterableContainer,
+  S extends IterableContainer,
+>(
+  second: S,
+): LazyTransducer<F[number], [F[number], S[number]]> =>
+  simplifyCallback((value, index) => ({
+    value: [[value, second[index]]],
     done: index >= second.length - 1,
-  });
+  }));

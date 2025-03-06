@@ -26,9 +26,8 @@ describe("pipe", () => {
     const counter = createLazyInvocationCounter();
     const result = pipe(
       [1, 2, 2, 5, 1, 6, 7] as const,
-      //counter.fn(),
+      counter.fn(),
       take(3),
-      // [1, 2, 2],
       unique(),
     );
 

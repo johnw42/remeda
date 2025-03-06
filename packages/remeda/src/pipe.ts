@@ -80,16 +80,12 @@ class LazyPipeline<T> {
       }
 
       const tResult = this.transducers[start]!(valueIn);
-      if (tResult.done === true) {
-        accum.push(...tResult.value);
-        return true;
-      }
       for (const value of tResult.value) {
         if (runTransducers(start + 1, value)) {
           return true;
         }
       }
-      return false;
+      return tResult.done === true;
     };
 
     for (;;) {

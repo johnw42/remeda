@@ -1,4 +1,4 @@
-export default function produce<
+export default function doProduce<
   Data,
   Args extends ReadonlyArray<unknown>,
   Result,

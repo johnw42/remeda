@@ -1,6 +1,7 @@
 import { lazyDataLastImpl } from "./internal/lazyDataLastImpl";
 import type { IterableContainer } from "./internal/types/IterableContainer";
-import type { LazyEvaluator } from "./internal/types/LazyEvaluator";
+import type { LazyTransducer } from "./internal/types/LazyEvaluator";
+import { simplifyCallback } from "./internal/utilityEvaluators";
 
 type ZippingFunction<
   T1 extends IterableContainer = IterableContainer,
@@ -100,8 +101,8 @@ export function zipWith(
 }
 
 function zipWithImplementation<
-  T1 extends IterableContainer,
-  T2 extends IterableContainer,
+  T1 extends ReadonlyArray<unknown>,
+  T2 extends ReadonlyArray<unknown>,
   Value,
 >(first: T1, second: T2, fn: ZippingFunction<T1, T2, Value>): Array<Value> {
   const datum = [first, second] as const;
@@ -110,13 +111,11 @@ function zipWithImplementation<
     : second.map((item, index) => fn(first[index], item, index, datum));
 }
 
-const lazyImplementation =
-  <T1, T2 extends IterableContainer, Value>(
-    second: T2,
-    fn: ZippingFunction<ReadonlyArray<T1>, T2, Value>,
-  ): LazyEvaluator<T1, Value> =>
-  (value, index, data) => ({
-    next: fn(value, second[index], index, [data, second]),
-    hasNext: true,
+const lazyImplementation = <T1, T2 extends IterableContainer, Value>(
+  second: T2,
+  fn: ZippingFunction<ReadonlyArray<T1>, T2, Value>,
+): LazyTransducer<T1, Value> =>
+  simplifyCallback((value, index, data) => ({
+    value: [fn(value, second[index], index, [data, second])],
     done: index >= second.length - 1,
-  });
+  }));

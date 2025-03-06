@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type --
- * purry is all about functions, so we need to turn these off to make it easy
+ * doTransduce is all about functions, so we need to turn these off to make it easy
  * to write the tests.
  */
 
-import { purryFromLazy } from "./purryFromLazy";
-import type { LazyEvaluator } from "./types/LazyEvaluator";
+import doTransduce from "./doTransduce";
+import type { LazyTransducer } from "./types/LazyEvaluator";
 
 test("throws on wrong number of arguments", () => {
   expect(() =>
@@ -21,10 +21,10 @@ test("throws on wrong number of arguments", () => {
 });
 
 const zeroArgsPurried = (...args: ReadonlyArray<unknown>) =>
-  purryFromLazy(zeroArgsLazyImpl, args);
+  doTransduce(undefined, zeroArgsLazyImpl, args);
 
 /* v8 ignore next 4 -- We only need the function pointer, we never call it! */
 const zeroArgsLazyImpl = () => evaluator;
-const evaluator: LazyEvaluator = () => {
+const evaluator: LazyTransducer = () => {
   throw new Error("unreachable");
 };

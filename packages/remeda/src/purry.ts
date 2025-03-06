@@ -1,8 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { lazyDataLastImpl } from "./internal/lazyDataLastImpl";
-import type { LazyEvaluator } from "./internal/types/LazyEvaluator";
-
 /**
  * Creates a function with `dataFirst` and `dataLast` signatures.
  *
@@ -19,7 +16,6 @@ import type { LazyEvaluator } from "./internal/types/LazyEvaluator";
  *
  * @param fn - The function to purry.
  * @param args - The arguments.
- * @param lazy - A lazy version of the function to purry.
  * @signature R.purry(fn, args);
  * @example
  *    function _findIndex(array, fn) {
@@ -45,12 +41,7 @@ import type { LazyEvaluator } from "./internal/types/LazyEvaluator";
 export function purry(
   fn: (...args: any) => unknown,
   args: ReadonlyArray<unknown>,
-  lazy?: (...args: any) => LazyEvaluator,
 ): unknown {
-  if (lazy) {
-    throw new Error("Not supported");
-  }
-
   const diff = fn.length - args.length;
   if (diff === 0) {
     return fn(...args);

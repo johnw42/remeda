@@ -10,11 +10,9 @@ export type LazyProducer<T = unknown, R = unknown> = (
   data: T,
 ) => Iterable<ReadonlyArray<R>, void, void>;
 
-export type LazyTransducer<T = unknown, R = T> = Iterable<
-  ReadonlyArray<R>,
-  void,
-  T
->;
+export type LazyTransducer<T = unknown, R = T> = (
+  data: T,
+) => IteratorResult<ReadonlyArray<R>, ReadonlyArray<R>>;
 
 export type LazyReducer<T = unknown, R = T> = Iterable<T, R, T>;
 

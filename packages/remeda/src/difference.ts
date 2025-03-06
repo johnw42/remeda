@@ -58,25 +58,19 @@ function lazyImplementation<T>(other: ReadonlyArray<T>): LazyTransducer<T, T> {
     remaining.set(value, (remaining.get(value) ?? 0) + 1);
   }
 
-  return {
-    [Symbol.iterator]() {
-      return {
-        next(value: T) {
-          const copies = remaining.get(value);
+  return (value: T) => {
+    const copies = remaining.get(value);
 
-          if (copies === undefined || copies === 0) {
-            // The item is either not part of the other array or we've dropped enough
-            // copies of it so we return it.
-            return { done: false, value: [value] };
-          }
+    if (copies === undefined || copies === 0) {
+      // The item is either not part of the other array or we've dropped enough
+      // copies of it so we return it.
+      return { done: false, value: [value] };
+    }
 
-          // The item is equal to an item in the other array and there are still
-          // copies of it to "account" for so we skip this one and remove it from our
-          // ongoing tally.
-          remaining.set(value, copies - 1);
-          return SKIP_ITEM;
-        },
-      };
-    },
+    // The item is equal to an item in the other array and there are still
+    // copies of it to "account" for so we skip this one and remove it from our
+    // ongoing tally.
+    remaining.set(value, copies - 1);
+    return SKIP_ITEM;
   };
 }

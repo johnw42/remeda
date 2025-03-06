@@ -53,31 +53,48 @@ class LazyPipeline {
   }
 
   public run(input: unknown): unknown {
-    let tInput: Iterable<unknown> =
+    const inputSeq: Iterable<unknown> =
       this.producer === undefined
         ? (input as Iterable<unknown>)
         : this.producer(input);
-    for (const transducer of this.transducers) {
-      const tIter = transducer[Symbol.iterator]();
-      const tOutput: Array<unknown> = [];
-      for (const value of tInput) {
-        const tNext = tIter.next(value);
-        if (tNext.done ?? false) {
-          break;
-        }
-        tOutput.push(...tNext.value);
+
+    const accum: Array<unknown> = [];
+
+    const runTransducers = (start: number, valueIn: unknown): boolean => {
+      if (start >= this.transducers.length) {
+        accum.push(valueIn);
+        return false;
       }
-      tInput = tOutput;
+
+      const tResult = this.transducers[start]!(valueIn);
+      if (tResult.done === true) {
+        accum.push(...tResult.value);
+        return true;
+      }
+      for (const value of tResult.value) {
+        if (runTransducers(start + 1, value)) {
+          return true;
+        }
+      }
+      return false;
+    };
+
+    for (const value of inputSeq) {
+      if (runTransducers(0, value)) {
+        break;
+      }
     }
+
     if (this.reducer === undefined) {
-      return [...tInput];
+      return accum;
     }
+
     const rIter = this.reducer[Symbol.iterator]();
     let rOutput: unknown;
-    for (const value of tInput) {
+    for (const value of inputSeq) {
       const rNext = rIter.next(value);
       rOutput = rNext.value;
-      if (rNext.done ?? false) {
+      if (rNext.done === true) {
         break;
       }
     }

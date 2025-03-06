@@ -47,19 +47,8 @@ const takeImplementation = <T extends IterableContainer>(
 
 function lazyImplementation<T>(n: number): LazyTransducer<T> {
   let remaining = n;
-  return {
-    [Symbol.iterator]() {
-      return {
-        next(...args) {
-          if (args.length === 0) {
-            throw new Error("No arguments provided");
-          }
-          remaining -= 1;
-          return remaining <= 0
-            ? { done: true, value: undefined }
-            : { done: false, value: args };
-        },
-      };
-    },
+  return (value) => {
+    remaining -= 1;
+    return { done: remaining <= 0, value: [value] };
   };
 }

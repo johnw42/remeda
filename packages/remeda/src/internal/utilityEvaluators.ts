@@ -13,32 +13,17 @@ export const SKIP_ITEM = {
  * A helper evaluator when we want to return an empty result.
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-function
-export function lazyEmptyEvaluator<T>(): LazyTransducer<T> {
-  return {
-    [Symbol.iterator]() {
-      return {
-        next() {
-          return SKIP_ITEM;
-        },
-      };
-    },
-  };
+export function lazyEmptyEvaluator<T>(): ReturnType<LazyTransducer<T>> {
+  return SKIP_ITEM;
 }
 
 /**
  * A helper evaluator when we want to return a shallow clone of the input.
  */
 export function lazyIdentityEvaluator<T>(): LazyTransducer<T> {
-  return {
-    [Symbol.iterator]() {
-      return {
-        next(value: T): IteratorYieldResult<[T]> {
-          return {
-            value: [value],
-            done: false,
-          } as const;
-        },
-      };
-    },
-  };
+  return (value: T): IteratorYieldResult<[T]> =>
+    ({
+      value: [value],
+      done: false,
+    }) as const;
 }

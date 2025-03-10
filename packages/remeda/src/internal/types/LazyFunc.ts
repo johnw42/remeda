@@ -3,9 +3,13 @@ export type LazyProducer<R = unknown> = () => IteratorResult<
   ReadonlyArray<R>
 >;
 
-export type LazyTransducer<T = unknown, R = T> = (
+export type LazyTransducer<T = unknown, R = T> = ((
   data: T,
-) => IteratorResult<ReadonlyArray<R>, ReadonlyArray<R>>;
+) => IteratorResult<ReadonlyArray<R>, ReadonlyArray<R>>) & {
+  readonly noMoreData?: NoMoreData<T, R>;
+};
+
+export type NoMoreData<T, R = T> = () => ReturnType<LazyTransducer<T, R>>;
 
 export type LazyReducer<T = unknown, R = T> = (
   data: T,
@@ -21,7 +25,7 @@ export type EagerTransducerImpl<
   Data,
   Args extends ReadonlyArray<unknown>,
   Result,
-> = (data: ReadonlyArray<Data>, ...args: Args) => Array<Result>;
+> = (data: Iterable<Data>, ...args: Args) => Array<Result>;
 
 export type EagerReducerImpl<
   Data,

@@ -14,7 +14,14 @@ it("should infer ReadonlyArray<unknown> when given any", () => {
   }
 });
 
-it("should work as type guard", () => {
+it("should work as type guard for iterables", () => {
+  const data = [] as Iterable<number>;
+  if (isArray(data)) {
+    expectTypeOf(data).toEqualTypeOf<ReadonlyArray<number>>();
+  }
+});
+
+it("should work as type guard for union types", () => {
   const data = TYPES_DATA_PROVIDER.array as AllTypesDataProviderTypes;
   if (isArray(data)) {
     expectTypeOf(data).toEqualTypeOf<
@@ -30,12 +37,18 @@ it("should infer ReadonlyArray<unknown> when given `unknown`", () => {
   }
 });
 
-it("should work as type guard in filter", () => {
+it("should work as type guard in filter for union types", () => {
   const data = ALL_TYPES_DATA_PROVIDER.filter(isArray);
 
   expectTypeOf(data).toEqualTypeOf<
     Array<Array<number> | [number, number, number]>
   >();
+});
+
+it("should work as type guard in filter for iterables", () => {
+  const data = [[] as Iterable<number>].filter(isArray);
+
+  expectTypeOf(data).toEqualTypeOf<Array<ReadonlyArray<number>>>();
 });
 
 test("mutable arrays work", () => {

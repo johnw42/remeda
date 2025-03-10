@@ -3,6 +3,7 @@ import { lazyDataLastImpl } from "./internal/lazyDataLastImpl";
 import type { IterableContainer } from "./internal/types/IterableContainer";
 import type { LazyTransducer } from "./internal/types/LazyFunc";
 import { lazyIdentityEvaluator } from "./internal/utilityEvaluators";
+import { toReadonlyArray } from "./internal/toReadonlyArray";
 
 type FlatArray<
   T,
@@ -118,9 +119,9 @@ export function flat(
 }
 
 const flatImplementation = (
-  data: ReadonlyArray<unknown>,
+  data: Iterable<unknown>,
   depth?: number,
-): Array<unknown> => (depth === undefined ? data.flat() : data.flat(depth));
+): Array<unknown> => toReadonlyArray(data).flat(depth);
 
 const lazyImplementation = (depth?: number): LazyTransducer =>
   depth === undefined || depth === 1
@@ -129,9 +130,7 @@ const lazyImplementation = (depth?: number): LazyTransducer =>
       ? lazyIdentityEvaluator()
       : (value) =>
           Array.isArray(value)
-            ? {
-                value: value.flat(depth - 1) as Array<unknown>,
-              }
+            ? { value: value.flat(depth - 1) as Array<unknown> }
             : { value: [value] };
 
 // This function is pulled out so that we don't generate a new arrow function

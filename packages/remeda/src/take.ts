@@ -1,6 +1,6 @@
 import doTransduce from "./internal/doTransduce";
-import type { LazyTransducer } from "./internal/types/LazyFunc";
-import { lazyEmptyEvaluator } from "./internal/utilityEvaluators";
+import { unsafeToArray } from "./internal/unsafeToArray";
+import { isArray } from "./isArray";
 
 /**
  * Returns the first `n` elements of `input`.
@@ -35,29 +35,21 @@ export function take(...args: ReadonlyArray<unknown>): unknown {
   return doTransduce(takeImplementation, lazyImplementation, args);
 }
 
-const takeImplementation = <T>(input: Iterable<T>, n: number): Array<T> => {
-  if (Array.isArray(input)) {
-    return n < 0 ? [] : (input as Array<T>).slice(0, n);
+function takeImplementation<T>(input: Iterable<T>, n: number): Array<T> {
+  if (isArray(input)) {
+    return n < 0 ? [] : input.slice(0, n);
   }
-  const result: Array<T> = [];
-  let remaining = n;
-  for (const value of input) {
-    if (remaining <= 0) {
-      break;
-    }
-    result.push(value);
-    remaining--;
-  }
-  return result;
-};
+  return unsafeToArray(lazyImplementation(input, n));
+}
 
-function lazyImplementation<T>(n: number): LazyTransducer<T> {
-  if (n <= 0) {
-    return lazyEmptyEvaluator;
+function* lazyImplementation<T>(input: Iterable<T>, n: number): Iterable<T> {
+  if (n > 0) {
+    for (const item of input) {
+      yield item;
+      n--;
+      if (n <= 0) {
+        break;
+      }
+    }
   }
-  let remaining = n;
-  return (value) => {
-    remaining -= 1;
-    return { done: remaining <= 0, value: [value] };
-  };
 }

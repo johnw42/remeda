@@ -1,9 +1,4 @@
 import doTransduce from "./internal/doTransduce";
-import type { LazyTransducer } from "./internal/types/LazyFunc";
-import {
-  SKIP_TRANSDUCER_ITEM,
-  lazyIdentityEvaluator,
-} from "./internal/utilityEvaluators";
 
 /**
  * Excludes the values from `other` array. The output maintains the same order
@@ -49,11 +44,10 @@ export function difference(...args: ReadonlyArray<unknown>): unknown {
   return doTransduce(undefined, lazyImplementation, args);
 }
 
-function lazyImplementation<T>(other: ReadonlyArray<T>): LazyTransducer<T, T> {
-  if (other.length === 0) {
-    return lazyIdentityEvaluator();
-  }
-
+function* lazyImplementation<T>(
+  data: Iterable<T>,
+  other: Iterable<T>,
+): Iterable<T> {
   // We need to build a more efficient data structure that would allow us to
   // keep track of the number of times we've seen a value in the other array.
   const remaining = new Map<T, number>();
@@ -61,19 +55,18 @@ function lazyImplementation<T>(other: ReadonlyArray<T>): LazyTransducer<T, T> {
     remaining.set(value, (remaining.get(value) ?? 0) + 1);
   }
 
-  return (value: T) => {
+  for (const value of data) {
     const copies = remaining.get(value);
 
     if (copies === undefined || copies === 0) {
       // The item is either not part of the other array or we've dropped enough
       // copies of it so we return it.
-      return { done: false, value: [value] };
+      yield value;
+    } else {
+      // The item is equal to an item in the other array and there are still
+      // copies of it to "account" for so we skip this one and remove it from our
+      // ongoing tally.
+      remaining.set(value, copies - 1);
     }
-
-    // The item is equal to an item in the other array and there are still
-    // copies of it to "account" for so we skip this one and remove it from our
-    // ongoing tally.
-    remaining.set(value, copies - 1);
-    return SKIP_TRANSDUCER_ITEM;
-  };
+  }
 }

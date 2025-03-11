@@ -1,6 +1,6 @@
 import type {
   LazyProducer,
-  LazyReducer,
+  EagerReducer,
   LazyTransducer,
 } from "./types/LazyFunc";
 
@@ -15,7 +15,7 @@ export const SKIP_TRANSDUCER_ITEM = {
  * A singleton value for skipping an item in a lazy producer.
  */
 export const SKIP_PRODUCER_ITEM = SKIP_TRANSDUCER_ITEM satisfies ReturnType<
-  LazyReducer<never>
+  EagerReducer<never>
 >;
 
 /**
@@ -23,7 +23,7 @@ export const SKIP_PRODUCER_ITEM = SKIP_TRANSDUCER_ITEM satisfies ReturnType<
  */
 export const SKIP_REDUCER_ITEM = {
   value: undefined,
-} as const satisfies ReturnType<LazyReducer<never>>;
+} as const satisfies ReturnType<EagerReducer<never>>;
 
 export const EMPTY_RESULT = {
   done: true,

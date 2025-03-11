@@ -1,9 +1,6 @@
 import doReduce from "./internal/doReduce";
-import type { LazyReducer } from "./internal/types/LazyFunc";
-import {
-  simplifyCallback,
-  SKIP_REDUCER_ITEM,
-} from "./internal/utilityEvaluators";
+import { simplifyCallback } from "./internal/utilityEvaluators";
+import { isArray } from "./isArray";
 
 /**
  * Returns the first element in the provided array that satisfies the provided
@@ -33,12 +30,12 @@ import {
  * @category Array
  */
 export function find<T, S extends T>(
-  data: ReadonlyArray<T>,
-  predicate: (value: T, index: number, data: ReadonlyArray<T>) => value is S,
+  data: Iterable<T>,
+  predicate: (value: T, index: number, data: Iterable<T>) => value is S,
 ): S | undefined;
 export function find<T>(
-  data: ReadonlyArray<T>,
-  predicate: (value: T, index: number, data: ReadonlyArray<T>) => boolean,
+  data: Iterable<T>,
+  predicate: (value: T, index: number, data: Iterable<T>) => boolean,
 ): T | undefined;
 
 /**
@@ -72,26 +69,27 @@ export function find<T>(
  */
 export function find<T, S extends T>(
   predicate: (value: T, index: number, data: ReadonlyArray<T>) => value is S,
-): (data: ReadonlyArray<T>) => S | undefined;
+): (data: Iterable<T>) => S | undefined;
 export function find<T>(
   predicate: (value: T, index: number, data: ReadonlyArray<T>) => boolean,
-): (data: ReadonlyArray<T>) => T | undefined;
+): (data: Iterable<T>) => T | undefined;
 
 export function find(...args: ReadonlyArray<unknown>): unknown {
-  return doReduce(findImplementation, lazyImplementation, args);
+  return doReduce(findImplementation, args);
 }
 
-const findImplementation = <T, S extends T>(
-  data: ReadonlyArray<T>,
-  predicate: (value: T, index: number, data: ReadonlyArray<T>) => value is S,
-): S | undefined => data.find(predicate);
-
-const lazyImplementation = <T, S extends T>(
-  predicate: (value: T, index: number, data: ReadonlyArray<T>) => value is S,
-): LazyReducer<T, S> => {
+function findImplementation<T>(
+  data: Iterable<T>,
+  predicate: (value: T, index: number, data: ReadonlyArray<T>) => boolean,
+): T | undefined {
+  if (isArray(data)) {
+    return data.find(predicate);
+  }
   const simplePredicate = simplifyCallback(predicate);
-  return (value: T) =>
-    simplePredicate(value)
-      ? { done: true, value: value as S }
-      : SKIP_REDUCER_ITEM;
-};
+  for (const value of data) {
+    if (simplePredicate(value)) {
+      return value;
+    }
+  }
+  return undefined;
+}

@@ -1,6 +1,6 @@
 import doReduce from "./internal/doReduce";
 import type { IterableContainer } from "./internal/types/IterableContainer";
-import type { LazyReducer } from "./internal/types/LazyFunc";
+import { isArray } from "./isArray";
 
 type First<T extends IterableContainer> = T extends []
   ? undefined
@@ -46,13 +46,16 @@ export function first<T extends IterableContainer>(data: T): First<T>;
 export function first(): <T extends IterableContainer>(data: T) => First<T>;
 
 export function first(...args: ReadonlyArray<unknown>): unknown {
-  return doReduce(firstImplementation, lazyImplementation, args);
+  return doReduce(firstImplementation, args);
 }
 
-const firstImplementation = <T>([item]: ReadonlyArray<T>): T | undefined =>
-  item;
-
-const lazyImplementation =
-  <T>(): LazyReducer<T> =>
-  (data: T) =>
-    ({ value: data, done: true }) as const;
+function firstImplementation<T>(data: Iterable<T>): T | undefined {
+  if (isArray(data)) {
+    return data[0];
+  }
+  // eslint-disable-next-line no-unreachable-loop
+  for (const value of data) {
+    return value;
+  }
+  return undefined;
+}

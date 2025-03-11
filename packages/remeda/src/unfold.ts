@@ -1,6 +1,4 @@
 import doProduce from "./internal/doProduce";
-import type { LazyProducer } from "./internal/types/LazyFunc";
-import { STOP_PRODUCER } from "./internal/utilityEvaluators";
 
 /**
  * Generates a list of values by unfolding a seed value.
@@ -22,38 +20,21 @@ export function unfold<T, R>(
   fn: (value: T) => [value: R, nextSeed: T] | undefined,
 ): (seed: T) => Array<R>;
 export function unfold(...args: ReadonlyArray<unknown>): unknown {
-  return doProduce(unfoldImplementation, lazyImplementation, args);
+  return doProduce(lazyImplementation, args);
 }
 
-function unfoldImplementation<T, R>(
+function* lazyImplementation<T, R>(
   seed: T,
   fn: (value: T) => [value: R, nextSeed: T] | undefined,
-): Array<R> {
-  const result: Array<R> = [];
-  for (;;) {
-    const valueAndSeed = fn(seed);
-    if (valueAndSeed === undefined) {
-      break;
-    }
-    const [value, nextSeed] = valueAndSeed;
-    result.push(value);
-    seed = nextSeed;
-  }
-  return result;
-}
-
-function lazyImplementation<T, R>(
-  seed: T,
-  fn: (value: T) => [value: R, nextSeed: T] | undefined,
-): LazyProducer<R> {
+): Iterable<R> {
   let currentSeed = seed;
-  return () => {
+  for (;;) {
     const valueAndSeed = fn(currentSeed);
     if (valueAndSeed === undefined) {
-      return STOP_PRODUCER;
+      return;
     }
     const [result, nextSeed] = valueAndSeed;
     currentSeed = nextSeed;
-    return { value: [result] };
-  };
+    yield result;
+  }
 }

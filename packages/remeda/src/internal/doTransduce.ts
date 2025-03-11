@@ -1,9 +1,10 @@
 import type {
+  EagerTransducer,
   EagerTransducerImpl,
-  DataLastTransducerFunc,
-  TransducerFunc,
   LazyTransducerImpl,
+  Transducer,
 } from "./types/LazyFunc";
+import { unsafeToArray } from "./unsafeToArray";
 
 export default function doTransduce<
   Data,
@@ -13,43 +14,20 @@ export default function doTransduce<
   eager: EagerTransducerImpl<Data, Rest, Result> | undefined,
   lazy: LazyTransducerImpl<Data, Rest, Result>,
   args: ReadonlyArray<unknown>,
-): Array<Result> | TransducerFunc<Data, Result> {
-  switch (args.length - lazy.length) {
-    case 0: {
-      const dataLast: DataLastTransducerFunc<Data, Result> =
-        eager === undefined
-          ? (data: ReadonlyArray<Data>) => runEagerly(lazy, data, args as Rest)
-          : (data: ReadonlyArray<Data>): Array<Result> =>
-              eager(data, ...(args as Rest));
+): Array<Result> | Transducer<Data, Result> {
+  eager ??= (data, ...rest) => unsafeToArray(lazy(data, ...rest));
+  switch (lazy.length - args.length) {
+    case 1: {
+      const dataLast: EagerTransducer<Data, Result> = (data): Array<Result> =>
+        eager(data, ...(args as Rest));
       return Object.assign(dataLast, {
-        lazy: lazy(...(args as Rest)),
+        lazy: (data: Iterable<Data>) => lazy(data, ...(args as Rest)),
         lazyKind: "transducer",
-      }) as TransducerFunc<Data, Result>;
+      } as const);
     }
-    case 1:
-      if (eager === undefined) {
-        const [data, ...rest] = args as [ReadonlyArray<Data>, ...Rest];
-        return runEagerly(lazy, data, rest);
-      }
-      return eager(...(args as readonly [ReadonlyArray<Data>, ...Rest]));
+    case 0:
+      return eager(...(args as readonly [Iterable<Data>, ...Rest]));
     default:
       throw new Error("Wrong number of arguments");
   }
-}
-
-function runEagerly<Data, Rest extends ReadonlyArray<unknown>, Result>(
-  lazy: LazyTransducerImpl<Data, Rest, Result>,
-  data: ReadonlyArray<Data>,
-  rest: Rest,
-): Array<Result> {
-  const results: Array<Result> = [];
-  const iter = lazy(...rest);
-  for (const item of data) {
-    const { done, value } = iter(item);
-    results.push(...value);
-    if (done === true) {
-      break;
-    }
-  }
-  return results;
 }

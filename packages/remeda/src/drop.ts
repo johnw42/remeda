@@ -1,14 +1,11 @@
 import type { IsInteger, IsNegative, Subtract } from "type-fest";
 import type { CoercedArray } from "./internal/types/CoercedArray";
 import type { IterableContainer } from "./internal/types/IterableContainer";
-import type { LazyTransducer } from "./internal/types/LazyFunc";
 import type { NTuple } from "./internal/types/NTuple";
 import type { TupleParts } from "./internal/types/TupleParts";
-import {
-  SKIP_TRANSDUCER_ITEM,
-  lazyIdentityEvaluator,
-} from "./internal/utilityEvaluators";
 import doTransduce from "./internal/doTransduce";
+import { isArray } from "./isArray";
+import { unsafeToArray } from "./internal/unsafeToArray";
 
 type Drop<T extends IterableContainer, N extends number> =
   IsNegative<N> extends true
@@ -97,6 +94,7 @@ export function drop<T extends IterableContainer, N extends number>(
   array: T,
   n: N,
 ): Drop<T, N>;
+export function drop<T>(data: Iterable<T>, n: number): Iterable<T>;
 
 /**
  * Removes first `n` elements from the `array`.
@@ -113,27 +111,32 @@ export function drop<T extends IterableContainer, N extends number>(
 export function drop<N extends number>(
   n: N,
 ): <T extends IterableContainer>(array: T) => Drop<T, N>;
+export function drop(n: number): <T>(data: T) => Iterable<T>;
 
 export function drop(...args: ReadonlyArray<unknown>): unknown {
   return doTransduce(dropImplementation, lazyImplementation, args);
 }
 
-const dropImplementation = <T extends IterableContainer>(
-  array: T,
-  n: number,
-): Array<T[number]> => (n < 0 ? [...array] : array.slice(n));
+function dropImplementation<T>(data: Iterable<T>, n: number): Array<T> {
+  if (n < 0) {
+    return [...data];
+  }
+  if (isArray(data)) {
+    return data.slice(n);
+  }
+  return unsafeToArray(lazyImplementation(data, n));
+}
 
-function lazyImplementation<T>(n: number): LazyTransducer<T> {
+function* lazyImplementation<T>(data: Iterable<T>, n: number): Iterable<T> {
   if (n <= 0) {
-    return lazyIdentityEvaluator();
+    yield* data;
+    return;
   }
 
-  let left = n;
-  return (value) => {
-    if (left > 0) {
-      left -= 1;
-      return SKIP_TRANSDUCER_ITEM;
+  let i = 0;
+  for (const value of data) {
+    if (i++ >= n) {
+      yield value;
     }
-    return { value: [value] };
-  };
+  }
 }

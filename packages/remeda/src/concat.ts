@@ -1,6 +1,5 @@
 import doTransduce from "./internal/doTransduce";
 import type { IterableContainer } from "./internal/types/IterableContainer";
-import type { LazyTransducer } from "./internal/types/LazyFunc";
 
 /**
  * Merge two or more arrays. This method does not change the existing arrays,
@@ -54,24 +53,17 @@ export function concat(...args: ReadonlyArray<unknown>): unknown {
   return doTransduce(concatImplementation, lazyImplementation, args);
 }
 
-const concatImplementation = <T1, T2>(
+function concatImplementation<T1, T2>(
   data: Iterable<T1>,
   other: Iterable<T2>,
-): Array<T1 | T2> => [...data, ...other];
+): Array<T1 | T2> {
+  return [...data, ...other];
+}
 
-const lazyImplementation = <T1, T2>(
+function* lazyImplementation<T1, T2>(
+  data: Iterable<T1>,
   other: Iterable<T2>,
-): LazyTransducer<T1, T1 | T2> => {
-  const func = (value: T1): ReturnType<LazyTransducer<T1, T1 | T2>> => ({
-    value: [value],
-  });
-  const iter = other[Symbol.iterator]();
-  func.noMoreData = () => {
-    const next = iter.next();
-    if (next.done === true) {
-      return { done: true, value: [] };
-    }
-    return { value: [next.value] };
-  };
-  return func;
-};
+): Iterable<T1 | T2> {
+  yield* data;
+  yield* other;
+}

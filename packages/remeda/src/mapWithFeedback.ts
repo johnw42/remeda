@@ -1,6 +1,5 @@
 import doTransduce from "./internal/doTransduce";
 import type { IterableContainer } from "./internal/types/IterableContainer";
-import type { LazyTransducer } from "./internal/types/LazyFunc";
 import type { Mapped } from "./internal/types/Mapped";
 import { simplifyCallback2 } from "./internal/utilityEvaluators";
 
@@ -37,6 +36,16 @@ export function mapWithFeedback<T extends IterableContainer, U>(
   ) => U,
   initialValue: U,
 ): Mapped<T, U>;
+export function mapWithFeedback<T, U>(
+  data: Iterable<T>,
+  callbackfn: (
+    previousValue: U,
+    currentValue: T,
+    currentIndex: number,
+    data: T,
+  ) => U,
+  initialValue: U,
+): Iterable<U>;
 
 /**
  * Applies a function on each element of the array, using the result of the
@@ -68,12 +77,22 @@ export function mapWithFeedback<T extends IterableContainer, U>(
   ) => U,
   initialValue: U,
 ): (data: T) => Mapped<T, U>;
+export function mapWithFeedback<T, U>(
+  callbackfn: (
+    previousValue: U,
+    currentValue: T,
+    currentIndex: number,
+    data: T,
+  ) => U,
+  initialValue: U,
+): (data: Iterable<T>) => Iterable<U>;
 
 export function mapWithFeedback(...args: ReadonlyArray<unknown>): unknown {
   return doTransduce(undefined, lazyImplementation, args);
 }
 
-const lazyImplementation = <T, U>(
+function* lazyImplementation<T, U>(
+  data: Iterable<T>,
   reducer: (
     previousValue: U,
     currentValue: T,
@@ -81,11 +100,11 @@ const lazyImplementation = <T, U>(
     data: ReadonlyArray<T>,
   ) => U,
   initialValue: U,
-): LazyTransducer<T, U> => {
+): Iterable<U> {
   const simpleReducer = simplifyCallback2(reducer);
   let previousValue = initialValue;
-  return (currentValue) => {
+  for (const currentValue of data) {
     previousValue = simpleReducer(previousValue, currentValue);
-    return { value: [previousValue] };
-  };
-};
+    yield previousValue;
+  }
+}

@@ -1,6 +1,4 @@
 import doTransduce from "./internal/doTransduce";
-import type { LazyTransducer } from "./internal/types/LazyFunc";
-import { SKIP_TRANSDUCER_ITEM } from "./internal/utilityEvaluators";
 
 type Comparator<TFirst, TSecond> = (a: TFirst, b: TSecond) => boolean;
 
@@ -27,8 +25,8 @@ type Comparator<TFirst, TSecond> = (a: TFirst, b: TSecond) => boolean;
  * @category Array
  */
 export function intersectionWith<TFirst, TSecond>(
-  array: ReadonlyArray<TFirst>,
-  other: ReadonlyArray<TSecond>,
+  array: Iterable<TFirst>,
+  other: Iterable<TSecond>,
   comparator: Comparator<TFirst, TSecond>,
 ): Array<TFirst>;
 
@@ -53,7 +51,7 @@ export function intersectionWith<TFirst, TSecond>(
  * @category Array
  */
 export function intersectionWith<TFirst, TSecond>(
-  other: ReadonlyArray<TSecond>,
+  other: Iterable<TSecond>,
   /**
    * Type inference doesn't work properly for the comparator's first parameter
    * in data last variant.
@@ -65,12 +63,17 @@ export function intersectionWith(...args: ReadonlyArray<unknown>): unknown {
   return doTransduce(undefined, lazyImplementation, args);
 }
 
-const lazyImplementation =
-  <TFirst, TSecond>(
-    other: ReadonlyArray<TSecond>,
-    comparator: Comparator<TFirst, TSecond>,
-  ): LazyTransducer<TFirst> =>
-  (value) =>
-    other.some((otherValue) => comparator(value, otherValue))
-      ? { value: [value] }
-      : SKIP_TRANSDUCER_ITEM;
+function* lazyImplementation<TFirst, TSecond>(
+  data: Iterable<TFirst>,
+  other: Iterable<TSecond>,
+  comparator: Comparator<TFirst, TSecond>,
+): Iterable<TFirst> {
+  for (const value of data) {
+    for (const otherValue of other) {
+      if (comparator(value, otherValue)) {
+        yield value;
+        break;
+      }
+    }
+  }
+}

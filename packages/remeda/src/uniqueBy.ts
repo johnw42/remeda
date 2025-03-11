@@ -1,11 +1,7 @@
 import doTransduce from "./internal/doTransduce";
 import type { Deduped } from "./internal/types/Deduped";
 import type { IterableContainer } from "./internal/types/IterableContainer";
-import type { LazyTransducer } from "./internal/types/LazyFunc";
-import {
-  simplifyCallback,
-  SKIP_TRANSDUCER_ITEM,
-} from "./internal/utilityEvaluators";
+import { simplifyCallback } from "./internal/utilityEvaluators";
 
 /**
  * Returns a new array containing only one copy of each element in the original
@@ -28,6 +24,10 @@ export function uniqueBy<T extends IterableContainer>(
   data: T,
   keyFunction: (item: T[number], index: number, data: T) => unknown,
 ): Deduped<T>;
+export function uniqueBy<T>(
+  data: Iterable<T>,
+  keyFunction: (item: T, index: number, data: ReadonlyArray<T>) => unknown,
+): Iterable<T>;
 
 /**
  * Returns a new array containing only one copy of each element in the original
@@ -54,18 +54,18 @@ export function uniqueBy(...args: ReadonlyArray<unknown>): unknown {
   return doTransduce(undefined, lazyImplementation, args);
 }
 
-function lazyImplementation<T>(
+function* lazyImplementation<T>(
+  data: Iterable<T>,
   keyFunction: (item: T, index: number, data: ReadonlyArray<T>) => unknown,
-): LazyTransducer<T> {
+): Iterable<T> {
   const simpleKeyFunction = simplifyCallback(keyFunction);
   const set = new Set<unknown>();
-  return (value) => {
+  for (const value of data) {
     const key = simpleKeyFunction(value);
     if (set.has(key)) {
-      return SKIP_TRANSDUCER_ITEM;
+      continue;
     }
-
     set.add(key);
-    return { value: [value] };
-  };
+    yield value;
+  }
 }

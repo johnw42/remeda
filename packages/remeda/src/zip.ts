@@ -56,7 +56,7 @@ export function zip<F, S>(
  * @signature
  *   R.zip(second)(first)
  * @example
- *   R.zip(['a', 'b'])([1, 2]) // => [[1, 'a'], [2, 'b']]
+ *   R.zip(['a', 'b'])([1, 2, 3]) // => [[1, 'a'], [2, 'b']]
  * @dataLast
  * @lazy
  * @category Array

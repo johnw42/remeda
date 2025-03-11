@@ -1,8 +1,8 @@
 import type { Writable } from "type-fest";
 import type { IterableContainer } from "./internal/types/IterableContainer";
-import type { LazyTransducer } from "./internal/types/LazyFunc";
 import doTransduce from "./internal/doTransduce";
 import { simplifyCallback } from "./internal/utilityEvaluators";
+import { toReadonlyArray } from "./internal/toReadonlyArray";
 
 /**
  * Executes a provided function once for each array element. Equivalent to
@@ -28,6 +28,10 @@ import { simplifyCallback } from "./internal/utilityEvaluators";
 export function forEach<T extends IterableContainer>(
   data: T,
   callbackfn: (value: T[number], index: number, data: T) => void,
+): void;
+export function forEach<T>(
+  data: Iterable<T>,
+  callbackfn: (value: T, index: number, data: ReadonlyArray<T>) => void,
 ): void;
 
 /**
@@ -62,21 +66,22 @@ export function forEach(...args: ReadonlyArray<unknown>): unknown {
 }
 
 function forEachImplementation<T>(
-  data: ReadonlyArray<T>,
+  data: Iterable<T>,
   callbackfn: (value: T, index: number, data: ReadonlyArray<T>) => void,
 ): Array<T> {
   // eslint-disable-next-line unicorn/no-array-for-each -- We are intentionally proxying the built in forEach, it's up to the user to decide if they want to use a for loop instead.
-  data.forEach(callbackfn);
+  toReadonlyArray(data).forEach(callbackfn);
   // @ts-expect-error [ts4104] - Because the dataFirst signature returns void this is only a problem when the dataLast function is used **outside** of a pipe; for these cases we warn the user that this is happening.
   return data;
 }
 
-const lazyImplementation = <T>(
+function* lazyImplementation<T>(
+  data: Iterable<T>,
   callbackfn: (value: T, index: number, data: ReadonlyArray<T>) => void,
-): LazyTransducer<T> => {
+): Iterable<T> {
   const simpleCallback = simplifyCallback(callbackfn);
-  return (value) => {
+  for (const value of data) {
     simpleCallback(value);
-    return { value: [value] };
-  };
-};
+    yield value;
+  }
+}

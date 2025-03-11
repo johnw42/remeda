@@ -1,6 +1,7 @@
 import doTransduce from "./internal/doTransduce";
-import type { LazyTransducer } from "./internal/types/LazyFunc";
+import { toReadonlyArray } from "./internal/toReadonlyArray";
 import { simplifyCallback } from "./internal/utilityEvaluators";
+import { isArray } from "./isArray";
 
 /**
  * Returns a new array formed by applying a given callback function to each
@@ -24,7 +25,7 @@ import { simplifyCallback } from "./internal/utilityEvaluators";
  * @category Array
  */
 export function flatMap<T, U>(
-  data: ReadonlyArray<T>,
+  data: Iterable<T>,
   callbackfn: (
     input: T,
     index: number,
@@ -58,34 +59,36 @@ export function flatMap<T, U>(
     index: number,
     data: ReadonlyArray<T>,
   ) => ReadonlyArray<U> | U,
-): (data: ReadonlyArray<T>) => Array<U>;
+): (data: Iterable<T>) => Array<U>;
 
 export function flatMap(...args: ReadonlyArray<unknown>): unknown {
   return doTransduce(flatMapImplementation, lazyImplementation, args);
 }
 
 const flatMapImplementation = <T, U>(
-  data: ReadonlyArray<T>,
+  data: Iterable<T>,
   callbackfn: (
     value: T,
     index: number,
     data: ReadonlyArray<T>,
   ) => ReadonlyArray<U> | U,
-): Array<U> => data.flatMap(callbackfn);
+): Array<U> => toReadonlyArray(data).flatMap(callbackfn);
 
-const lazyImplementation = <T, K>(
+function* lazyImplementation<T, K>(
+  data: Iterable<T>,
   callbackfn: (
     input: T,
     index: number,
     data: ReadonlyArray<T>,
   ) => K | ReadonlyArray<K>,
-): LazyTransducer<T, K> => {
+): Iterable<K> {
   const simpleCallback = simplifyCallback(callbackfn);
-  // @ts-expect-error [ts2322] - We need to make LazyMany better so it accommodate the typing here...
-  return (value) => {
+  for (const value of data) {
     const next = simpleCallback(value);
-    return Array.isArray(next)
-      ? { value: next as ReadonlyArray<K> }
-      : { value: [next] };
-  };
-};
+    if (isArray(next)) {
+      yield* next;
+    } else {
+      yield next;
+    }
+  }
+}

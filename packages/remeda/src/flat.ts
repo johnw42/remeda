@@ -1,9 +1,8 @@
 import type { IsNumericLiteral } from "type-fest";
-import { lazyDataLastImpl } from "./internal/lazyDataLastImpl";
 import type { IterableContainer } from "./internal/types/IterableContainer";
-import type { LazyTransducer } from "./internal/types/LazyFunc";
-import { lazyIdentityEvaluator } from "./internal/utilityEvaluators";
 import { toReadonlyArray } from "./internal/toReadonlyArray";
+import doTransduce from "./internal/doTransduce";
+import { isArray } from "./isArray";
 
 type FlatArray<
   T,
@@ -107,14 +106,11 @@ export function flat(
   dataOrDepth?: IterableContainer | number,
   depth?: number,
 ): unknown {
-  if (typeof dataOrDepth === "object") {
-    return flatImplementation(dataOrDepth, depth);
-  }
-
-  return lazyDataLastImpl(
+  return doTransduce(
     flatImplementation,
-    dataOrDepth === undefined ? [] : [dataOrDepth],
     lazyImplementation,
+    [dataOrDepth, depth],
+    typeof dataOrDepth === "object",
   );
 }
 
@@ -123,18 +119,32 @@ const flatImplementation = (
   depth?: number,
 ): Array<unknown> => toReadonlyArray(data).flat(depth);
 
-const lazyImplementation = (depth?: number): LazyTransducer =>
-  depth === undefined || depth === 1
-    ? lazyShallow
-    : depth <= 0
-      ? lazyIdentityEvaluator()
-      : (value) =>
-          Array.isArray(value)
-            ? { value: value.flat(depth - 1) as Array<unknown> }
-            : { value: [value] };
+function* lazyImplementation(
+  data: Iterable<unknown>,
+  depth = 1,
+): Iterable<unknown> {
+  // Optimization for common case.
+  if (depth === 1) {
+    for (const value of data) {
+      if (isArray(value)) {
+        yield* value;
+      } else {
+        yield value;
+      }
+    }
+    return;
+  }
 
-// This function is pulled out so that we don't generate a new arrow function
-// each time. Because it doesn't need to run with recursion it could be pulled
-// out from the lazyImplementation and be reused for all invocations.
-const lazyShallow: LazyTransducer = (data: unknown) =>
-  Array.isArray(data) ? { value: data as Array<unknown> } : { value: [data] };
+  if (depth <= 0) {
+    yield* data;
+    return;
+  }
+
+  for (const value of data) {
+    if (isArray(value)) {
+      yield* value.flat(depth - 1);
+    } else {
+      yield value;
+    }
+  }
+}

@@ -1,46 +1,62 @@
-export function simplifyCallback<T, U>(
-  callbackfn: (value: T, index: number, data: ReadonlyArray<T>) => U,
-): (value: T) => U {
-  switch (callbackfn.length) {
-    case 1:
-      return callbackfn as (value: T) => U;
-    case 2: {
-      let index = 0;
-      return (value) =>
-        (callbackfn as (value: T, index: number) => U)(value, index++);
+import { isArray } from "../isArray";
+import type { ArrayMethodCallback } from "./types/ArrayMethodCallback";
+
+export function* mapCallback<T, U>(
+  data: Iterable<T>,
+  callbackfn: ArrayMethodCallback<ReadonlyArray<T>, U>,
+): Iterable<[T, U]> {
+  let index = 0;
+  let writableData: Array<T> | undefined;
+  const dataArg: ReadonlyArray<T> = isArray(data) ? data : (writableData = []);
+  for (const value of data) {
+    if (writableData !== undefined) {
+      writableData.push(value);
     }
-    default: {
-      const data: Array<T> = [];
-      return (value) => {
-        data.push(value);
-        return callbackfn(value, data.length - 1, data);
-      };
-    }
+    yield [value, callbackfn(value, index++, dataArg)];
   }
 }
 
-export function simplifyCallback2<E, T, U>(
-  callbackfn: (extra: E, value: T, index: number, data: ReadonlyArray<T>) => U,
-): (extra: E, value: T) => U {
-  switch (callbackfn.length) {
-    case 2:
-      return callbackfn as (extra: E, value: T) => U;
-    // eslint-disable-next-line @typescript-eslint/no-magic-numbers
-    case 3: {
-      let index = 0;
-      return (extra, value) =>
-        (callbackfn as (extra: E, value: T, index: number) => U)(
-          extra,
-          value,
-          index++,
-        );
+/**
+ * Simplifies an array method callback function into a function that takes a
+ * single argument and invokes the original callback with that argument, a
+ * sequential index, and the a data array.
+ *
+ * The `data` argument passed to the callback is `data` if it is an array, or a
+ * new array containing all the items seen so far if it is not an array.
+ *
+ * @param callbackfn - The callback function to simplify.
+ * @param data - The original data array to pass to the callback.
+ * @returns A simplified callback function.
+ */
+export function simplifyCallback<T, U>(
+  callbackfn: ArrayMethodCallback<ReadonlyArray<T>, U>,
+  data: Iterable<T>,
+): (value: T) => U {
+  let index = 0;
+  let writableData: Array<T> | undefined;
+  const dataArg: ReadonlyArray<T> = isArray(data) ? data : (writableData = []);
+  return (value) => {
+    if (writableData !== undefined) {
+      writableData.push(value);
     }
-    default: {
-      const data: Array<T> = [];
-      return (extra, value) => {
-        data.push(value);
-        return callbackfn(extra, value, data.length - 1, data);
-      };
-    }
-  }
+    return callbackfn(value, index++, dataArg);
+  };
 }
+
+// /**
+//  * Like {@link simplifyCallback}, but with an extra argument in the callback.
+//  */
+// export function simplifyCallback2<E, T, U>(
+//   callbackfn: (extra: E, value: T, index: number, data: ReadonlyArray<T>) => U,
+//   data: Iterable<T>,
+// ): (extra: E, value: T) => U {
+//   let index = 0;
+//   let writableData: Array<T> | undefined;
+//   const dataArg: ReadonlyArray<T> = isArray(data) ? data : (writableData = []);
+//   return (extra, value) => {
+//     if (writableData !== undefined) {
+//       writableData.push(value);
+//     }
+//     return callbackfn(extra, value, index++, dataArg);
+//   };
+// }

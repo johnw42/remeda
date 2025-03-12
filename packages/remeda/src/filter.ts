@@ -1,7 +1,11 @@
+import type { IterableElement } from "type-fest";
 import doTransduce from "./internal/doTransduce";
-import { unsafeToArray } from "./internal/unsafeToArray";
-import { simplifyCallback } from "./internal/utilityEvaluators";
+import type {
+  ArrayMethodCallback,
+  ArrayMethodCallbackDataArg,
+} from "./internal/types/ArrayMethodCallback";
 import { isArray } from "./isArray";
+import { mapCallback } from "./internal/utilityEvaluators";
 
 /**
  * Creates a shallow copy of a portion of a given array, filtered down to just
@@ -22,14 +26,18 @@ import { isArray } from "./isArray";
  * @lazy
  * @category Array
  */
-export function filter<T, S extends T>(
-  data: ReadonlyArray<T>,
-  predicate: (value: T, index: number, data: ReadonlyArray<T>) => value is S,
+export function filter<E, S extends E, T extends Iterable<E>>(
+  data: T,
+  predicate: (
+    value: E,
+    index: number,
+    data: ArrayMethodCallbackDataArg<T>,
+  ) => value is S,
 ): Array<S>;
-export function filter<T>(
-  data: ReadonlyArray<T>,
-  predicate: (value: T, index: number, data: ReadonlyArray<T>) => boolean,
-): Array<T>;
+export function filter<T extends Iterable<unknown>>(
+  data: T,
+  predicate: ArrayMethodCallback<T, boolean>,
+): Array<IterableElement<T>>;
 
 /**
  * Creates a shallow copy of a portion of a given array, filtered down to just
@@ -49,12 +57,16 @@ export function filter<T>(
  * @lazy
  * @category Array
  */
-export function filter<T, S extends T>(
-  predicate: (value: T, index: number, data: ReadonlyArray<T>) => value is S,
-): (data: ReadonlyArray<T>) => Array<S>;
-export function filter<T>(
-  predicate: (value: T, index: number, data: ReadonlyArray<T>) => boolean,
-): (data: ReadonlyArray<T>) => Array<T>;
+export function filter<E, S extends E, T extends Iterable<E>>(
+  predicate: (
+    value: E,
+    index: number,
+    data: ArrayMethodCallbackDataArg<T>,
+  ) => value is S,
+): (data: T) => Array<S>;
+export function filter<T extends Iterable<unknown>>(
+  predicate: ArrayMethodCallback<T, boolean>,
+): (data: T) => Array<IterableElement<T>>;
 
 export function filter(...args: ReadonlyArray<unknown>): unknown {
   return doTransduce(filterImplementation, lazyImplementation, args);
@@ -67,16 +79,15 @@ function filterImplementation<T>(
   if (isArray(data)) {
     return data.filter(predicate);
   }
-  return unsafeToArray(lazyImplementation(data, predicate));
+  return [...lazyImplementation(data, predicate)];
 }
 
 function* lazyImplementation<T>(
   data: Iterable<T>,
   predicate: (value: T, index: number, data: ReadonlyArray<T>) => boolean,
 ): Iterable<T> {
-  const simplePredicate = simplifyCallback(predicate);
-  for (const value of data) {
-    if (simplePredicate(value)) {
+  for (const [value, flag] of mapCallback(data, predicate)) {
+    if (flag) {
       yield value;
     }
   }

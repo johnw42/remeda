@@ -1,5 +1,5 @@
 import doReduce from "./internal/doReduce";
-import { simplifyCallback } from "./internal/utilityEvaluators";
+import { mapCallback } from "./internal/utilityEvaluators";
 import { isArray } from "./isArray";
 
 /**
@@ -85,9 +85,8 @@ function findImplementation<T>(
   if (isArray(data)) {
     return data.find(predicate);
   }
-  const simplePredicate = simplifyCallback(predicate);
-  for (const value of data) {
-    if (simplePredicate(value)) {
+  for (const [value, flag] of mapCallback(data, predicate)) {
+    if (flag) {
       return value;
     }
   }

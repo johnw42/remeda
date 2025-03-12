@@ -1,9 +1,8 @@
 import doTransduce from "./internal/doTransduce";
-import type { IterableContainer } from "./internal/types/IterableContainer";
 import type { Mapped } from "./internal/types/Mapped";
-import { unsafeToArray } from "./internal/unsafeToArray";
-import { simplifyCallback } from "./internal/utilityEvaluators";
+import { mapCallback } from "./internal/utilityEvaluators";
 import { isArray } from "./isArray";
+import type { ArrayMethodCallback } from "./internal/types/ArrayMethodCallback";
 
 /**
  * Creates a new array populated with the results of calling a provided function
@@ -24,9 +23,9 @@ import { isArray } from "./isArray";
  * @lazy
  * @category Array
  */
-export function map<T extends IterableContainer, U>(
+export function map<T extends Iterable<unknown>, U>(
   data: T,
-  callbackfn: (value: T[number], index: number, data: T) => U,
+  callbackfn: ArrayMethodCallback<T, U>,
 ): Mapped<T, U>;
 
 /**
@@ -47,8 +46,8 @@ export function map<T extends IterableContainer, U>(
  * @lazy
  * @category Array
  */
-export function map<T extends IterableContainer, U>(
-  callbackfn: (value: T[number], index: number, data: T) => U,
+export function map<T extends Iterable<unknown>, U>(
+  callbackfn: ArrayMethodCallback<T, U>,
 ): (data: T) => Mapped<T, U>;
 
 export function map(...args: ReadonlyArray<unknown>): unknown {
@@ -57,20 +56,19 @@ export function map(...args: ReadonlyArray<unknown>): unknown {
 
 function mapImplementation<T, U>(
   data: Iterable<T>,
-  callbackfn: (value: T, index: number, data: ReadonlyArray<T>) => U,
+  callbackfn: ArrayMethodCallback<ReadonlyArray<T>, U>,
 ): Array<U> {
   if (isArray(data)) {
     return data.map(callbackfn);
   }
-  return unsafeToArray(lazyImplementation(data, callbackfn));
+  return [...lazyImplementation(data, callbackfn)];
 }
 
 function* lazyImplementation<T, U>(
   data: Iterable<T>,
-  callbackfn: (value: T, index: number, data: ReadonlyArray<T>) => U,
+  callbackfn: ArrayMethodCallback<ReadonlyArray<T>, U>,
 ): Iterable<U> {
-  const simpleCallback = simplifyCallback(callbackfn);
-  for (const item of data) {
-    yield simpleCallback(item);
+  for (const [, result] of mapCallback(data, callbackfn)) {
+    yield result;
   }
 }

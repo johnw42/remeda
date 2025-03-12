@@ -1,7 +1,7 @@
 import type { Writable } from "type-fest";
 import type { IterableContainer } from "./internal/types/IterableContainer";
 import doTransduce from "./internal/doTransduce";
-import { simplifyCallback } from "./internal/utilityEvaluators";
+import { mapCallback } from "./internal/utilityEvaluators";
 import { toReadonlyArray } from "./internal/toReadonlyArray";
 
 /**
@@ -79,9 +79,7 @@ function* lazyImplementation<T>(
   data: Iterable<T>,
   callbackfn: (value: T, index: number, data: ReadonlyArray<T>) => void,
 ): Iterable<T> {
-  const simpleCallback = simplifyCallback(callbackfn);
-  for (const value of data) {
-    simpleCallback(value);
+  for (const [value] of mapCallback(data, callbackfn)) {
     yield value;
   }
 }

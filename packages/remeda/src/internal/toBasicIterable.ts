@@ -1,3 +1,5 @@
+import { memoizeIterable } from "./memoizeIterable";
+
 /**
  * A helper funtion for unit tests that turns an array into a generic iterable.
  *
@@ -5,18 +7,22 @@
  */
 export function toBasicIterable<T>(
   iterable: Iterable<T>,
-  itemLimit = Infinity,
-  // TODO: Change default to false.
-  allowMultipleTraversal = true,
+  itemLimit?: number,
+  allowMultipleTraversal = false,
 ): Iterable<T> {
-  const iterator = iterable[Symbol.iterator]();
+  if (allowMultipleTraversal) {
+    iterable = memoizeIterable(iterable);
+  }
+  itemLimit ??= Infinity;
+
   let startCount = 0;
   let itemCount = 0;
   return {
     [Symbol.iterator]() {
-      if (startCount++ >= 0 && !allowMultipleTraversal) {
+      if (startCount++ > 0 && !allowMultipleTraversal) {
         throw new Error("Multiple traversal not allowed");
       }
+      const iterator = iterable[Symbol.iterator]();
       return {
         next() {
           if (itemCount++ >= itemLimit) {

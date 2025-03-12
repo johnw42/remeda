@@ -33,6 +33,7 @@ describeIterableArg("dropLastWhile", (wrap) => {
       expect(result).not.toBe(data);
     });
   });
+
   describe("data last", () => {
     it("should return items until the last predicate failure", () => {
       expect(

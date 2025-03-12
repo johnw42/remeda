@@ -1,9 +1,4 @@
-import type { IterableElement } from "type-fest";
 import doTransduce from "./internal/doTransduce";
-import type {
-  ArrayMethodCallback,
-  ArrayMethodCallbackDataArg,
-} from "./internal/types/ArrayMethodCallback";
 import { isArray } from "./isArray";
 import { mapCallback } from "./internal/utilityEvaluators";
 
@@ -26,18 +21,14 @@ import { mapCallback } from "./internal/utilityEvaluators";
  * @lazy
  * @category Array
  */
-export function filter<E, S extends E, T extends Iterable<E>>(
-  data: T,
-  predicate: (
-    value: E,
-    index: number,
-    data: ArrayMethodCallbackDataArg<T>,
-  ) => value is S,
+export function filter<E, S extends E>(
+  data: Iterable<E>,
+  predicate: (value: E, index: number, data: ReadonlyArray<E>) => value is S,
 ): Array<S>;
-export function filter<T extends Iterable<unknown>>(
-  data: T,
-  predicate: ArrayMethodCallback<T, boolean>,
-): Array<IterableElement<T>>;
+export function filter<E>(
+  data: Iterable<E>,
+  predicate: (value: E, index: number, data: ReadonlyArray<E>) => boolean,
+): Array<E>;
 
 /**
  * Creates a shallow copy of a portion of a given array, filtered down to just
@@ -59,15 +50,9 @@ export function filter<T extends Iterable<unknown>>(
  */
 export function filter<E, S extends E>(
   predicate: (value: E, index: number, data: ReadonlyArray<E>) => value is S,
-): (data: ReadonlyArray<E>) => Array<S>;
-export function filter<E, S extends E>(
-  predicate: (value: E, index: number) => value is S,
 ): (data: Iterable<E>) => Array<S>;
 export function filter<E>(
   predicate: (value: E, index: number, data: ReadonlyArray<E>) => boolean,
-): (data: ReadonlyArray<E>) => Array<E>;
-export function filter<E>(
-  predicate: (value: E, index: number) => boolean,
 ): (data: Iterable<E>) => Array<E>;
 
 export function filter(...args: ReadonlyArray<unknown>): unknown {

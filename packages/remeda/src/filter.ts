@@ -57,16 +57,18 @@ export function filter<T extends Iterable<unknown>>(
  * @lazy
  * @category Array
  */
-export function filter<E, S extends E, T extends Iterable<E>>(
-  predicate: (
-    value: E,
-    index: number,
-    data: ArrayMethodCallbackDataArg<T>,
-  ) => value is S,
-): (data: T) => Array<S>;
-export function filter<T extends Iterable<unknown>>(
-  predicate: ArrayMethodCallback<T, boolean>,
-): (data: T) => Array<IterableElement<T>>;
+export function filter<E, S extends E>(
+  predicate: (value: E, index: number, data: ReadonlyArray<E>) => value is S,
+): (data: ReadonlyArray<E>) => Array<S>;
+export function filter<E, S extends E>(
+  predicate: (value: E, index: number) => value is S,
+): (data: Iterable<E>) => Array<S>;
+export function filter<E>(
+  predicate: (value: E, index: number, data: ReadonlyArray<E>) => boolean,
+): (data: ReadonlyArray<E>) => Array<E>;
+export function filter<E>(
+  predicate: (value: E, index: number) => boolean,
+): (data: Iterable<E>) => Array<E>;
 
 export function filter(...args: ReadonlyArray<unknown>): unknown {
   return doTransduce(filterImplementation, lazyImplementation, args);

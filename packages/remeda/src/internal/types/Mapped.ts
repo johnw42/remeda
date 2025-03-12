@@ -6,8 +6,4 @@ export type Mapped<T extends Iterable<unknown>, K> = [T] extends [
   ? {
       -readonly [P in keyof T]: K;
     }
-  : Iterable<K>;
-
-// export type Mapped<T extends IterableContainer, K> = {
-//   -readonly [P in keyof T]: K;
-// };
+  : Array<K>;

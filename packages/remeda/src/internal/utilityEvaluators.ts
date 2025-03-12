@@ -42,21 +42,3 @@ export function simplifyCallback<T, U>(
     return callbackfn(value, index++, dataArg);
   };
 }
-
-// /**
-//  * Like {@link simplifyCallback}, but with an extra argument in the callback.
-//  */
-// export function simplifyCallback2<E, T, U>(
-//   callbackfn: (extra: E, value: T, index: number, data: ReadonlyArray<T>) => U,
-//   data: Iterable<T>,
-// ): (extra: E, value: T) => U {
-//   let index = 0;
-//   let writableData: Array<T> | undefined;
-//   const dataArg: ReadonlyArray<T> = isArray(data) ? data : (writableData = []);
-//   return (extra, value) => {
-//     if (writableData !== undefined) {
-//       writableData.push(value);
-//     }
-//     return callbackfn(extra, value, index++, dataArg);
-//   };
-// }

@@ -3,6 +3,7 @@ import { constant } from "./constant";
 import { filter } from "./filter";
 import { identity } from "./identity";
 import { describeIterableArg } from "./internal/describeIterableArg";
+import { toBasicIterable } from "./internal/toBasicIterable";
 import { map } from "./map";
 import { multiply } from "./multiply";
 import { pipe } from "./pipe";
@@ -14,18 +15,17 @@ describe("map", () => {
     const indexes2: Array<number> = [];
     const anyItems1: Array<Array<number>> = [];
     const anyItems2: Array<Array<number>> = [];
-
     const data = [1, 2, 3, 4, 5];
 
     expect(
       pipe(
         data,
+        map(identity()),
         map((x, i, items) => {
           anyItems1.push([...items]);
           indexes1.push(i);
           return x;
         }),
-        // TODO: remove parameter type
         filter((x) => x % 2 === 1),
         map((x, i, items) => {
           anyItems2.push([...items]);
@@ -37,8 +37,37 @@ describe("map", () => {
 
     expect(indexes1).toStrictEqual([0, 1, 2, 3, 4]);
     expect(indexes2).toStrictEqual([0, 1, 2]);
-    expect(anyItems1).toStrictEqual([data, data, data, data, data]);
+    expect(anyItems1).toStrictEqual([
+      [1],
+      [1, 2],
+      [1, 2, 3],
+      [1, 2, 3, 4],
+      [1, 2, 3, 4, 5],
+    ]);
     expect(anyItems2).toStrictEqual([[1], [1, 3], [1, 3, 5]]);
+  });
+
+  it("indexed: check index and items with iterable argument", () => {
+    const indexes1: Array<number> = [];
+    const indexes2: Array<number> = [];
+
+    expect(
+      pipe(
+        toBasicIterable([1, 2, 3, 4, 5]),
+        map((x, i) => {
+          indexes1.push(i);
+          return x;
+        }),
+        filter((x) => x % 2 === 1),
+        map((x, i) => {
+          indexes2.push(i);
+          return x;
+        }),
+      ),
+    ).toStrictEqual([1, 3, 5]);
+
+    expect(indexes1).toStrictEqual([0, 1, 2, 3, 4]);
+    expect(indexes2).toStrictEqual([0, 1, 2]);
   });
 });
 

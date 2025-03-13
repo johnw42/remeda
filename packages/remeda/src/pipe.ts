@@ -15,12 +15,13 @@ type EagerEffect = ((input: unknown) => unknown) & {
 };
 
 class LazyPipeline {
-  private readonly producer: LazyProducer<unknown, unknown> | undefined =
+  private readonly producer: LazyProducer<unknown, Array<unknown>> | undefined =
     undefined;
   private readonly transducers: Array<
     LazyTransducer<Iterable<unknown>, Array<unknown>>
   > = [];
-  private readonly reducer: Reducer<unknown, unknown> | undefined = undefined;
+  private readonly reducer: Reducer<Iterable<unknown>, unknown> | undefined =
+    undefined;
   public readonly length: number;
 
   public constructor(
@@ -83,18 +84,12 @@ class LazyPipeline {
 }
 
 /**
- * A function from `A` to `B`, where an input type of `Iterable<T>` is narrowed
- * to `ReadonlyArray<T>`.  This narrowing allows functions that only accept
- * arrays when otherwise they would have to accept any iterable.
+ * A function from `A` to `B`.
+ *
+ * TODO: Extend this to support transducers, etc., where the input type of
+ * the function is an array type but `A` is merely iterable.
  */
 type Effect<A, B> = (input: A) => B;
-// type Effect<A, B> = {
-//   (input: A): B;
-//   //(input: A extends Iterable<infer T> ? IterableContainer<T> : A): B;
-// };
-// type Effect<A, B> = (
-//   input: A extends Iterable<infer T> ? A & IterableContainer<T> : A,
-// ) => B; //&(A extends Iterable<unknown> ? { [lazyKind]: unknown } : unknown);
 
 /**
  * Perform left-to-right function composition.

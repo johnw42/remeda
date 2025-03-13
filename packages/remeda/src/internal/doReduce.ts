@@ -6,7 +6,7 @@ import {
 } from "./types/LazyFunc";
 
 export default function doReduce<
-  Data,
+  Data extends Iterable<unknown>,
   Rest extends ReadonlyArray<unknown>,
   Result,
 >(
@@ -15,7 +15,7 @@ export default function doReduce<
 ): Result | Reducer<Data, Result> {
   switch (impl.length - args.length) {
     case 0:
-      return impl(...(args as readonly [ReadonlyArray<Data>, ...Rest]));
+      return impl(...(args as readonly [Data, ...Rest]));
     case 1: {
       const dataLast: EagerReducer<Data, Result> = (data) =>
         impl(data, ...(args as Rest));
@@ -27,3 +27,8 @@ export default function doReduce<
       throw new Error("Wrong number of arguments");
   }
 }
+
+export type DoReduceResult<
+  Data extends Iterable<unknown> = Iterable<unknown>,
+  Result = unknown,
+> = Result | Reducer<Data, Result>;

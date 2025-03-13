@@ -1,7 +1,8 @@
-import doTransduce from "./internal/doTransduce";
+import type { IterableElement } from "type-fest";
+import doTransduce, { type DoTransduceResult } from "./internal/doTransduce";
 import type { IterableContainer } from "./internal/types/IterableContainer";
+import type { Transducer } from "./internal/types/LazyFunc";
 import type { Mapped } from "./internal/types/Mapped";
-import { unsafeToArray } from "./internal/unsafeToArray";
 import { simplifyCallback } from "./internal/utilityEvaluators";
 import { isArray } from "./isArray";
 
@@ -48,10 +49,10 @@ export function map<T extends IterableContainer, U>(
  * @category Array
  */
 export function map<T extends IterableContainer, U>(
-  callbackfn: (value: T[number], index: number, data: T) => U,
-): (data: T) => Mapped<T, U>;
+  callbackfn: (value: IterableElement<T>, index: number, data: T) => U,
+): Transducer<T, Mapped<T, U>>;
 
-export function map(...args: ReadonlyArray<unknown>): unknown {
+export function map(...args: ReadonlyArray<unknown>): DoTransduceResult {
   return doTransduce(mapImplementation, lazyImplementation, args);
 }
 
@@ -62,7 +63,7 @@ function mapImplementation<T, U>(
   if (isArray(data)) {
     return data.map(callbackfn);
   }
-  return unsafeToArray(lazyImplementation(data, callbackfn));
+  return [...lazyImplementation(data, callbackfn)];
 }
 
 function* lazyImplementation<T, U>(

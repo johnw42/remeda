@@ -1,51 +1,49 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable jsdoc/check-param-names, jsdoc/require-param -- we don't document the op params, it'd be redundant */
 
-import type {
-  LazyProducer,
-  LazyTransducer,
-  Producer,
-  Transducer,
-  Reducer,
+import {
+  type LazyProducer,
+  type LazyTransducer,
+  type Reducer,
+  lazyKind,
+  lazyImpl,
+  type LazyEffect,
 } from "./internal/types/LazyFunc";
 
-type EagerFunc = ((input: unknown) => unknown) & {
-  readonly lazyKind?: undefined;
+type EagerEffect = ((input: unknown) => unknown) & {
+  readonly [lazyKind]?: undefined;
 };
-
-type LazyFunc =
-  | Producer<unknown, unknown>
-  | Transducer<unknown, unknown>
-  | Reducer<unknown, unknown>;
 
 class LazyPipeline {
   private readonly producer: LazyProducer<unknown, unknown> | undefined =
     undefined;
-  private readonly transducers: Array<LazyTransducer<unknown, unknown>> = [];
+  private readonly transducers: Array<
+    LazyTransducer<Iterable<unknown>, Array<unknown>>
+  > = [];
   private readonly reducer: Reducer<unknown, unknown> | undefined = undefined;
   public readonly length: number;
 
   public constructor(
-    operations: ReadonlyArray<LazyFunc | EagerFunc>,
+    operations: ReadonlyArray<LazyEffect | EagerEffect>,
     startIndex: number,
   ) {
     let i: number;
     for (i = startIndex; i < operations.length; i++) {
       const lazyOp = operations[i]!;
       let breakLoop = false;
-      switch (lazyOp.lazyKind) {
+      switch (lazyOp[lazyKind]) {
         case undefined:
           breakLoop = true;
           break;
         case "producer":
           if (this.producer === undefined) {
-            this.producer = lazyOp.lazy;
+            this.producer = lazyOp[lazyImpl];
           } else {
             breakLoop = true;
           }
           break;
         case "transducer":
-          this.transducers.push(lazyOp.lazy);
+          this.transducers.push(lazyOp[lazyImpl]);
           break;
         case "reducer":
           this.reducer = lazyOp;
@@ -89,8 +87,14 @@ class LazyPipeline {
  * to `ReadonlyArray<T>`.  This narrowing allows functions that only accept
  * arrays when otherwise they would have to accept any iterable.
  */
-type Effect<A, B> = (input: Input<A>) => B;
-type Input<A> = A extends Iterable<infer T> ? ReadonlyArray<T> : A;
+type Effect<A, B> = (input: A) => B;
+// type Effect<A, B> = {
+//   (input: A): B;
+//   //(input: A extends Iterable<infer T> ? IterableContainer<T> : A): B;
+// };
+// type Effect<A, B> = (
+//   input: A extends Iterable<infer T> ? A & IterableContainer<T> : A,
+// ) => B; //&(A extends Iterable<unknown> ? { [lazyKind]: unknown } : unknown);
 
 /**
  * Perform left-to-right function composition.
@@ -108,6 +112,7 @@ type Input<A> = A extends Iterable<infer T> ? ReadonlyArray<T> : A;
  * @category Function
  */
 export function pipe<A, B>(value: A, op1: Effect<A, B>): B;
+
 export function pipe<A, B, C>(
   value: A,
   op1: Effect<A, B>,
@@ -285,7 +290,7 @@ export function pipe<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P>(
 
 export function pipe(
   input: unknown,
-  ...operations: ReadonlyArray<LazyFunc | EagerFunc>
+  ...operations: ReadonlyArray<LazyEffect | EagerEffect>
 ): any {
   let output = input;
 
@@ -293,10 +298,10 @@ export function pipe(
   while (opIndex < operations.length) {
     const op = operations[opIndex]!;
     if (
-      op.lazyKind === undefined ||
-      (op.lazyKind !== "producer" && !isIterable(output))
+      op[lazyKind] === undefined ||
+      (op[lazyKind] !== "producer" && !isIterable(output))
     ) {
-      output = (op as EagerFunc)(output);
+      output = (op as EagerEffect)(output);
       opIndex += 1;
       continue;
     }

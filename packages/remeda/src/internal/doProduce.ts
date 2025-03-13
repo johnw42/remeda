@@ -1,4 +1,10 @@
-import type { EagerProducer, Producer, ProducerImpl } from "./types/LazyFunc";
+import {
+  lazyImpl,
+  lazyKind,
+  type EagerProducer,
+  type Producer,
+  type ProducerImpl,
+} from "./types/LazyFunc";
 import { unsafeToArray } from "./unsafeToArray";
 
 export default function doProduce<
@@ -14,8 +20,8 @@ export default function doProduce<
       const dataLast: EagerProducer<Data, Result> = (data) =>
         unsafeToArray(impl(data, ...(args as Rest)));
       return Object.assign(dataLast, {
-        lazy: (data: Data) => impl(data, ...(args as Rest)),
-        lazyKind: "producer",
+        [lazyImpl]: (data: Data) => impl(data, ...(args as Rest)),
+        [lazyKind]: "producer",
       } as const);
     }
     case 0:

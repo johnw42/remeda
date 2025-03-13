@@ -1,22 +1,24 @@
-import type {
-  EagerTransducer,
-  EagerTransducerImpl,
-  LazyTransducerImpl,
-  Transducer,
+import {
+  lazyImpl,
+  lazyKind,
+  type EagerTransducer,
+  type EagerTransducerImpl,
+  type LazyTransducerImpl,
+  type Transducer,
 } from "./types/LazyFunc";
 import { unsafeToArray } from "./unsafeToArray";
 
 export default function doTransduce<
-  Data,
+  Data extends Iterable<unknown>,
   Rest extends ReadonlyArray<unknown>,
-  Result,
+  Result extends Array<unknown>,
 >(
   eager: EagerTransducerImpl<Data, Rest, Result> | undefined,
   lazy: LazyTransducerImpl<Data, Rest, Result>,
   args: ReadonlyArray<unknown>,
   isDataFirst?: boolean,
-): Array<Result> | Transducer<Data, Result> {
-  eager ??= (data, ...rest) => unsafeToArray(lazy(data, ...rest));
+): DoTransduceResult<Data, Result> {
+  eager ??= (data, ...rest) => unsafeToArray(lazy(data, ...rest)) as Result;
   if (isDataFirst === undefined) {
     switch (lazy.length - args.length) {
       case 1:
@@ -31,13 +33,18 @@ export default function doTransduce<
   }
 
   if (isDataFirst) {
-    return eager(...(args as readonly [Iterable<Data>, ...Rest]));
+    return eager(...(args as readonly [Data, ...Rest]));
   }
 
-  const dataLast: EagerTransducer<Data, Result> = (data): Array<Result> =>
+  const dataLast: EagerTransducer<Data, Result> = (data): Result =>
     eager(data, ...(args as Rest));
   return Object.assign(dataLast, {
-    lazy: (data: Iterable<Data>) => lazy(data, ...(args as Rest)),
-    lazyKind: "transducer",
+    [lazyImpl]: (data: Data) => lazy(data, ...(args as Rest)),
+    [lazyKind]: "transducer",
   } as const);
 }
+
+export type DoTransduceResult<
+  Data extends Iterable<unknown> = Iterable<unknown>,
+  Result extends Array<unknown> = Array<unknown>,
+> = Result | Transducer<Data, Result>;

@@ -85,6 +85,14 @@ class LazyPipeline {
 }
 
 /**
+ * A function from `A` to `B`, where an input type of `Iterable<T>` is narrowed
+ * to `ReadonlyArray<T>`.  This narrowing allows functions that only accept
+ * arrays when otherwise they would have to accept any iterable.
+ */
+type Effect<A, B> = (input: Input<A>) => B;
+type Input<A> = A extends Iterable<infer T> ? ReadonlyArray<T> : A;
+
+/**
  * Perform left-to-right function composition.
  *
  * @param value - The initial value.
@@ -99,180 +107,180 @@ class LazyPipeline {
  * @dataFirst
  * @category Function
  */
-export function pipe<A, B>(value: A, op1: (input: A) => B): B;
+export function pipe<A, B>(value: A, op1: Effect<A, B>): B;
 export function pipe<A, B, C>(
   value: A,
-  op1: (input: A) => B,
-  op2: (input: B) => C,
+  op1: Effect<A, B>,
+  op2: Effect<B, C>,
 ): C;
 
 export function pipe<A, B, C, D>(
   value: A,
-  op1: (input: A) => B,
-  op2: (input: B) => C,
-  op3: (input: C) => D,
+  op1: Effect<A, B>,
+  op2: Effect<B, C>,
+  op3: Effect<C, D>,
 ): D;
 
 export function pipe<A, B, C, D, E>(
   value: A,
-  op1: (input: A) => B,
-  op2: (input: B) => C,
-  op3: (input: C) => D,
-  op4: (input: D) => E,
+  op1: Effect<A, B>,
+  op2: Effect<B, C>,
+  op3: Effect<C, D>,
+  op4: Effect<D, E>,
 ): E;
 
 export function pipe<A, B, C, D, E, F>(
   value: A,
-  op1: (input: A) => B,
-  op2: (input: B) => C,
-  op3: (input: C) => D,
-  op4: (input: D) => E,
-  op5: (input: E) => F,
+  op1: Effect<A, B>,
+  op2: Effect<B, C>,
+  op3: Effect<C, D>,
+  op4: Effect<D, E>,
+  op5: Effect<E, F>,
 ): F;
 
 export function pipe<A, B, C, D, E, F, G>(
   value: A,
-  op1: (input: A) => B,
-  op2: (input: B) => C,
-  op3: (input: C) => D,
-  op4: (input: D) => E,
-  op5: (input: E) => F,
-  op6: (input: F) => G,
+  op1: Effect<A, B>,
+  op2: Effect<B, C>,
+  op3: Effect<C, D>,
+  op4: Effect<D, E>,
+  op5: Effect<E, F>,
+  op6: Effect<F, G>,
 ): G;
 
 export function pipe<A, B, C, D, E, F, G, H>(
   value: A,
-  op1: (input: A) => B,
-  op2: (input: B) => C,
-  op3: (input: C) => D,
-  op4: (input: D) => E,
-  op5: (input: E) => F,
-  op6: (input: F) => G,
-  op7: (input: G) => H,
+  op1: Effect<A, B>,
+  op2: Effect<B, C>,
+  op3: Effect<C, D>,
+  op4: Effect<D, E>,
+  op5: Effect<E, F>,
+  op6: Effect<F, G>,
+  op7: Effect<G, H>,
 ): H;
 
 export function pipe<A, B, C, D, E, F, G, H, I>(
   value: A,
-  op1: (input: A) => B,
-  op2: (input: B) => C,
-  op3: (input: C) => D,
-  op4: (input: D) => E,
-  op5: (input: E) => F,
-  op6: (input: F) => G,
-  op7: (input: G) => H,
-  op8: (input: H) => I,
+  op1: Effect<A, B>,
+  op2: Effect<B, C>,
+  op3: Effect<C, D>,
+  op4: Effect<D, E>,
+  op5: Effect<E, F>,
+  op6: Effect<F, G>,
+  op7: Effect<G, H>,
+  op8: Effect<H, I>,
 ): I;
 
 export function pipe<A, B, C, D, E, F, G, H, I, J>(
   value: A,
-  op1: (input: A) => B,
-  op2: (input: B) => C,
-  op3: (input: C) => D,
-  op4: (input: D) => E,
-  op5: (input: E) => F,
-  op6: (input: F) => G,
-  op7: (input: G) => H,
-  op8: (input: H) => I,
-  op9: (input: I) => J,
+  op1: Effect<A, B>,
+  op2: Effect<B, C>,
+  op3: Effect<C, D>,
+  op4: Effect<D, E>,
+  op5: Effect<E, F>,
+  op6: Effect<F, G>,
+  op7: Effect<G, H>,
+  op8: Effect<H, I>,
+  op9: Effect<I, J>,
 ): J;
 
 export function pipe<A, B, C, D, E, F, G, H, I, J, K>(
   value: A,
-  op01: (input: A) => B,
-  op02: (input: B) => C,
-  op03: (input: C) => D,
-  op04: (input: D) => E,
-  op05: (input: E) => F,
-  op06: (input: F) => G,
-  op07: (input: G) => H,
-  op08: (input: H) => I,
-  op09: (input: I) => J,
-  op10: (input: J) => K,
+  op01: Effect<A, B>,
+  op02: Effect<B, C>,
+  op03: Effect<C, D>,
+  op04: Effect<D, E>,
+  op05: Effect<E, F>,
+  op06: Effect<F, G>,
+  op07: Effect<G, H>,
+  op08: Effect<H, I>,
+  op09: Effect<I, J>,
+  op10: Effect<J, K>,
 ): K;
 
 export function pipe<A, B, C, D, E, F, G, H, I, J, K, L>(
   value: A,
-  op01: (input: A) => B,
-  op02: (input: B) => C,
-  op03: (input: C) => D,
-  op04: (input: D) => E,
-  op05: (input: E) => F,
-  op06: (input: F) => G,
-  op07: (input: G) => H,
-  op08: (input: H) => I,
-  op09: (input: I) => J,
-  op10: (input: J) => K,
-  op11: (input: K) => L,
+  op01: Effect<A, B>,
+  op02: Effect<B, C>,
+  op03: Effect<C, D>,
+  op04: Effect<D, E>,
+  op05: Effect<E, F>,
+  op06: Effect<F, G>,
+  op07: Effect<G, H>,
+  op08: Effect<H, I>,
+  op09: Effect<I, J>,
+  op10: Effect<J, K>,
+  op11: Effect<K, L>,
 ): L;
 
 export function pipe<A, B, C, D, E, F, G, H, I, J, K, L, M>(
   value: A,
-  op01: (input: A) => B,
-  op02: (input: B) => C,
-  op03: (input: C) => D,
-  op04: (input: D) => E,
-  op05: (input: E) => F,
-  op06: (input: F) => G,
-  op07: (input: G) => H,
-  op08: (input: H) => I,
-  op09: (input: I) => J,
-  op10: (input: J) => K,
-  op11: (input: K) => L,
-  op12: (input: L) => M,
+  op01: Effect<A, B>,
+  op02: Effect<B, C>,
+  op03: Effect<C, D>,
+  op04: Effect<D, E>,
+  op05: Effect<E, F>,
+  op06: Effect<F, G>,
+  op07: Effect<G, H>,
+  op08: Effect<H, I>,
+  op09: Effect<I, J>,
+  op10: Effect<J, K>,
+  op11: Effect<K, L>,
+  op12: Effect<L, M>,
 ): M;
 
 export function pipe<A, B, C, D, E, F, G, H, I, J, K, L, M, N>(
   value: A,
-  op01: (input: A) => B,
-  op02: (input: B) => C,
-  op03: (input: C) => D,
-  op04: (input: D) => E,
-  op05: (input: E) => F,
-  op06: (input: F) => G,
-  op07: (input: G) => H,
-  op08: (input: H) => I,
-  op09: (input: I) => J,
-  op10: (input: J) => K,
-  op11: (input: K) => L,
-  op12: (input: L) => M,
-  op13: (input: M) => N,
+  op01: Effect<A, B>,
+  op02: Effect<B, C>,
+  op03: Effect<C, D>,
+  op04: Effect<D, E>,
+  op05: Effect<E, F>,
+  op06: Effect<F, G>,
+  op07: Effect<G, H>,
+  op08: Effect<H, I>,
+  op09: Effect<I, J>,
+  op10: Effect<J, K>,
+  op11: Effect<K, L>,
+  op12: Effect<L, M>,
+  op13: Effect<M, N>,
 ): N;
 
 export function pipe<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O>(
   value: A,
-  op01: (input: A) => B,
-  op02: (input: B) => C,
-  op03: (input: C) => D,
-  op04: (input: D) => E,
-  op05: (input: E) => F,
-  op06: (input: F) => G,
-  op07: (input: G) => H,
-  op08: (input: H) => I,
-  op09: (input: I) => J,
-  op10: (input: J) => K,
-  op11: (input: K) => L,
-  op12: (input: L) => M,
-  op13: (input: M) => N,
-  op14: (input: N) => O,
+  op01: Effect<A, B>,
+  op02: Effect<B, C>,
+  op03: Effect<C, D>,
+  op04: Effect<D, E>,
+  op05: Effect<E, F>,
+  op06: Effect<F, G>,
+  op07: Effect<G, H>,
+  op08: Effect<H, I>,
+  op09: Effect<I, J>,
+  op10: Effect<J, K>,
+  op11: Effect<K, L>,
+  op12: Effect<L, M>,
+  op13: Effect<M, N>,
+  op14: Effect<N, O>,
 ): O;
 
 export function pipe<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P>(
   value: A,
-  op01: (input: A) => B,
-  op02: (input: B) => C,
-  op03: (input: C) => D,
-  op04: (input: D) => E,
-  op05: (input: E) => F,
-  op06: (input: F) => G,
-  op07: (input: G) => H,
-  op08: (input: H) => I,
-  op09: (input: I) => J,
-  op10: (input: J) => K,
-  op11: (input: K) => L,
-  op12: (input: L) => M,
-  op13: (input: M) => N,
-  op14: (input: N) => O,
-  op15: (input: O) => P,
+  op01: Effect<A, B>,
+  op02: Effect<B, C>,
+  op03: Effect<C, D>,
+  op04: Effect<D, E>,
+  op05: Effect<E, F>,
+  op06: Effect<F, G>,
+  op07: Effect<G, H>,
+  op08: Effect<H, I>,
+  op09: Effect<I, J>,
+  op10: Effect<J, K>,
+  op11: Effect<K, L>,
+  op12: Effect<L, M>,
+  op13: Effect<M, N>,
+  op14: Effect<N, O>,
+  op15: Effect<O, P>,
 ): P;
 
 export function pipe(

@@ -1,6 +1,8 @@
+import { constant } from "./constant";
 import { filter } from "./filter";
 import { flat } from "./flat";
 import { identity } from "./identity";
+import { toBasicIterable } from "./internal/toBasicIterable";
 import { map } from "./map";
 import { pipe } from "./pipe";
 import { prop } from "./prop";
@@ -10,6 +12,25 @@ it("should pipe a single operation", () => {
   const result = pipe(1, (x) => x * 2);
 
   expect(result).toBe(2);
+});
+
+it("should pipe a single array operation on an iterable", () => {
+  const result = pipe(
+    toBasicIterable([1, 2, 3]),
+    map((x) => x * 2),
+  );
+
+  expect(result).toStrictEqual([2, 4, 6]);
+});
+
+it("should pipe an array operation in the middle of the pipeline on an iterable", () => {
+  const result = pipe(
+    0,
+    constant(toBasicIterable([1, 2, 3])),
+    map((x) => x * 2),
+  );
+
+  expect(result).toStrictEqual([2, 4, 6]);
 });
 
 it("should pipe operations", () => {

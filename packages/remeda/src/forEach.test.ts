@@ -5,7 +5,7 @@ import { pipe } from "./pipe";
 import { take } from "./take";
 
 // eslint-disable-next-line vitest/require-hook
-describeIterableArg("forEach", (wrap, { expectSameArray }) => {
+describeIterableArg("forEach", ({ wrap, wrappedArray }) => {
   test("dataFirst", () => {
     const array = [1, 2, 3];
     const data = wrap(array);
@@ -15,13 +15,9 @@ describeIterableArg("forEach", (wrap, { expectSameArray }) => {
     forEach(data, cb);
 
     expect(cb).toHaveBeenCalledTimes(3);
-    expect(cb).toHaveBeenCalledWith(1, 0, expect.anything());
-    expect(cb).toHaveBeenCalledWith(2, 1, expect.anything());
-    expect(cb).toHaveBeenCalledWith(3, 2, expect.anything());
-
-    for (const [_item, _index, dataArg] of cb.mock.calls) {
-      expectSameArray(dataArg, array);
-    }
+    expect(cb).toHaveBeenCalledWith(1, 0, wrappedArray(array));
+    expect(cb).toHaveBeenCalledWith(2, 1, wrappedArray(array));
+    expect(cb).toHaveBeenCalledWith(3, 2, wrappedArray(array));
   });
 
   test("dataLast", () => {
@@ -34,13 +30,9 @@ describeIterableArg("forEach", (wrap, { expectSameArray }) => {
     // explicitly tell it the how to type the `data` param..
     const result = forEach<typeof data>(cb)(data);
 
-    expect(cb).toHaveBeenCalledWith(1, 0, expect.anything());
-    expect(cb).toHaveBeenCalledWith(2, 1, expect.anything());
-    expect(cb).toHaveBeenCalledWith(3, 2, expect.anything());
-
-    for (const [_item, _index, dataArg] of cb.mock.calls) {
-      expectSameArray(dataArg, array);
-    }
+    expect(cb).toHaveBeenCalledWith(1, 0, wrappedArray(array));
+    expect(cb).toHaveBeenCalledWith(2, 1, wrappedArray(array));
+    expect(cb).toHaveBeenCalledWith(3, 2, wrappedArray(array));
 
     // dataLast used directly, we return the same reference.
     expect(result).toBe(data);
@@ -54,13 +46,9 @@ describeIterableArg("forEach", (wrap, { expectSameArray }) => {
 
     const result = pipe(data, forEach(cb));
 
-    expect(cb).toHaveBeenCalledWith(1, 0, expect.anything());
-    expect(cb).toHaveBeenCalledWith(2, 1, expect.anything());
-    expect(cb).toHaveBeenCalledWith(3, 2, expect.anything());
-
-    for (const [_item, _index, dataArg] of cb.mock.calls) {
-      expectSameArray(dataArg, array);
-    }
+    expect(cb).toHaveBeenCalledWith(1, 0, wrappedArray(array));
+    expect(cb).toHaveBeenCalledWith(2, 1, wrappedArray(array));
+    expect(cb).toHaveBeenCalledWith(3, 2, wrappedArray(array));
 
     expect([...result]).toStrictEqual(array);
 

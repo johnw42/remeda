@@ -4,7 +4,7 @@ import { describeIterableArg } from "./internal/describeIterableArg";
 import { pipe } from "./pipe";
 
 // eslint-disable-next-line vitest/require-hook
-describeIterableArg("firstBy", (wrap) => {
+describeIterableArg("firstBy", ({ wrap }) => {
   describe("runtime (dataFirst)", () => {
     it("returns undefined on empty", () => {
       expect(firstBy(wrap([]), identity())).toBeUndefined();
@@ -38,17 +38,17 @@ describeIterableArg("firstBy", (wrap) => {
     });
 
     it("breaks ties with multiple order rules", () => {
-      const data = wrap(
-        ["a", "bb", "b", "aaaa", "bbb", "aa", "aaa", "bbbb"],
-        undefined,
-        true,
-      );
+      const data = ["a", "bb", "b", "aaaa", "bbb", "aa", "aaa", "bbbb"];
 
-      expect(firstBy(data, (x) => x.length, identity())).toBe("a");
-      expect(firstBy(data, [(x) => x.length, "desc"], identity())).toBe("aaaa");
-      expect(firstBy(data, (x) => x.length, [identity(), "desc"])).toBe("b");
+      expect(firstBy(wrap(data), (x) => x.length, identity())).toBe("a");
+      expect(firstBy(wrap(data), [(x) => x.length, "desc"], identity())).toBe(
+        "aaaa",
+      );
+      expect(firstBy(wrap(data), (x) => x.length, [identity(), "desc"])).toBe(
+        "b",
+      );
       expect(
-        firstBy(data, [(x) => x.length, "desc"], [identity(), "desc"]),
+        firstBy(wrap(data), [(x) => x.length, "desc"], [identity(), "desc"]),
       ).toBe("bbbb");
     });
 
@@ -111,30 +111,26 @@ describeIterableArg("firstBy", (wrap) => {
     });
 
     it("breaks ties with multiple order rules", () => {
-      const data = wrap(
-        ["a", "bb", "b", "aaaa", "bbb", "aa", "aaa", "bbbb"],
-        undefined,
-        true,
-      );
+      const data = ["a", "bb", "b", "aaaa", "bbb", "aa", "aaa", "bbbb"];
 
       expect(
         pipe(
-          data,
+          wrap(data),
           firstBy((x) => x.length, identity()),
         ),
       ).toBe("a");
-      expect(pipe(data, firstBy([(x) => x.length, "desc"], identity()))).toBe(
-        "aaaa",
-      );
+      expect(
+        pipe(wrap(data), firstBy([(x) => x.length, "desc"], identity())),
+      ).toBe("aaaa");
       expect(
         pipe(
-          data,
+          wrap(data),
           firstBy((x) => x.length, [identity(), "desc"]),
         ),
       ).toBe("b");
       expect(
         pipe(
-          data,
+          wrap(data),
           firstBy([(x: string) => x.length, "desc"], [identity(), "desc"]),
         ),
       ).toBe("bbbb");

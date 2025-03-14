@@ -4,7 +4,7 @@ import { pipe } from "./pipe";
 import { take } from "./take";
 
 // eslint-disable-next-line vitest/require-hook
-describeIterableArg("dropWhile", (wrap) => {
+describeIterableArg("dropWhile", ({ wrap }) => {
   describe("data first", () => {
     it("should return items starting from the first predicate failure", () => {
       expect(dropWhile(wrap([1, 2, 3, 4]), (n) => n !== 3)).toStrictEqual([

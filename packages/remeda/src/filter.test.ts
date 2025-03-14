@@ -5,7 +5,7 @@ import { map } from "./map";
 import { pipe } from "./pipe";
 
 // eslint-disable-next-line vitest/require-hook
-describeIterableArg("filter", (wrap) => {
+describeIterableArg("filter", ({ wrap }) => {
   describe("data_first", () => {
     it("filter", () => {
       const result = filter(wrap([1, 2, 3]), (x) => x % 2 === 1);

@@ -80,18 +80,8 @@ function* lazyImplementation<T>(
   data: Iterable<T>,
   predicate: ArrayMethodCallback<ReadonlyArray<T>, boolean>,
 ): Iterable<T> {
-  let dropping = true;
-  for (const [value, flag] of mapCallback(data, (valueArg, index, dataArg) => {
-    if (!dropping) {
-      return false;
-    }
-    if (predicate(valueArg, index, dataArg)) {
-      return true;
-    }
-    dropping = false;
-    return false;
-  })) {
-    if (!flag) {
+  for (const [value, flag] of mapCallback(data, predicate)) {
+    if (flag) {
       yield value;
     }
   }

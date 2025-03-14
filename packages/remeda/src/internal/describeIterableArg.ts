@@ -1,41 +1,89 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import { identity } from "../identity";
-import { isArray } from "../isArray";
 import { toBasicIterable } from "./toBasicIterable";
+import { AsymmetricMatcher, equals } from "@vitest/expect";
+import { isObjectWithProps } from "./isObjectWithProps";
+
+class SameRefMatcher extends AsymmetricMatcher<unknown> {
+  public override asymmetricMatch(other: unknown): boolean {
+    return this.sample === other;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/class-methods-use-this
+  public override toString(): string {
+    return "SameRefMatcher";
+  }
+
+  // eslint-disable-next-line @typescript-eslint/class-methods-use-this
+  public override toAsymmetricMatcher(): string {
+    return "SameRefMatcher.toAsymmetricMatcher";
+  }
+
+  public static for(sample: unknown): SameRefMatcher {
+    return new SameRefMatcher(sample);
+  }
+}
+
+class ArrayContentMatcher<T> extends AsymmetricMatcher<ReadonlyArray<T>> {
+  public constructor(sample: Iterable<T>) {
+    super([...sample]);
+  }
+
+  public override asymmetricMatch(other: unknown): boolean {
+    if (!isObjectWithProps(other, Symbol.iterator)) {
+      return false;
+    }
+
+    const otherArray = [...(other as Iterable<T>)];
+
+    return (
+      this.sample.length === otherArray.length &&
+      this.sample.every((v, i) => equals(v, otherArray[i]))
+    );
+  }
+
+  // eslint-disable-next-line @typescript-eslint/class-methods-use-this
+  public override toString(): string {
+    return "ArrayContentMatcher";
+  }
+
+  // eslint-disable-next-line @typescript-eslint/class-methods-use-this
+  public override toAsymmetricMatcher(): string {
+    return "ArrayContentMatcher.toAsymmetricMatcher";
+  }
+
+  public static for<T>(sample: Iterable<T>): ArrayContentMatcher<T> {
+    return new ArrayContentMatcher(sample);
+  }
+}
 
 /**
- * A function that either returns its argument unchanges to wraps it as a plain
- * iterable (with no methods other than `[Symbol.iterator]`).
- *
- * If `itemLimit` is provided, the returned iterable will throw an error if it is
- * asked for more than `itemLimit` items.  This is useful to testing laziness.
- *
- * If `allowMultipleTraversal` is `true`, the returned iterable will allow
- * multiple traversals.  This is useful for testing iterables that can be
- * traversed multiple times.
- *
- * @param data - The data to wrap.
- * @param itemLimit - The maximum number of items to return.
- * @returns The wrapped data.
+ * A function that either returns its argument unchanged or wraps it using {@link toBasicIterable}.
  */
-type WrapperFn = <T>(
-  data: Iterable<T>,
-  itemLimit?: number,
-  allowMultipleTraversal?: boolean,
-) => Iterable<T>;
+type WrapperFn = typeof toBasicIterable;
 
 /**
  * The body passed to `describeIterableArg`.
  */
-type BodyFn = (
-  wrap: WrapperFn,
-  info: IterableArgInfo,
-) => void | PromiseLike<void>;
+type BodyFn = (info: IterableArgInfo) => void | PromiseLike<void>;
 
 type IterableArgInfo = {
+  /**
+   * @see WrapperFn
+   */
+  readonly wrap: WrapperFn;
+  /**
+   * A string describing the type of data being returned by `wrap`.
+   */
   readonly what: string;
-  readonly wrapper: WrapperFn;
+  /**
+   * True iff `wrap` returns the original array.
+   */
   readonly dataIsArray: boolean;
-  readonly expectSameArray: <T>(a: Iterable<T>, b: Iterable<T>) => void;
+  /**
+   * An asymmetric matcher that either checks if two arrays are the same reference or they have the same content.
+   */
+  readonly wrappedArray: <T>(a: Iterable<T>) => boolean;
 };
 
 /**
@@ -50,27 +98,17 @@ export function describeIterableArg(...args: ReadonlyArray<unknown>): void {
   let body: BodyFn;
   if (args.length === 2) {
     [desc, body] = args as [string, BodyFn];
-    if (/\$dataDesc\b/u.exec(desc) === null) {
-      desc += " where type of data is $dataDesc";
+    if (/\$what\b/u.exec(desc) === null) {
+      desc += " where type of data is $what";
     }
   } else {
     [body] = args as [BodyFn];
-    desc = "where type of data is $dataDesc";
+    desc = "where type of data is $what";
   }
 
   describe.each`
-    what           | dataIsArray | expectSameArray             | wrapper
-    ${"array"}     | ${true}     | ${expectSameArrayStrict}    | ${identity()}
-    ${"generator"} | ${false}    | ${expectSameArrayNonStrict} | ${toBasicIterable}
-  `(desc, (info: IterableArgInfo) => body(info.wrapper, info));
-}
-
-function expectSameArrayStrict<T>(a: Iterable<T>, b: Iterable<T>): void {
-  assert(isArray(a));
-  assert(isArray(b));
-  expect(a).toBe(b);
-}
-
-function expectSameArrayNonStrict<T>(a: Iterable<T>, b: Iterable<T>): void {
-  expect([...a]).toStrictEqual([...b]);
+    what           | dataIsArray | wrappedArray               | wrap
+    ${"array"}     | ${true}     | ${SameRefMatcher.for}      | ${identity()}
+    ${"generator"} | ${false}    | ${ArrayContentMatcher.for} | ${toBasicIterable}
+  `(desc, (info: IterableArgInfo) => body(info));
 }

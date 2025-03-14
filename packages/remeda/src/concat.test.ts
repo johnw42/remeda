@@ -4,7 +4,7 @@ import { pipe } from "./pipe";
 import { take } from "./take";
 
 // eslint-disable-next-line vitest/require-hook
-describeIterableArg("concat", (wrap) => {
+describeIterableArg("concat", ({ wrap }) => {
   test("data first", () => {
     const actual = concat(wrap([1, 2, 3]), wrap(["a"]));
 

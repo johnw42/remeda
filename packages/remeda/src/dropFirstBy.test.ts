@@ -4,7 +4,7 @@ import { describeIterableArg } from "./internal/describeIterableArg";
 import { pipe } from "./pipe";
 
 // eslint-disable-next-line vitest/require-hook
-describeIterableArg("dropFirstBy", (wrap) => {
+describeIterableArg("dropFirstBy", ({ wrap }) => {
   describe("runtime (dataFirst)", () => {
     it("works", () => {
       const data = wrap([4, 5, 1, 6, 2, 3, 7]);

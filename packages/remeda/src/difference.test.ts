@@ -4,7 +4,7 @@ import { pipe } from "./pipe";
 import { take } from "./take";
 
 // eslint-disable-next-line vitest/require-hook
-describeIterableArg("difference", (wrap) => {
+describeIterableArg("difference", ({ wrap }) => {
   it("returns empty array on empty input", () => {
     expect(difference(wrap([]), wrap([1, 2, 3]))).toStrictEqual([]);
   });

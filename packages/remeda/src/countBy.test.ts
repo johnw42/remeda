@@ -3,7 +3,7 @@ import { describeIterableArg } from "./internal/describeIterableArg";
 import { pipe } from "./pipe";
 
 // eslint-disable-next-line vitest/require-hook
-describeIterableArg("countBy", (wrap) => {
+describeIterableArg("countBy", ({ wrap }) => {
   describe("dataFirst", () => {
     test("countBy", () => {
       const data = wrap([1, 2, 3, 2, 1, 5]);

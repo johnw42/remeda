@@ -5,7 +5,7 @@ import { pipe } from "./pipe";
 import { take } from "./take";
 
 // eslint-disable-next-line vitest/require-hook
-describeIterableArg("drop", (wrap) => {
+describeIterableArg("drop", ({ wrap }) => {
   describe("data first", () => {
     it("works on regular inputs", () => {
       expect(drop(wrap([1, 2, 3, 4, 5]), 2)).toStrictEqual([3, 4, 5]);

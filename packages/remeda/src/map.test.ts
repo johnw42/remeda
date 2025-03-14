@@ -72,7 +72,7 @@ describe("map", () => {
 });
 
 // eslint-disable-next-line vitest/require-hook
-describeIterableArg("map", (wrap) => {
+describeIterableArg("map", ({ wrap }) => {
   describe("data_first", () => {
     it("map", () => {
       expect(map(wrap([1, 2, 3]), multiply(2))).toStrictEqual([2, 4, 6]);

@@ -9,7 +9,7 @@ const other = [{ a: 2 }, { a: 5 }, { a: 3 }];
 const expected = [{ a: 1 }, { a: 4 }];
 
 // eslint-disable-next-line vitest/require-hook
-describeIterableArg("differenceWith", (wrap) => {
+describeIterableArg("differenceWith", ({ wrap }) => {
   describe("data_first", () => {
     test("should return difference", () => {
       expect(

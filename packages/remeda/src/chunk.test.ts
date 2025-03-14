@@ -4,7 +4,7 @@ import { pipe } from "./pipe";
 import { take } from "./take";
 
 // eslint-disable-next-line vitest/require-hook
-describeIterableArg("chunk", (wrap) => {
+describeIterableArg("chunk", ({ wrap }) => {
   describe("data first", () => {
     test("equal size", () => {
       expect(chunk(wrap(["a", "b", "c", "d"]), 2)).toStrictEqual([

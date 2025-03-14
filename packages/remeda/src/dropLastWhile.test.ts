@@ -3,7 +3,7 @@ import { describeIterableArg } from "./internal/describeIterableArg";
 import { pipe } from "./pipe";
 
 // eslint-disable-next-line vitest/require-hook
-describeIterableArg("dropLastWhile", (wrap) => {
+describeIterableArg("dropLastWhile", ({ wrap }) => {
   describe("data first", () => {
     it("should return items until the last predicate failure", () => {
       expect(dropLastWhile(wrap([1, 2, 3, 4]), (n) => n !== 2)).toStrictEqual([

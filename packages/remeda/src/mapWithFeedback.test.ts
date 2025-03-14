@@ -6,7 +6,7 @@ import { pipe } from "./pipe";
 import { take } from "./take";
 
 // eslint-disable-next-line vitest/require-hook
-describeIterableArg("mapWithFeedback", (wrap) => {
+describeIterableArg("mapWithFeedback", ({ wrap, wrappedArray }) => {
   describe("data first", () => {
     it("should return an array of successively accumulated values", () => {
       expect(
@@ -66,11 +66,11 @@ describeIterableArg("mapWithFeedback", (wrap) => {
           : [[1], [1, 2], [1, 2, 3], [1, 2, 3, 4], [1, 2, 3, 4, 5]],
       );
 
-      expect(mockedReducer).toHaveBeenCalledWith(100, 1, 0, expect.any(Array));
-      expect(mockedReducer).toHaveBeenCalledWith(101, 2, 1, expect.any(Array));
-      expect(mockedReducer).toHaveBeenCalledWith(103, 3, 2, expect.any(Array));
-      expect(mockedReducer).toHaveBeenCalledWith(106, 4, 3, expect.any(Array));
-      expect(mockedReducer).toHaveBeenCalledWith(110, 5, 4, expect.any(Array));
+      expect(mockedReducer).toHaveBeenCalledWith(100, 1, 0, wrappedArray(data));
+      expect(mockedReducer).toHaveBeenCalledWith(101, 2, 1, wrappedArray(data));
+      expect(mockedReducer).toHaveBeenCalledWith(103, 3, 2, wrappedArray(data));
+      expect(mockedReducer).toHaveBeenCalledWith(106, 4, 3, wrappedArray(data));
+      expect(mockedReducer).toHaveBeenCalledWith(110, 5, 4, wrappedArray(data));
     });
   });
 

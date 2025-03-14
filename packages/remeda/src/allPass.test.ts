@@ -4,7 +4,7 @@ import { describeIterableArg } from "./internal/describeIterableArg";
 const fns = [(x: number) => x % 3 === 0, (x: number) => x % 4 === 0] as const;
 
 // eslint-disable-next-line vitest/require-hook
-describeIterableArg("allPass", (wrap) => {
+describeIterableArg("allPass", ({ wrap }) => {
   test("data first", () => {
     expect(allPass(12, wrap(fns))).toBe(true);
     expect(allPass(4, wrap(fns, 1))).toBe(false);

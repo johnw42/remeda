@@ -9,6 +9,7 @@ import {
   lazyImpl,
   type LazyEffect,
 } from "./internal/types/LazyFunc";
+import { isIterable } from "./isIterable";
 
 type EagerEffect = ((input: unknown) => unknown) & {
   readonly [lazyKind]?: undefined;
@@ -298,14 +299,4 @@ export function pipe(
     opIndex += lazyPipeline.length;
   }
   return output;
-}
-
-function isIterable(something: unknown): something is Iterable<unknown> {
-  // Check for null and undefined to avoid errors when accessing Symbol.iterator
-  return (
-    typeof something === "string" ||
-    (typeof something === "object" &&
-      something !== null &&
-      Symbol.iterator in something)
-  );
 }

@@ -1,6 +1,6 @@
 import doTransduce from "./internal/doTransduce";
 import { toReadonlyArray } from "./internal/toReadonlyArray";
-import { simplifyCallback } from "./internal/utilityEvaluators";
+import { mapCallback } from "./internal/utilityEvaluators";
 import { isArray } from "./isArray";
 
 /**
@@ -82,9 +82,7 @@ function* lazyImplementation<T, K>(
     data: ReadonlyArray<T>,
   ) => K | ReadonlyArray<K>,
 ): Iterable<K> {
-  const simpleCallback = simplifyCallback(callbackfn);
-  for (const value of data) {
-    const next = simpleCallback(value);
+  for (const [, next] of mapCallback(data, callbackfn)) {
     if (isArray(next)) {
       yield* next;
     } else {

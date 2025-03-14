@@ -1,4 +1,5 @@
 import doTransduce from "./internal/doTransduce";
+import { memoizeIterable } from "./internal/memoizeIterable";
 
 type IsEquals<TFirst, TSecond> = (a: TFirst, b: TSecond) => boolean;
 
@@ -63,6 +64,7 @@ function* lazyImplementation<TFirst, TSecond>(
   other: Iterable<TSecond>,
   isEquals: IsEquals<TFirst, TSecond>,
 ): Iterable<TFirst> {
+  other = memoizeIterable(other);
   for (const value of data) {
     let anyEqual = false;
     for (const otherValue of other) {

@@ -1,5 +1,5 @@
 import { prepend } from "./prepend";
-import { toGenerator } from "./internal/toGenerator";
+import { toBasicIterable } from "./internal/toBasicIterable";
 import { pipe } from "./pipe";
 
 describe("prepend", () => {
@@ -10,7 +10,7 @@ describe("prepend", () => {
   });
 
   test("data first on iterables", () => {
-    const actual = prepend(toGenerator([1, 2, 3]), toGenerator(["a"]));
+    const actual = prepend(toBasicIterable([1, 2, 3]), toBasicIterable(["a"]));
 
     expect(actual).toStrictEqual(["a", 1, 2, 3] as const);
   });
@@ -22,7 +22,10 @@ describe("prepend", () => {
   });
 
   test("data last on iterables", () => {
-    const actual = pipe(toGenerator([1, 2, 3]), prepend(toGenerator(["a"])));
+    const actual = pipe(
+      toBasicIterable([1, 2, 3]),
+      prepend(toBasicIterable(["a"])),
+    );
 
     expect(actual).toStrictEqual(["a", 1, 2, 3]);
   });

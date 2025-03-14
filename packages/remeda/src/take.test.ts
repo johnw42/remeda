@@ -1,4 +1,4 @@
-import { toGenerator } from "./internal/toGenerator";
+import { toBasicIterable } from "./internal/toBasicIterable";
 import { map } from "./map";
 import { pipe } from "./pipe";
 import { take } from "./take";
@@ -35,7 +35,9 @@ describe("data last", () => {
   });
 
   it("works on iterables", () => {
-    expect(pipe(toGenerator([1, 2, 3, 4, 5]), take(2))).toStrictEqual([1, 2]);
+    expect(pipe(toBasicIterable([1, 2, 3, 4, 5]), take(2))).toStrictEqual([
+      1, 2,
+    ]);
   });
 
   it("works trivially on empty arrays", () => {

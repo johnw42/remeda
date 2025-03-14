@@ -1,10 +1,10 @@
-import type { IterableElement } from "type-fest";
 import doTransduce, { type DoTransduceResult } from "./internal/doTransduce";
-import type { IterableContainer } from "./internal/types/IterableContainer";
-import type { Transducer } from "./internal/types/LazyFunc";
 import type { Mapped } from "./internal/types/Mapped";
-import { simplifyCallback } from "./internal/utilityEvaluators";
+import { mapCallback } from "./internal/utilityEvaluators";
 import { isArray } from "./isArray";
+import type { ArrayMethodCallback } from "./internal/types/ArrayMethodCallback";
+import type { IterableElement } from "type-fest";
+import type { Transducer } from "./internal/types/LazyFunc";
 
 /**
  * Creates a new array populated with the results of calling a provided function
@@ -25,9 +25,9 @@ import { isArray } from "./isArray";
  * @lazy
  * @category Array
  */
-export function map<T extends IterableContainer, U>(
+export function map<T extends Iterable<unknown>, U>(
   data: T,
-  callbackfn: (value: T[number], index: number, data: T) => U,
+  callbackfn: ArrayMethodCallback<T, U>,
 ): Mapped<T, U>;
 
 /**
@@ -48,7 +48,7 @@ export function map<T extends IterableContainer, U>(
  * @lazy
  * @category Array
  */
-export function map<T extends IterableContainer, U>(
+export function map<T extends Iterable<unknown>, U>(
   callbackfn: (value: IterableElement<T>, index: number, data: T) => U,
 ): Transducer<T, Mapped<T, U>>;
 
@@ -58,7 +58,7 @@ export function map(...args: ReadonlyArray<unknown>): DoTransduceResult {
 
 function mapImplementation<T, U>(
   data: Iterable<T>,
-  callbackfn: (value: T, index: number, data: ReadonlyArray<T>) => U,
+  callbackfn: ArrayMethodCallback<ReadonlyArray<T>, U>,
 ): Array<U> {
   if (isArray(data)) {
     return data.map(callbackfn);
@@ -68,10 +68,9 @@ function mapImplementation<T, U>(
 
 function* lazyImplementation<T, U>(
   data: Iterable<T>,
-  callbackfn: (value: T, index: number, data: ReadonlyArray<T>) => U,
+  callbackfn: ArrayMethodCallback<ReadonlyArray<T>, U>,
 ): Iterable<U> {
-  const simpleCallback = simplifyCallback(callbackfn);
-  for (const item of data) {
-    yield simpleCallback(item);
+  for (const [, result] of mapCallback(data, callbackfn)) {
+    yield result;
   }
 }

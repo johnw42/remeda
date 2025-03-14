@@ -1,7 +1,7 @@
 import doTransduce from "./internal/doTransduce";
+import type { ArrayMethodCallback } from "./internal/types/ArrayMethodCallback";
 import type { Deduped } from "./internal/types/Deduped";
-import type { IterableContainer } from "./internal/types/IterableContainer";
-import { simplifyCallback } from "./internal/utilityEvaluators";
+import { mapCallback } from "./internal/utilityEvaluators";
 
 /**
  * Returns a new array containing only one copy of each element in the original
@@ -20,9 +20,9 @@ import { simplifyCallback } from "./internal/utilityEvaluators";
  * @lazy
  * @category Array
  */
-export function uniqueBy<T extends IterableContainer>(
+export function uniqueBy<T extends Iterable<unknown>>(
   data: T,
-  keyFunction: (item: T[number], index: number, data: T) => unknown,
+  keyFunction: ArrayMethodCallback<T>,
 ): Deduped<T>;
 export function uniqueBy<T>(
   data: Iterable<T>,
@@ -46,8 +46,8 @@ export function uniqueBy<T>(
  * @lazy
  * @category Array
  */
-export function uniqueBy<T extends IterableContainer>(
-  keyFunction: (item: T[number], index: number, data: T) => unknown,
+export function uniqueBy<T extends Iterable<unknown>>(
+  keyFunction: ArrayMethodCallback<T>,
 ): (data: T) => Deduped<T>;
 
 export function uniqueBy(...args: ReadonlyArray<unknown>): unknown {
@@ -58,10 +58,8 @@ function* lazyImplementation<T>(
   data: Iterable<T>,
   keyFunction: (item: T, index: number, data: ReadonlyArray<T>) => unknown,
 ): Iterable<T> {
-  const simpleKeyFunction = simplifyCallback(keyFunction);
   const set = new Set<unknown>();
-  for (const value of data) {
-    const key = simpleKeyFunction(value);
+  for (const [value, key] of mapCallback(data, keyFunction)) {
     if (set.has(key)) {
       continue;
     }

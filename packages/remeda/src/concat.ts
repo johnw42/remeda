@@ -16,6 +16,7 @@ import type { IterableContainer } from "./internal/types/IterableContainer";
  * @example
  *    R.concat([1, 2, 3], ['a']) // [1, 2, 3, 'a']
  * @dataFirst
+ * @lazy
  * @category Array
  */
 export function concat<
@@ -40,6 +41,7 @@ export function concat<T1, T2>(
  * @example
  *    R.concat(['a'])([1, 2, 3]) // [1, 2, 3, 'a']
  * @dataLast
+ * @lazy
  * @category Array
  */
 export function concat<T2 extends IterableContainer>(

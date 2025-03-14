@@ -5,7 +5,9 @@ import {
 import { isPromise } from "./isPromise";
 
 it("should work as type guard", () => {
-  expect(isPromise(TYPES_DATA_PROVIDER.promise)).toBe(true);
+  for (const [key, value] of Object.entries(TYPES_DATA_PROVIDER)) {
+    expect(isPromise(value)).toBe(key === "promise");
+  }
 });
 
 it("should work as type guard in filter", () => {

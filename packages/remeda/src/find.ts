@@ -1,6 +1,12 @@
-import doReduce from "./internal/doReduce";
-import { mapCallback } from "./internal/utilityEvaluators";
+import type { IterableElement } from "type-fest";
+import doReduce, { type DoReduceResult } from "./internal/doReduce";
+import type {
+  ArrayMethodCallback,
+  ArrayMethodTypePredicate,
+} from "./internal/types/ArrayMethodCallback";
+import { mapCallback } from "./internal/mapCallback";
 import { isArray } from "./isArray";
+import type { Reducer } from "./internal/types/LazyFunc";
 
 /**
  * Returns the first element in the provided array that satisfies the provided
@@ -29,15 +35,14 @@ import { isArray } from "./isArray";
  * @lazy
  * @category Array
  */
-export function find<T, S extends T>(
-  data: Iterable<T>,
-  predicate: (value: T, index: number, data: Iterable<T>) => value is S,
+export function find<T extends Iterable<unknown>, S extends IterableElement<T>>(
+  data: T,
+  predicate: ArrayMethodTypePredicate<T, S>,
 ): S | undefined;
-export function find<T>(
-  data: Iterable<T>,
-  predicate: (value: T, index: number, data: Iterable<T>) => boolean,
-): T | undefined;
-
+export function find<T extends Iterable<unknown>>(
+  data: T,
+  predicate: ArrayMethodCallback<T, boolean>,
+): IterableElement<T> | undefined;
 /**
  * Returns the first element in the provided array that satisfies the provided
  * testing function. If no values satisfy the testing function, `undefined` is
@@ -67,20 +72,20 @@ export function find<T>(
  * @lazy
  * @category Array
  */
-export function find<T, S extends T>(
-  predicate: (value: T, index: number, data: ReadonlyArray<T>) => value is S,
-): (data: Iterable<T>) => S | undefined;
-export function find<T>(
-  predicate: (value: T, index: number, data: ReadonlyArray<T>) => boolean,
-): (data: Iterable<T>) => T | undefined;
+export function find<T extends Iterable<unknown>, S extends IterableElement<T>>(
+  predicate: ArrayMethodTypePredicate<T, S>,
+): Reducer<T, S | undefined>;
+export function find<T extends Iterable<unknown>>(
+  predicate: ArrayMethodCallback<T, boolean>,
+): Reducer<T, IterableElement<T> | undefined>;
 
-export function find(...args: ReadonlyArray<unknown>): unknown {
+export function find(...args: ReadonlyArray<unknown>): DoReduceResult {
   return doReduce(findImplementation, args);
 }
 
 function findImplementation<T>(
   data: Iterable<T>,
-  predicate: (value: T, index: number, data: ReadonlyArray<T>) => boolean,
+  predicate: ArrayMethodCallback<ReadonlyArray<T>, boolean>,
 ): T | undefined {
   if (isArray(data)) {
     return data.find(predicate);

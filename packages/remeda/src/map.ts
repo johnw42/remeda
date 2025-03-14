@@ -1,9 +1,8 @@
 import doTransduce, { type DoTransduceResult } from "./internal/doTransduce";
 import type { Mapped } from "./internal/types/Mapped";
-import { mapCallback } from "./internal/utilityEvaluators";
+import { mapCallback } from "./internal/mapCallback";
 import { isArray } from "./isArray";
 import type { ArrayMethodCallback } from "./internal/types/ArrayMethodCallback";
-import type { IterableElement } from "type-fest";
 import type { Transducer } from "./internal/types/LazyFunc";
 
 /**
@@ -49,7 +48,7 @@ export function map<T extends Iterable<unknown>, U>(
  * @category Array
  */
 export function map<T extends Iterable<unknown>, U>(
-  callbackfn: (value: IterableElement<T>, index: number, data: T) => U,
+  callbackfn: ArrayMethodCallback<T, U>,
 ): Transducer<T, Mapped<T, U>>;
 
 export function map(...args: ReadonlyArray<unknown>): DoTransduceResult {

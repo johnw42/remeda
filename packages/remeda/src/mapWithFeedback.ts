@@ -1,8 +1,8 @@
-import type { IterableElement } from "type-fest";
-import doTransduce from "./internal/doTransduce";
+import doTransduce, { type DoTransduceResult } from "./internal/doTransduce";
 import type { Mapped } from "./internal/types/Mapped";
-import type { ArrayMethodCallbackDataArg } from "./internal/types/ArrayMethodCallback";
-import { isArray } from "./isArray";
+import type { ArrayMethodCallbackWithExtraArg } from "./internal/types/ArrayMethodCallback";
+import type { Transducer } from "./internal/types/LazyFunc";
+import { mapCallback } from "./internal/mapCallback";
 
 /**
  * Applies a function on each element of the array, using the result of the
@@ -29,24 +29,9 @@ import { isArray } from "./isArray";
  */
 export function mapWithFeedback<T extends Iterable<unknown>, U>(
   data: T,
-  callbackfn: (
-    previousValue: U,
-    currentValue: IterableElement<T>,
-    currentIndex: number,
-    data: ArrayMethodCallbackDataArg<T>,
-  ) => U,
+  callbackfn: ArrayMethodCallbackWithExtraArg<U, T, U>,
   initialValue: U,
 ): Mapped<T, U>;
-export function mapWithFeedback<T, U>(
-  data: Iterable<T>,
-  callbackfn: (
-    previousValue: U,
-    currentValue: T,
-    currentIndex: number,
-    data: T,
-  ) => U,
-  initialValue: U,
-): Iterable<U>;
 
 /**
  * Applies a function on each element of the array, using the result of the
@@ -70,47 +55,27 @@ export function mapWithFeedback<T, U>(
  * @category Array
  */
 export function mapWithFeedback<T extends Iterable<unknown>, U>(
-  callbackfn: (
-    previousValue: U,
-    currentValue: IterableElement<T>,
-    currentIndex: number,
-    data: ArrayMethodCallbackDataArg<T>,
-  ) => U,
+  callbackfn: ArrayMethodCallbackWithExtraArg<U, T, U>,
   initialValue: U,
-): (data: T) => Mapped<T, U>;
-export function mapWithFeedback<T, U>(
-  callbackfn: (
-    previousValue: U,
-    currentValue: T,
-    currentIndex: number,
-    data: T,
-  ) => U,
-  initialValue: U,
-): (data: Iterable<T>) => Iterable<U>;
+): Transducer<T, Mapped<T, U>>;
 
-export function mapWithFeedback(...args: ReadonlyArray<unknown>): unknown {
+export function mapWithFeedback(
+  ...args: ReadonlyArray<unknown>
+): DoTransduceResult {
   return doTransduce(undefined, lazyImplementation, args);
 }
 
 function* lazyImplementation<T, U>(
   data: Iterable<T>,
-  reducer: (
-    previousValue: U,
-    currentValue: T,
-    index: number,
-    data: ReadonlyArray<T>,
-  ) => U,
+  reducer: ArrayMethodCallbackWithExtraArg<U, ReadonlyArray<T>, U>,
   initialValue: U,
 ): Iterable<U> {
-  let index = 0;
   let previousValue = initialValue;
-  let writableData: Array<T> | undefined;
-  const dataArg: ReadonlyArray<T> = isArray(data) ? data : (writableData = []);
-  for (const value of data) {
-    if (writableData !== undefined) {
-      writableData.push(value);
-    }
-    previousValue = reducer(previousValue, value, index++, dataArg);
-    yield previousValue;
+  for (const [, nextValue] of mapCallback(data, (valueArg, index, dataArg) => {
+    const result = reducer(previousValue, valueArg, index, dataArg);
+    previousValue = result;
+    return result;
+  })) {
+    yield nextValue;
   }
 }

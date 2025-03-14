@@ -1,6 +1,6 @@
 import doTransduce from "./internal/doTransduce";
 import { toReadonlyArray } from "./internal/toReadonlyArray";
-import { mapCallback } from "./internal/utilityEvaluators";
+import { mapCallback } from "./internal/mapCallback";
 import { isArray } from "./isArray";
 
 /**

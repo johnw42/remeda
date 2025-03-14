@@ -1,7 +1,7 @@
 import type { Writable } from "type-fest";
 import type { IterableContainer } from "./internal/types/IterableContainer";
 import doTransduce from "./internal/doTransduce";
-import { mapCallback } from "./internal/utilityEvaluators";
+import { mapCallback } from "./internal/mapCallback";
 import { toReadonlyArray } from "./internal/toReadonlyArray";
 
 /**

@@ -1,7 +1,7 @@
 import doTransduce from "./internal/doTransduce";
 import type { ArrayMethodCallback } from "./internal/types/ArrayMethodCallback";
 import type { Deduped } from "./internal/types/Deduped";
-import { mapCallback } from "./internal/utilityEvaluators";
+import { mapCallback } from "./internal/mapCallback";
 
 /**
  * Returns a new array containing only one copy of each element in the original

@@ -51,11 +51,10 @@ export function countBy(...args: ReadonlyArray<unknown>): unknown {
 
 const countByImplementation = <T>(
   data: Iterable<T>,
-  categorizationFn: (
-    value: T,
-    index: number,
-    data: ReadonlyArray<T>,
-  ) => PropertyKey | undefined,
+  categorizationFn: ArrayMethodCallback<
+    ReadonlyArray<T>,
+    PropertyKey | undefined
+  >,
 ): ExactRecord<PropertyKey, number> => {
   const out: ExactRecord<PropertyKey, number> = {};
 

@@ -1,6 +1,12 @@
-import doTransduce from "./internal/doTransduce";
+import doTransduce, { type DoTransduceResult } from "./internal/doTransduce";
 import { isArray } from "./isArray";
-import { mapCallback } from "./internal/utilityEvaluators";
+import { mapCallback } from "./internal/mapCallback";
+import type { IterableElement } from "type-fest";
+import type {
+  ArrayMethodCallback,
+  ArrayMethodTypePredicate,
+} from "./internal/types/ArrayMethodCallback";
+import type { Transducer } from "./internal/types/LazyFunc";
 
 /**
  * Creates a shallow copy of a portion of a given array, filtered down to just
@@ -21,14 +27,14 @@ import { mapCallback } from "./internal/utilityEvaluators";
  * @lazy
  * @category Array
  */
-export function filter<E, S extends E>(
-  data: Iterable<E>,
-  predicate: (value: E, index: number, data: ReadonlyArray<E>) => value is S,
-): Array<S>;
-export function filter<E>(
-  data: Iterable<E>,
-  predicate: (value: E, index: number, data: ReadonlyArray<E>) => boolean,
-): Array<E>;
+export function filter<
+  T extends Iterable<unknown>,
+  S extends IterableElement<T>,
+>(data: T, predicate: ArrayMethodTypePredicate<T, S>): Array<S>;
+export function filter<T extends Iterable<unknown>>(
+  data: T,
+  predicate: ArrayMethodCallback<T, boolean>,
+): Array<IterableElement<T>>;
 
 /**
  * Creates a shallow copy of a portion of a given array, filtered down to just
@@ -48,20 +54,21 @@ export function filter<E>(
  * @lazy
  * @category Array
  */
-export function filter<E, S extends E>(
-  predicate: (value: E, index: number, data: ReadonlyArray<E>) => value is S,
-): (data: Iterable<E>) => Array<S>;
-export function filter<E>(
-  predicate: (value: E, index: number, data: ReadonlyArray<E>) => boolean,
-): (data: Iterable<E>) => Array<E>;
+export function filter<
+  T extends Iterable<unknown>,
+  S extends IterableElement<T>,
+>(predicate: ArrayMethodTypePredicate<T, S>): Transducer<T, Array<S>>;
+export function filter<T extends Iterable<unknown>>(
+  predicate: ArrayMethodCallback<T, boolean>,
+): Transducer<T, Array<IterableElement<T>>>;
 
-export function filter(...args: ReadonlyArray<unknown>): unknown {
+export function filter(...args: ReadonlyArray<unknown>): DoTransduceResult {
   return doTransduce(filterImplementation, lazyImplementation, args);
 }
 
 function filterImplementation<T>(
   data: Iterable<T>,
-  predicate: (value: T, index: number, array: ReadonlyArray<T>) => boolean,
+  predicate: ArrayMethodCallback<ReadonlyArray<T>, boolean>,
 ): Array<T> {
   if (isArray(data)) {
     return data.filter(predicate);
@@ -71,10 +78,20 @@ function filterImplementation<T>(
 
 function* lazyImplementation<T>(
   data: Iterable<T>,
-  predicate: (value: T, index: number, data: ReadonlyArray<T>) => boolean,
+  predicate: ArrayMethodCallback<ReadonlyArray<T>, boolean>,
 ): Iterable<T> {
-  for (const [value, flag] of mapCallback(data, predicate)) {
-    if (flag) {
+  let dropping = true;
+  for (const [value, flag] of mapCallback(data, (valueArg, index, dataArg) => {
+    if (!dropping) {
+      return false;
+    }
+    if (predicate(valueArg, index, dataArg)) {
+      return true;
+    }
+    dropping = false;
+    return false;
+  })) {
+    if (!flag) {
       yield value;
     }
   }

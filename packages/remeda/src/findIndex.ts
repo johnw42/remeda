@@ -1,6 +1,6 @@
 import doReduce from "./internal/doReduce";
 import type { ArrayMethodCallback } from "./internal/types/ArrayMethodCallback";
-import { mapCallback } from "./internal/utilityEvaluators";
+import { mapCallback } from "./internal/mapCallback";
 import { isArray } from "./isArray";
 
 /**

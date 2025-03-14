@@ -29,28 +29,6 @@ it("should infer types correctly for array operations", () => {
   expectTypeOf(result).toEqualTypeOf<Array<number>>();
 });
 
-// eslint-disable-next-line vitest/no-commented-out-tests
-// it("should infer types correctly for array operations give iterable input", () => {
-//   const result = pipe(
-//     [1, 2, 3] as Iterable<number>,
-//     map((x) => x * 2),
-//     take(2),
-//   );
-
-//   expectTypeOf(result).toEqualTypeOf<Array<number>>();
-// });
-
-// eslint-disable-next-line vitest/no-commented-out-tests
-// it("should infer types correctly for an array operation in the middle of the pipeline on an iterable", () => {
-//   const result = pipe(
-//     0,
-//     constant([1, 2, 3] as Iterable<number>),
-//     map((x) => x * 2),
-//   );
-
-//   expectTypeOf(result).toEqualTypeOf<Array<number>>();
-// });
-
 it("should infer types correctly for object operations", () => {
   const result = pipe(
     { a: 1, b: 2 },

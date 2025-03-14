@@ -27,8 +27,5 @@ export type ArrayMethodCallbackWithExtraArg<
   data: ArrayMethodCallbackDataArg<T>,
 ) => R;
 
-type ArrayMethodCallbackDataArg<T extends Iterable<unknown>> = [T] extends [
-  IterableContainer,
-]
-  ? T
-  : ReadonlyArray<IterableElement<T>>;
+type ArrayMethodCallbackDataArg<T extends Iterable<unknown>> =
+  T extends IterableContainer ? T : ReadonlyArray<IterableElement<T>>;

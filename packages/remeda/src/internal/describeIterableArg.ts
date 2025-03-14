@@ -1,4 +1,5 @@
 import { identity } from "../identity";
+import { isArray } from "../isArray";
 import { toBasicIterable } from "./toBasicIterable";
 
 /**
@@ -25,7 +26,17 @@ type WrapperFn = <T>(
 /**
  * The body passed to `describeIterableArg`.
  */
-type BodyFn = (wrap: WrapperFn) => void | PromiseLike<void>;
+type BodyFn = (
+  wrap: WrapperFn,
+  info: IterableArgInfo,
+) => void | PromiseLike<void>;
+
+type IterableArgInfo = {
+  readonly what: string;
+  readonly wrapper: WrapperFn;
+  readonly dataIsArray: boolean;
+  readonly expectSameArray: <T>(a: Iterable<T>, b: Iterable<T>) => void;
+};
 
 /**
  * A wrapper around `describe` that allows for testing functions with both
@@ -48,8 +59,18 @@ export function describeIterableArg(...args: ReadonlyArray<unknown>): void {
   }
 
   describe.each`
-    dataDesc       | function
-    ${"array"}     | ${identity()}
-    ${"generator"} | ${toBasicIterable}
-  `(desc, ({ function: wrap }) => body(wrap as WrapperFn));
+    what           | dataIsArray | expectSameArray             | wrapper
+    ${"array"}     | ${true}     | ${expectSameArrayStrict}    | ${identity()}
+    ${"generator"} | ${false}    | ${expectSameArrayNonStrict} | ${toBasicIterable}
+  `(desc, (info: IterableArgInfo) => body(info.wrapper, info));
+}
+
+function expectSameArrayStrict<T>(a: Iterable<T>, b: Iterable<T>): void {
+  assert(isArray(a));
+  assert(isArray(b));
+  expect(a).toBe(b);
+}
+
+function expectSameArrayNonStrict<T>(a: Iterable<T>, b: Iterable<T>): void {
+  expect([...a]).toStrictEqual([...b]);
 }

@@ -1,4 +1,12 @@
+import type { IterableElement } from "type-fest";
 import { purry } from "./purry";
+import type {
+  ArrayMethodCallback,
+  ArrayMethodTypePredicate,
+} from "./internal/types/ArrayMethodCallback";
+import type { Reducer } from "./internal/types/LazyFunc";
+import type { DoReduceResult } from "./internal/doReduce";
+import { toReadonlyArray } from "./internal/toReadonlyArray";
 
 /**
  * Iterates the array in reverse order and returns the value of the first
@@ -26,14 +34,14 @@ import { purry } from "./purry";
  * @dataFirst
  * @category Array
  */
-export function findLast<T, S extends T>(
-  data: ReadonlyArray<T>,
-  predicate: (value: T, index: number, data: ReadonlyArray<T>) => value is S,
-): S | undefined;
-export function findLast<T>(
-  data: ReadonlyArray<T>,
-  predicate: (value: T, index: number, data: ReadonlyArray<T>) => boolean,
-): T | undefined;
+export function findLast<
+  T extends Iterable<unknown>,
+  S extends IterableElement<T>,
+>(data: T, predicate: ArrayMethodTypePredicate<T, S>): S | undefined;
+export function findLast<T extends Iterable<unknown>>(
+  data: T,
+  predicate: ArrayMethodCallback<T, boolean>,
+): IterableElement<T> | undefined;
 
 /**
  * Iterates the array in reverse order and returns the value of the first
@@ -63,26 +71,28 @@ export function findLast<T>(
  * @dataLast
  * @category Array
  */
-export function findLast<T, S extends T>(
-  predicate: (value: T, index: number, data: ReadonlyArray<T>) => value is S,
-): (data: ReadonlyArray<T>) => S | undefined;
-export function findLast<T = never>(
-  predicate: (value: T, index: number, data: ReadonlyArray<T>) => boolean,
-): (data: ReadonlyArray<T>) => T | undefined;
+export function findLast<
+  T extends Iterable<unknown>,
+  S extends IterableElement<T>,
+>(predicate: ArrayMethodTypePredicate<T, S>): Reducer<T, S | undefined>;
+export function findLast<T extends Iterable<unknown>>(
+  predicate: ArrayMethodCallback<T, boolean>,
+): Reducer<T, IterableElement<T> | undefined>;
 
-export function findLast(...args: ReadonlyArray<unknown>): unknown {
+export function findLast(...args: ReadonlyArray<unknown>): DoReduceResult {
   return purry(findLastImplementation, args);
 }
 
-const findLastImplementation = <T, S extends T>(
+const findLastImplementation = <T>(
   data: ReadonlyArray<T>,
-  predicate: (value: T, index: number, data: ReadonlyArray<T>) => value is S,
-): S | undefined => {
-  // TODO [2025-05-01]: When node 18 reaches end-of-life bump target lib to ES2023+ and use `Array.prototype.findLast` here.
+  predicate: ArrayMethodCallback<ReadonlyArray<T>, boolean>,
+): T | undefined => {
+  const array = toReadonlyArray(data);
 
-  for (let i = data.length - 1; i >= 0; i--) {
-    const item = data[i]!;
-    if (predicate(item, i, data)) {
+  // TODO [2025-05-01]: When node 18 reaches end-of-life bump target lib to ES2023+ and use `Array.prototype.findLast` here.
+  for (let i = array.length - 1; i >= 0; i--) {
+    const item = array[i]!;
+    if (predicate(item, i, array)) {
       return item;
     }
   }

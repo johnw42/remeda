@@ -1,8 +1,10 @@
-import type { Writable } from "type-fest";
+import type { IterableElement, Writable } from "type-fest";
 import type { IterableContainer } from "./internal/types/IterableContainer";
-import doTransduce from "./internal/doTransduce";
+import doTransduce, { type DoTransduceResult } from "./internal/doTransduce";
 import { mapCallback } from "./internal/mapCallback";
 import { toReadonlyArray } from "./internal/toReadonlyArray";
+import type { ArrayMethodCallback } from "./internal/types/ArrayMethodCallback";
+import type { Transducer } from "./internal/types/LazyFunc";
 
 /**
  * Executes a provided function once for each array element. Equivalent to
@@ -25,13 +27,9 @@ import { toReadonlyArray } from "./internal/toReadonlyArray";
  * @lazy
  * @category Array
  */
-export function forEach<T extends IterableContainer>(
+export function forEach<T extends Iterable<unknown>>(
   data: T,
-  callbackfn: (value: T[number], index: number, data: T) => void,
-): void;
-export function forEach<T>(
-  data: Iterable<T>,
-  callbackfn: (value: T, index: number, data: ReadonlyArray<T>) => void,
+  callbackfn: ArrayMethodCallback<T, void>,
 ): void;
 
 /**
@@ -43,7 +41,7 @@ export function forEach<T>(
  * same reference as the input array, and not a shallow copy of it!
  *
  * @param callbackfn - A function to execute for each element in the array.
- * @returns The original array (the ref itself, not a shallow copy of it).
+ * @returns The original input (not a copy).
  * @signature
  *    R.forEach(callbackfn)(data)
  * @example
@@ -57,11 +55,14 @@ export function forEach<T>(
  * @lazy
  * @category Array
  */
-export function forEach<T extends IterableContainer>(
-  callbackfn: (value: T[number], index: number, data: T) => void,
-): (data: T) => Writable<T>;
+export function forEach<T extends Iterable<unknown>>(
+  callbackfn: ArrayMethodCallback<T, void>,
+): Transducer<
+  T,
+  T extends IterableContainer ? Writable<T> : Array<IterableElement<T>>
+>;
 
-export function forEach(...args: ReadonlyArray<unknown>): unknown {
+export function forEach(...args: ReadonlyArray<unknown>): DoTransduceResult {
   return doTransduce(forEachImplementation, lazyImplementation, args);
 }
 

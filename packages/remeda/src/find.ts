@@ -43,6 +43,7 @@ export function find<T extends Iterable<unknown>>(
   data: T,
   predicate: ArrayMethodCallback<T, boolean>,
 ): IterableElement<T> | undefined;
+
 /**
  * Returns the first element in the provided array that satisfies the provided
  * testing function. If no values satisfy the testing function, `undefined` is

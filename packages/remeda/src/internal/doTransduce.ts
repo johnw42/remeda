@@ -21,11 +21,11 @@ export default function doTransduce<
   eager ??= (data, ...rest) => unsafeToArray(lazy(data, ...rest)) as Result;
   if (isDataFirst === undefined) {
     switch (lazy.length - args.length) {
-      case 1:
-        isDataFirst = false;
-        break;
       case 0:
         isDataFirst = true;
+        break;
+      case 1:
+        isDataFirst = false;
         break;
       default:
         throw new Error("Wrong number of arguments");

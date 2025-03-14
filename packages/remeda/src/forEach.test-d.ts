@@ -12,8 +12,19 @@ it("doesn't return anything on dataFirst invocations", () => {
 it("passes the item type to the callback", () => {
   pipe(
     [1, 2, 3] as const,
-    forEach((x) => {
+    forEach((x, _index, data) => {
       expectTypeOf(x).toEqualTypeOf<1 | 2 | 3>();
+      expectTypeOf(data).toEqualTypeOf<readonly [1, 2, 3]>();
+    }),
+  );
+});
+
+it("passes an array when the argument is an iterable", () => {
+  pipe(
+    [1, 2, 3] as Iterable<number>,
+    forEach((x, _index, data) => {
+      expectTypeOf(x).toEqualTypeOf<number>();
+      expectTypeOf(data).toEqualTypeOf<ReadonlyArray<number>>();
     }),
   );
 });

@@ -1,7 +1,9 @@
-import doTransduce from "./internal/doTransduce";
+import doTransduce, { type DoTransduceResult } from "./internal/doTransduce";
 import { toReadonlyArray } from "./internal/toReadonlyArray";
 import { mapCallback } from "./internal/mapCallback";
 import { isArray } from "./isArray";
+import type { ArrayMethodCallback } from "./internal/types/ArrayMethodCallback";
+import type { Transducer } from "./internal/types/LazyFunc";
 
 /**
  * Returns a new array formed by applying a given callback function to each
@@ -24,13 +26,9 @@ import { isArray } from "./isArray";
  * @lazy
  * @category Array
  */
-export function flatMap<T, U>(
-  data: Iterable<T>,
-  callbackfn: (
-    input: T,
-    index: number,
-    data: ReadonlyArray<T>,
-  ) => ReadonlyArray<U> | U,
+export function flatMap<T extends Iterable<unknown>, U>(
+  data: T,
+  callbackfn: ArrayMethodCallback<T, ReadonlyArray<U> | U>,
 ): Array<U>;
 
 /**
@@ -53,35 +51,23 @@ export function flatMap<T, U>(
  * @lazy
  * @category Array
  */
-export function flatMap<T, U>(
-  callbackfn: (
-    input: T,
-    index: number,
-    data: ReadonlyArray<T>,
-  ) => ReadonlyArray<U> | U,
-): (data: Iterable<T>) => Array<U>;
+export function flatMap<T extends Iterable<unknown>, U>(
+  callbackfn: ArrayMethodCallback<T, ReadonlyArray<U> | U>,
+): Transducer<T, Array<U>>;
 
-export function flatMap(...args: ReadonlyArray<unknown>): unknown {
+export function flatMap(...args: ReadonlyArray<unknown>): DoTransduceResult {
   return doTransduce(flatMapImplementation, lazyImplementation, args);
 }
 
 const flatMapImplementation = <T, U>(
   data: Iterable<T>,
-  callbackfn: (
-    value: T,
-    index: number,
-    data: ReadonlyArray<T>,
-  ) => ReadonlyArray<U> | U,
+  callbackfn: ArrayMethodCallback<ReadonlyArray<T>, ReadonlyArray<U> | U>,
 ): Array<U> => toReadonlyArray(data).flatMap(callbackfn);
 
-function* lazyImplementation<T, K>(
+function* lazyImplementation<T, U>(
   data: Iterable<T>,
-  callbackfn: (
-    input: T,
-    index: number,
-    data: ReadonlyArray<T>,
-  ) => K | ReadonlyArray<K>,
-): Iterable<K> {
+  callbackfn: ArrayMethodCallback<ReadonlyArray<T>, ReadonlyArray<U> | U>,
+): Iterable<U> {
   for (const [, next] of mapCallback(data, callbackfn)) {
     if (isArray(next)) {
       yield* next;

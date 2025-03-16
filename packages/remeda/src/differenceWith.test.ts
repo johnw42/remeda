@@ -8,7 +8,6 @@ const source = [{ a: 1 }, { a: 2 }, { a: 3 }, { a: 4 }];
 const other = [{ a: 2 }, { a: 5 }, { a: 3 }];
 const expected = [{ a: 1 }, { a: 4 }];
 
-// eslint-disable-next-line vitest/require-hook
 describeIterableArg("differenceWith", ({ wrap }) => {
   describe("data_first", () => {
     test("should return difference", () => {
@@ -42,7 +41,9 @@ describeIterableArg("differenceWith", ({ wrap }) => {
 
     test("lazy", () => {
       const result = pipe(
-        wrap([{ a: 1 }, { a: 2 }, { a: 3 }, { a: 4 }, { a: 5 }, { a: 6 }], 4),
+        wrap([{ a: 1 }, { a: 2 }, { a: 3 }, { a: 4 }, { a: 5 }, { a: 6 }], {
+          limit: 4,
+        }),
         differenceWith(wrap([{ a: 2 }, { a: 3 }]), isDeepEqual),
         take(2),
       );

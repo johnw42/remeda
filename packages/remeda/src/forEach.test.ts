@@ -4,7 +4,6 @@ import { toBasicIterable } from "./internal/toBasicIterable";
 import { pipe } from "./pipe";
 import { take } from "./take";
 
-// eslint-disable-next-line vitest/require-hook
 describeIterableArg("forEach", ({ wrap, wrappedArray }) => {
   test("dataFirst", () => {
     const array = [1, 2, 3];

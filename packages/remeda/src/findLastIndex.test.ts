@@ -2,7 +2,6 @@ import { findLastIndex } from "./findLastIndex";
 import { describeIterableArg } from "./internal/describeIterableArg";
 import { pipe } from "./pipe";
 
-// eslint-disable-next-line vitest/require-hook
 describeIterableArg("findLastIndex", ({ wrap }) => {
   describe("data first", () => {
     test("findLastIndex", () => {

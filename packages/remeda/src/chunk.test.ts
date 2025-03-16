@@ -3,7 +3,6 @@ import { describeIterableArg } from "./internal/describeIterableArg";
 import { pipe } from "./pipe";
 import { take } from "./take";
 
-// eslint-disable-next-line vitest/require-hook
 describeIterableArg("chunk", ({ wrap }) => {
   describe("data first", () => {
     test("equal size", () => {
@@ -38,7 +37,9 @@ describeIterableArg("chunk", ({ wrap }) => {
     });
 
     test("lazy", () => {
-      expect(pipe(wrap("abcdef", 4), chunk(2), take(2))).toStrictEqual([
+      expect(
+        pipe(wrap("abcdef", { limit: 4 }), chunk(2), take(2)),
+      ).toStrictEqual([
         ["a", "b"],
         ["c", "d"],
       ]);

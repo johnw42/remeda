@@ -1,17 +1,29 @@
-import type { IsNumericLiteral } from "type-fest";
+import type { IsNumericLiteral, IterableElement } from "type-fest";
 import type { IterableContainer } from "./internal/types/IterableContainer";
 import { toReadonlyArray } from "./internal/toReadonlyArray";
 import doTransduce from "./internal/doTransduce";
 import { isArray } from "./isArray";
 
 type FlatArray<
+  T extends Iterable<unknown>,
+  Depth extends number,
+> = FlatArrayInner<
+  T extends IterableContainer ? T : ReadonlyArray<IterableElement<T>>,
+  Depth
+>;
+
+// The `Iteration` parameter is used to track the current recursion depth; it is
+// an tuple of `unknown` values, where `Iteration["length"]` is the current
+// depth. The `Depth` parameter is the maximum depth to flatten the array to, so
+// recursion stops when `Depth` extends `Iteration["length"]`.
+type FlatArrayInner<
   T,
   Depth extends number,
   Iteration extends ReadonlyArray<unknown> = [],
 > = Depth extends Iteration["length"]
   ? // Stopping condition for the recursion when the array is a tuple.
     T
-  : T extends readonly []
+  : T extends readonly [] | Array<never>
     ? // Trivial result when the array is empty.
       []
     : T extends readonly [infer Item, ...infer Rest]
@@ -21,13 +33,13 @@ type FlatArray<
         [
           ...(Item extends IterableContainer
             ? // If the item itself is an array we continue going deeper
-              FlatArray<Item, Depth, [...Iteration, unknown]>
+              FlatArrayInner<Item, Depth, [...Iteration, unknown]>
             : // But if it isn't we add it to the output tuple
               [Item]),
           // And we merge this with the result from the rest of the tuple.
-          ...FlatArray<Rest, Depth, Iteration>,
+          ...FlatArrayInner<Rest, Depth, Iteration>,
         ]
-      : // For simple arrays we compute the item type, and wrap it with an
+      : // For simple iterables we compute the item type, and wrap it with an
         // array.
         Array<FlatSimpleArrayItems<T, Depth, Iteration>>;
 
@@ -54,6 +66,37 @@ type FlatSimpleArrayItems<
     : T;
 }[IsDone extends true ? "done" : "recur"];
 
+// export type FlatSimpleArrayItems<
+//   T,
+//   Depth extends number,
+//   Iteration extends ReadonlyArray<unknown> = [],
+//   IsDone extends boolean = false,
+// > = {
+//   done: T;
+//   recur: T extends ReadonlyArray<unknown>
+//     ? FlatSimpleArrayItemsRecursive<T, Depth, Iteration>
+//     : T extends Iterable<infer E>
+//       ? // Handle the case where E is `string` or some other weird iterable type
+//         // that that is in iterable of itself.
+//         E extends Iterable<E>
+//         ? E
+//         : FlatSimpleArrayItemsRecursive<T, Depth, Iteration>
+//       : T;
+// }[IsDone extends true ? "done" : "recur"];
+
+// type FlatSimpleArrayItemsRecursive<
+//   T extends Iterable<unknown>,
+//   Depth extends number,
+//   Iteration extends ReadonlyArray<unknown> = [],
+// > = FlatSimpleArrayItems<
+//   IterableElement<T>,
+//   Depth,
+//   [...Iteration, unknown],
+//   // This trick allows us to continue 1 iteration more than the depth,
+//   // which is required to flatten the array up to depth.
+//   Iteration["length"] extends Depth ? true : false
+// >;
+
 /**
  * Creates a new array with all sub-array elements concatenated into it
  * recursively up to the specified depth. Equivalent to the built-in
@@ -76,7 +119,7 @@ type FlatSimpleArrayItems<
  * @lazy
  * @category Array
  */
-export function flat<T extends IterableContainer, Depth extends number = 1>(
+export function flat<T extends Iterable<unknown>, Depth extends number = 1>(
   data: T,
   depth?: IsNumericLiteral<Depth> extends true ? Depth : never,
 ): FlatArray<T, Depth>;
@@ -100,7 +143,7 @@ export function flat<T extends IterableContainer, Depth extends number = 1>(
  */
 export function flat<Depth extends number = 1>(
   depth?: IsNumericLiteral<Depth> extends true ? Depth : never,
-): <T extends IterableContainer>(data: T) => FlatArray<T, Depth>;
+): <T extends Iterable<unknown>>(data: T) => FlatArray<T, Depth>;
 
 export function flat(
   dataOrDepth?: IterableContainer | number,

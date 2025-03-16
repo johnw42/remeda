@@ -1,4 +1,5 @@
 import { flat } from "./flat";
+import { toBasicIterable } from "./internal/toBasicIterable";
 import type { NonEmptyArray } from "./internal/types/NonEmptyArray";
 
 it("works on empty arrays", () => {
@@ -13,13 +14,25 @@ it("works on already-flat arrays", () => {
   expectTypeOf(result).toEqualTypeOf<Array<string>>();
 });
 
-it("works on a single level of nesting", () => {
+it("works on already-flat iterables", () => {
+  const result = flat([] as Iterable<string>, 1);
+
+  expectTypeOf(result).toEqualTypeOf<Array<string>>();
+});
+
+it("works on a single level of nesting in an array", () => {
   const result = flat([] as Array<Array<string>>, 1);
 
   expectTypeOf(result).toEqualTypeOf<Array<string>>();
 });
 
-it("stops after the first level of nesting (depth === 1)", () => {
+it("works on a single level of nesting in an iterable", () => {
+  const result = flat([] as Iterable<Array<string>>, 1);
+
+  expectTypeOf(result).toEqualTypeOf<Array<string>>();
+});
+
+it("stops after the first level of nesting (depth === 1) on an array", () => {
   const threeDeepResult = flat([] as Array<Array<Array<string>>>, 1);
 
   expectTypeOf(threeDeepResult).toEqualTypeOf<Array<Array<string>>>();
@@ -29,14 +42,36 @@ it("stops after the first level of nesting (depth === 1)", () => {
   expectTypeOf(fourDeepResult).toEqualTypeOf<Array<Array<Array<string>>>>();
 });
 
-it("works with mixed types", () => {
+it("stops after the first level of nesting (depth === 1) on an iterable", () => {
+  const threeDeepResult = flat([] as Iterable<Array<Array<string>>>, 1);
+
+  expectTypeOf(threeDeepResult).toEqualTypeOf<Array<Array<string>>>();
+
+  const fourDeepResult = flat([] as Array<Array<Array<Array<string>>>>, 1);
+
+  expectTypeOf(fourDeepResult).toEqualTypeOf<Array<Array<Array<string>>>>();
+});
+
+it("works with mixed types in an array", () => {
   const result = flat([] as Array<Array<number> | Array<string>>, 1);
 
   expectTypeOf(result).toEqualTypeOf<Array<number | string>>();
 });
 
-it("works with mixed levels of nesting", () => {
+it("works with mixed types in an iterable", () => {
+  const result = flat([] as Iterable<Array<number> | Array<string>>, 1);
+
+  expectTypeOf(result).toEqualTypeOf<Array<number | string>>();
+});
+
+it("works with mixed levels of nesting in an array", () => {
   const result = flat([] as Array<Array<number> | string>, 1);
+
+  expectTypeOf(result).toEqualTypeOf<Array<number | string>>();
+});
+
+it("works with mixed levels of nesting in an iterable", () => {
+  const result = flat([] as Iterable<Array<number> | string>, 1);
 
   expectTypeOf(result).toEqualTypeOf<Array<number | string>>();
 });
@@ -47,7 +82,19 @@ it("works when depth is deeper than the array", () => {
   expectTypeOf(result).toEqualTypeOf<Array<string>>();
 });
 
-it("works when depth is really really really really big", () => {
+it("works when depth is deeper than the iterable", () => {
+  const result = flat([] as Iterable<string>, 10);
+
+  expectTypeOf(result).toEqualTypeOf<Array<string>>();
+});
+
+it("works on an array when depth is really really really really big", () => {
+  const result = flat([] as Array<string>, 9_999_999);
+
+  expectTypeOf(result).toEqualTypeOf<Array<string>>();
+});
+
+it("works on an iterable when depth is really really really really big", () => {
   const result = flat([] as Array<string>, 9_999_999);
 
   expectTypeOf(result).toEqualTypeOf<Array<string>>();
@@ -71,10 +118,28 @@ it("works on simple tuples", () => {
   expectTypeOf(result).toEqualTypeOf<[1, 2, 3, 4]>();
 });
 
-it("works on tuples with different levels of nesting", () => {
+it("works on an iterable of simple tuples", () => {
+  const result = flat(
+    toBasicIterable([
+      [1, 2],
+      [3, 4],
+    ] as const),
+    1,
+  );
+
+  expectTypeOf(result).toEqualTypeOf<Array<1 | 2 | 3 | 4>>();
+});
+
+it("works on tuples with different levels of nesting in an array", () => {
   const result = flat([1, [2, 3], [4, [5, 6]]] as const, 1);
 
   expectTypeOf(result).toEqualTypeOf<[1, 2, 3, 4, readonly [5, 6]]>();
+});
+
+it("works on tuples with different levels of nesting in an iterable", () => {
+  const result = flat(toBasicIterable([1, [2, 3], [4, [5, 6]]] as const), 1);
+
+  expectTypeOf(result).toEqualTypeOf<Array<1 | 2 | 3 | 4 | readonly [5, 6]>>();
 });
 
 it("works on tuples with depth>1", () => {
@@ -83,14 +148,35 @@ it("works on tuples with depth>1", () => {
   expectTypeOf(result).toEqualTypeOf<[1, 2, 3, 4, 5, 6]>();
 });
 
+it("works on an iterable of tuples with depth>1", () => {
+  const result = flat(toBasicIterable([1, [2, 3], [4, [5, 6]]] as const), 2);
+
+  expectTypeOf(result).toEqualTypeOf<Array<1 | 2 | 3 | 4 | 5 | 6>>();
+});
+
 it("works with tuples with a lot of nesting", () => {
   const result = flat([[[[1]], [[[[2]]]]], [[[[3, 4], 5]]]] as const, 10);
 
   expectTypeOf(result).toEqualTypeOf<[1, 2, 3, 4, 5]>();
 });
 
+it("works with an iterable of tuples with a lot of nesting", () => {
+  const result = flat(
+    toBasicIterable([[[[1]], [[[[2]]]]], [[[[3, 4], 5]]]] as const),
+    10,
+  );
+
+  expectTypeOf(result).toEqualTypeOf<Array<1 | 2 | 3 | 4 | 5>>();
+});
+
 it("works with a mix of simple arrays and tuples", () => {
   const result = flat([[]] as [Array<string>], 1);
+
+  expectTypeOf(result).toEqualTypeOf<Array<string>>();
+});
+
+it("works with a mix of simple arrays and tuples in an iterable", () => {
+  const result = flat(toBasicIterable([[]] as [Array<string>]), 1);
 
   expectTypeOf(result).toEqualTypeOf<Array<string>>();
 });
@@ -125,6 +211,12 @@ it("works on tuples inside arrays", () => {
   expectTypeOf(result).toEqualTypeOf<Array<number | string>>();
 });
 
+it("works on tuples inside iterables", () => {
+  const result = flat([] as Iterable<[Array<string>, Array<number>]>, 2);
+
+  expectTypeOf(result).toEqualTypeOf<Array<number | string>>();
+});
+
 it("works on arrays inside tuples", () => {
   const result = flat([1, [], 4] as [1, Array<[2, 3]>, 4], 2);
 
@@ -140,6 +232,19 @@ it("works with depths beyond 20", () => {
   );
 
   expectTypeOf(result).toEqualTypeOf<[1]>();
+});
+
+it("works with depths beyond 20 in an iterable", () => {
+  // The built-in type for `Array.prototype.flat` only goes up to 20.
+
+  const result = flat(
+    toBasicIterable([
+      [[[[[[[[[[[[[[[[[[[[[[[[[[[[[[1]]]]]]]]]]]]]]]]]]]]]]]]]]]]]],
+    ] as const),
+    99,
+  );
+
+  expectTypeOf(result).toEqualTypeOf<Array<1>>();
 });
 
 it("doesn't accept non-literal depths", () => {

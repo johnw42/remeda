@@ -1,5 +1,5 @@
 /**
- * Generates a sequence of values by calling a function repeatedly.
+ * Generates an infinite sequence of values by calling a function repeatedly.
  *
  * @param fn - The function to generate values.  The argument is the number of times the function has been called.
  * @signature

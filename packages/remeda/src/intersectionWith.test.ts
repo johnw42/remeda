@@ -1,4 +1,5 @@
 import { createLazyInvocationCounter } from "../test/lazyInvocationCounter";
+import { describeIterableArg } from "./internal/describeIterableArg";
 import { intersectionWith } from "./intersectionWith";
 import { isDeepEqual } from "./isDeepEqual";
 import { pipe } from "./pipe";
@@ -16,11 +17,11 @@ const expected = [
   },
 ];
 
-describe("intersectionWith", () => {
+describeIterableArg("intersectionWith", ({ wrap }) => {
   describe("data first", () => {
     test("returns the new array of intersecting values based on a custom comparator", () => {
       expect(
-        intersectionWith(source, other, (a, b) => a.id === b),
+        intersectionWith(wrap(source), wrap(other), (a, b) => a.id === b),
       ).toStrictEqual(expected);
     });
   });
@@ -29,26 +30,26 @@ describe("intersectionWith", () => {
     it("returns the new array of intersecting values based on a custom comparator", () => {
       expect(
         intersectionWith(
-          other,
+          wrap(other),
           // type inference doesn't work properly for the comparator's first
           // parameter in data last variant
           (a, b) => (a as (typeof source)[0]).id === b,
-        )(source),
+        )(wrap(source)),
       ).toStrictEqual(expected);
     });
 
     it("checks if items are equal based on remeda's imported util function as a comparator", () => {
       expect(
         pipe(
-          [
+          wrap([
             { x: 1, y: 2 },
             { x: 2, y: 1 },
-          ],
+          ]),
           intersectionWith(
-            [
+            wrap([
               { x: 1, y: 1 },
               { x: 1, y: 2 },
-            ],
+            ]),
             isDeepEqual,
           ),
         ),
@@ -58,9 +59,9 @@ describe("intersectionWith", () => {
     it("evaluates lazily", () => {
       const counter = createLazyInvocationCounter();
       const result = pipe(
-        [{ a: 1 }, { a: 2 }, { a: 3 }, { a: 4 }, { a: 5 }, { a: 6 }],
+        wrap([{ a: 1 }, { a: 2 }, { a: 3 }, { a: 4 }, { a: 5 }, { a: 6 }]),
         counter.fn(),
-        intersectionWith([{ a: 2 }, { a: 3 }, { a: 4 }], isDeepEqual),
+        intersectionWith(wrap([{ a: 2 }, { a: 3 }, { a: 4 }]), isDeepEqual),
         take(2),
       );
 

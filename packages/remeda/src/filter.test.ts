@@ -4,7 +4,6 @@ import { describeIterableArg } from "./internal/describeIterableArg";
 import { map } from "./map";
 import { pipe } from "./pipe";
 
-// eslint-disable-next-line vitest/require-hook
 describeIterableArg("filter", ({ wrap }) => {
   describe("data_first", () => {
     it("filter", () => {

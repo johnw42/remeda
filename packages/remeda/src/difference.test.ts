@@ -3,7 +3,6 @@ import { describeIterableArg } from "./internal/describeIterableArg";
 import { pipe } from "./pipe";
 import { take } from "./take";
 
-// eslint-disable-next-line vitest/require-hook
 describeIterableArg("difference", ({ wrap }) => {
   it("returns empty array on empty input", () => {
     expect(difference(wrap([]), wrap([1, 2, 3]))).toStrictEqual([]);
@@ -72,7 +71,7 @@ describeIterableArg("difference", ({ wrap }) => {
 
   test("lazy", () => {
     const result = pipe(
-      wrap([1, 2, 3, 4, 5, 6], 4),
+      wrap([1, 2, 3, 4, 5, 6], { limit: 4 }),
       difference(wrap([2, 3])),
       take(2),
     );

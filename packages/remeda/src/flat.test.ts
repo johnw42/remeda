@@ -2,142 +2,158 @@ import { createLazyInvocationCounter } from "../test/lazyInvocationCounter.js";
 import { find } from "./find";
 import { flat } from "./flat";
 import { identity } from "./identity";
+import { describeIterableArg } from "./internal/describeIterableArg.js";
 import { map } from "./map";
 import { pipe } from "./pipe";
 
-describe("dataFirst", () => {
-  it("works on empty arrays", () => {
-    expect(flat([], 1)).toStrictEqual([]);
+describeIterableArg("flat", ({ wrap }) => {
+  describe("dataFirst", () => {
+    it("works on empty arrays", () => {
+      expect(flat(wrap([]), 1)).toStrictEqual([]);
+    });
+
+    it("works on flat arrays", () => {
+      expect(flat(wrap([1, 2, 3]), 1)).toStrictEqual([1, 2, 3]);
+    });
+
+    it("flattens shallow nested arrays", () => {
+      expect(flat(wrap([[1, 2], [3, 4], [5], [6]]), 1)).toStrictEqual([
+        1, 2, 3, 4, 5, 6,
+      ]);
+    });
+
+    it("stops at the given depth", () => {
+      expect(flat(wrap([[[[[[[[[1]]]]]]]]]), 3)).toStrictEqual([[[[[[1]]]]]]);
+    });
+
+    it("works with deeper depth", () => {
+      expect(flat(wrap([1]), 10)).toStrictEqual([1]);
+    });
+
+    it("handles optional depth as if it was 1", () => {
+      expect(flat(wrap([1, [2, 3], [[4]]]))).toStrictEqual([1, 2, 3, [4]]);
+    });
+
+    it("handles objects", () => {
+      expect(flat(wrap([{ a: 1 }, [{ b: 3 }]]), 1)).toStrictEqual([
+        { a: 1 },
+        { b: 3 },
+      ]);
+    });
+
+    it("clones the array on depth 0", () => {
+      const data = [1, 2, 3];
+      const result = flat(wrap(data), 0);
+
+      expect(result).toStrictEqual(data);
+      expect(result).not.toBe(data);
+    });
+
+    it("clones the array when no nested items", () => {
+      const data = [1, 2, 3];
+      const result = flat(wrap(data), 1);
+
+      expect(result).toStrictEqual(data);
+      expect(result).not.toBe(data);
+    });
   });
 
-  it("works on flat arrays", () => {
-    expect(flat([1, 2, 3], 1)).toStrictEqual([1, 2, 3]);
+  describe("dataLast", () => {
+    it("works on empty arrays", () => {
+      expect(pipe(wrap([]), flat(1))).toStrictEqual([]);
+    });
+
+    it("works on flat arrays", () => {
+      expect(pipe(wrap([1, 2, 3]), flat(1))).toStrictEqual([1, 2, 3]);
+    });
+
+    it("flattens shallow nested arrays", () => {
+      expect(pipe(wrap([[1, 2], [3, 4], [5], [6]]), flat(1))).toStrictEqual([
+        1, 2, 3, 4, 5, 6,
+      ]);
+    });
+
+    it("stops at the given depth", () => {
+      expect(pipe(wrap([[[[[[[[[1]]]]]]]]]), flat(3))).toStrictEqual([
+        [[[[[1]]]]],
+      ]);
+    });
+
+    it("works with deeper depth", () => {
+      expect(pipe(wrap([1]), flat(10))).toStrictEqual([1]);
+    });
+
+    it("handles optional depth as if it was 1", () => {
+      expect(pipe(wrap([1, [2, 3], [[4]]]), flat())).toStrictEqual([
+        1,
+        2,
+        3,
+        [4],
+      ]);
+    });
+
+    it("handles objects", () => {
+      expect(pipe(wrap([{ a: 1 }, [{ b: 3 }]]), flat(1))).toStrictEqual([
+        { a: 1 },
+        { b: 3 },
+      ]);
+    });
+
+    it("works lazily (shallow)", () => {
+      const data = [[1, 2], 3, [4, 5]];
+      const beforeMock =
+        // eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types
+        vi.fn<(x: (typeof data)[number]) => (typeof data)[number]>(identity());
+      const afterMock = vi.fn<(x: number) => number>(identity());
+      const result = pipe(
+        wrap(data),
+        map(beforeMock),
+        flat(1),
+        map(afterMock),
+        find((x) => x - 1 === 2),
+      );
+
+      expect(beforeMock).toHaveBeenCalledTimes(2);
+      expect(afterMock).toHaveBeenCalledTimes(3);
+      expect(result).toBe(3);
+    });
+
+    it("works lazily (deep)", () => {
+      const data = [[[0]], [[[1, 2], [[3]], [[4, 5]]]], 6];
+      const beforeMock =
+        // eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types
+        vi.fn<(x: (typeof data)[number]) => (typeof data)[number]>(identity());
+      const afterMock = vi.fn<(x: number) => number>(identity());
+      const result = pipe(
+        wrap(data),
+        map(beforeMock),
+        flat(4),
+        map(afterMock),
+        find((x) => x - 1 === 2),
+      );
+
+      expect(beforeMock).toHaveBeenCalledTimes(2);
+      expect(afterMock).toHaveBeenCalledTimes(4);
+      expect(result).toBe(3);
+    });
+
+    it("works lazily with trivial depth === 0", () => {
+      const data = [1, [2, 3], [4, [5, 6], [7, [8, 9], [[10]]]]];
+      const result = pipe(wrap(data), flat(0));
+
+      expect(result).toStrictEqual(data);
+      expect(result).not.toBe(data);
+    });
   });
 
-  it("flattens shallow nested arrays", () => {
-    expect(flat([[1, 2], [3, 4], [5], [6]], 1)).toStrictEqual([
-      1, 2, 3, 4, 5, 6,
-    ]);
+  it("can go very very deep", () => {
+    expect(
+      flat(
+        wrap([[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[1]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]),
+        99,
+      ),
+    ).toStrictEqual([1]);
   });
-
-  it("stops at the given depth", () => {
-    expect(flat([[[[[[[[[1]]]]]]]]], 3)).toStrictEqual([[[[[[1]]]]]]);
-  });
-
-  it("works with deeper depth", () => {
-    expect(flat([1], 10)).toStrictEqual([1]);
-  });
-
-  it("handles optional depth as if it was 1", () => {
-    expect(flat([1, [2, 3], [[4]]])).toStrictEqual([1, 2, 3, [4]]);
-  });
-
-  it("handles objects", () => {
-    expect(flat([{ a: 1 }, [{ b: 3 }]], 1)).toStrictEqual([{ a: 1 }, { b: 3 }]);
-  });
-
-  it("clones the array on depth 0", () => {
-    const data = [1, 2, 3];
-    const result = flat(data, 0);
-
-    expect(result).toStrictEqual(data);
-    expect(result).not.toBe(data);
-  });
-
-  it("clones the array when no nested items", () => {
-    const data = [1, 2, 3];
-    const result = flat(data, 1);
-
-    expect(result).toStrictEqual(data);
-    expect(result).not.toBe(data);
-  });
-});
-
-describe("dataLast", () => {
-  it("works on empty arrays", () => {
-    expect(pipe([], flat(1))).toStrictEqual([]);
-  });
-
-  it("works on flat arrays", () => {
-    expect(pipe([1, 2, 3], flat(1))).toStrictEqual([1, 2, 3]);
-  });
-
-  it("flattens shallow nested arrays", () => {
-    expect(pipe([[1, 2], [3, 4], [5], [6]], flat(1))).toStrictEqual([
-      1, 2, 3, 4, 5, 6,
-    ]);
-  });
-
-  it("stops at the given depth", () => {
-    expect(pipe([[[[[[[[[1]]]]]]]]], flat(3))).toStrictEqual([[[[[[1]]]]]]);
-  });
-
-  it("works with deeper depth", () => {
-    expect(pipe([1], flat(10))).toStrictEqual([1]);
-  });
-
-  it("handles optional depth as if it was 1", () => {
-    expect(pipe([1, [2, 3], [[4]]], flat())).toStrictEqual([1, 2, 3, [4]]);
-  });
-
-  it("handles objects", () => {
-    expect(pipe([{ a: 1 }, [{ b: 3 }]], flat(1))).toStrictEqual([
-      { a: 1 },
-      { b: 3 },
-    ]);
-  });
-
-  it("works lazily (shallow)", () => {
-    const data = [[1, 2], 3, [4, 5]];
-    const beforeMock =
-      // eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types
-      vi.fn<(x: (typeof data)[number]) => (typeof data)[number]>(identity());
-    const afterMock = vi.fn<(x: number) => number>(identity());
-    const result = pipe(
-      data,
-      map(beforeMock),
-      flat(1),
-      map(afterMock),
-      find((x) => x - 1 === 2),
-    );
-
-    expect(beforeMock).toHaveBeenCalledTimes(2);
-    expect(afterMock).toHaveBeenCalledTimes(3);
-    expect(result).toBe(3);
-  });
-
-  it("works lazily (deep)", () => {
-    const data = [[[0]], [[[1, 2], [[3]], [[4, 5]]]], 6];
-    const beforeMock =
-      // eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types
-      vi.fn<(x: (typeof data)[number]) => (typeof data)[number]>(identity());
-    const afterMock = vi.fn<(x: number) => number>(identity());
-    const result = pipe(
-      data,
-      map(beforeMock),
-      flat(4),
-      map(afterMock),
-      find((x) => x - 1 === 2),
-    );
-
-    expect(beforeMock).toHaveBeenCalledTimes(2);
-    expect(afterMock).toHaveBeenCalledTimes(4);
-    expect(result).toBe(3);
-  });
-
-  it("works lazily with trivial depth === 0", () => {
-    const data = [1, [2, 3], [4, [5, 6], [7, [8, 9], [[10]]]]];
-    const result = pipe(data, flat(0));
-
-    expect(result).toStrictEqual(data);
-    expect(result).not.toBe(data);
-  });
-});
-
-it("can go very very deep", () => {
-  expect(
-    flat([[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[1]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]], 99),
-  ).toStrictEqual([1]);
 });
 
 // These tests are copied from an previous implementations of the same concept

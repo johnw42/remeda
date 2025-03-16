@@ -6,7 +6,6 @@ import { pipe } from "./pipe";
 
 const assertIsDefined = <T>(v: T | null | undefined): T => v!;
 
-// eslint-disable-next-line vitest/require-hook
 describeIterableArg("first", ({ wrap }) => {
   describe("first", () => {
     test("should return first", () => {

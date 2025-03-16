@@ -1,30 +1,25 @@
 import type { IterableElement } from "type-fest";
-import type { IterableContainer } from "./internal/types/IterableContainer";
-import { isArray } from "./isArray";
-import { unsafeToArray } from "./internal/unsafeToArray";
 import doTransduce from "./internal/doTransduce";
-
-type IterableZippingFunction<T1 = unknown, T2 = unknown, Value = unknown> = (
-  first: T1,
-  second: T2,
-  index: number,
-  data: readonly [ReadonlyArray<T1>, ReadonlyArray<T2>],
-) => Value;
+import { isArray } from "./isArray";
+import type { IterableContainer } from "./internal/types/IterableContainer";
 
 type ZippingFunction<
   T1 extends Iterable<unknown> = Iterable<unknown>,
   T2 extends Iterable<unknown> = Iterable<unknown>,
   Value = unknown,
-> = T1 extends IterableContainer
-  ? T2 extends IterableContainer
-    ? (
-        first: T1[number],
-        second: T2[number],
-        index: number,
-        data: readonly [first: T1, second: T2],
-      ) => Value
-    : IterableZippingFunction<IterableElement<T1>, IterableElement<T2>, Value>
-  : IterableZippingFunction<IterableElement<T1>, IterableElement<T2>, Value>;
+> = (
+  first: IterableElement<T1>,
+  second: IterableElement<T2>,
+  index: number,
+  data: readonly [
+    first: T1 extends IterableContainer
+      ? T1
+      : ReadonlyArray<IterableElement<T1>>,
+    second: T2 extends IterableContainer
+      ? T2
+      : ReadonlyArray<IterableElement<T2>>,
+  ],
+) => Value;
 
 /**
  * Creates a new list from two supplied lists by calling the supplied function
@@ -35,19 +30,13 @@ type ZippingFunction<
  *   R.zipWith(fn)(first, second)
  * @example
  *   R.zipWith((a: string, b: string) => a + b)(['1', '2', '3', '4'], ['a', 'b', 'c']) // => ['1a', '2b', '3c']
+ * @dataLast
+ * @lazy
  * @category Array
  */
 export function zipWith<TItem1, TItem2, Value>(
-  fn: ZippingFunction<ReadonlyArray<TItem1>, ReadonlyArray<TItem2>, Value>,
-): (
-  first: ReadonlyArray<TItem1>,
-  second: ReadonlyArray<TItem2>,
-) => Array<Value>;
-export function zipWith<
-  T1 extends Iterable<unknown>,
-  T2 extends Iterable<unknown>,
-  Value,
->(fn: ZippingFunction<T1, T2, Value>): (first: T1, second: T2) => Array<Value>;
+  fn: ZippingFunction<Iterable<TItem1>, Iterable<TItem2>, Value>,
+): (first: Iterable<TItem1>, second: Iterable<TItem2>) => Array<Value>;
 
 /**
  * Creates a new list from two supplied lists by calling the supplied function
@@ -117,7 +106,7 @@ export function zipWith(...args: ReadonlyArray<unknown>): unknown {
 function zipWithImplementation<T1, T2, Value>(
   first: Iterable<T1>,
   second: Iterable<T2>,
-  fn: IterableZippingFunction<T1, T2, Value>,
+  fn: ZippingFunction<ReadonlyArray<T1>, ReadonlyArray<T2>, Value>,
 ): Array<Value> {
   if (isArray(first) && isArray(second)) {
     const datum = [first, second] as const;
@@ -127,13 +116,13 @@ function zipWithImplementation<T1, T2, Value>(
     return second.map((item, index) => fn(first[index]!, item, index, datum));
   }
 
-  return unsafeToArray(lazyImplementation(first, second, fn));
+  return [...lazyImplementation(first, second, fn)];
 }
 
 function* lazyImplementation<T1, T2, Value>(
   first: Iterable<T1>,
   second: Iterable<T2>,
-  fn: IterableZippingFunction<T1, T2, Value>,
+  fn: ZippingFunction<ReadonlyArray<T1>, ReadonlyArray<T2>, Value>,
 ): Iterable<Value> {
   const iter = second[Symbol.iterator]();
   const data1: Array<T1> = [];

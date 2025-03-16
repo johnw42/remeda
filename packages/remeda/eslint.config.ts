@@ -7,7 +7,7 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    ignores: ["coverage", "dist"],
+    ignores: ["coverage", "dist", "**/tmp.*"],
   },
   eslint.configs.recommended,
   jsdoc.configs["flat/recommended-typescript"],
@@ -423,6 +423,7 @@ export default tseslint.config(
     },
   },
   {
+    name: "tests",
     files: ["src/**/*.test.ts", "src/**/*.test-d.ts", "test/**/*.*"],
     plugins: {
       vitest,
@@ -445,6 +446,11 @@ export default tseslint.config(
       // to be tested against.
       "vitest/consistent-test-it": "off",
 
+      "vitest/require-hook": [
+        "warn",
+        { allowedFunctionCalls: ["describeIterableArg"] },
+      ],
+
       // This rule's docs don't provide justification for enabling it and what
       // value it adds. Going by the rule just adds another level of indentation
       // without really adding any interesting semantics.
@@ -461,6 +467,7 @@ export default tseslint.config(
     },
   },
   {
+    name: "executable tests",
     files: ["src/**/*.test.ts"],
     rules: {
       // The range of things that are acceptable for truthy and falsy is wider

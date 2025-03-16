@@ -1,4 +1,5 @@
 import doTransduce from "./internal/doTransduce";
+import { toReadonlyArray } from "./internal/toReadonlyArray";
 
 type Comparator<TFirst, TSecond> = (a: TFirst, b: TSecond) => boolean;
 
@@ -57,7 +58,7 @@ export function intersectionWith<TFirst, TSecond>(
    * in data last variant.
    */
   comparator: Comparator<TFirst, TSecond>,
-): (array: ReadonlyArray<TFirst>) => Array<TFirst>;
+): (array: Iterable<TFirst>) => Array<TFirst>;
 
 export function intersectionWith(...args: ReadonlyArray<unknown>): unknown {
   return doTransduce(undefined, lazyImplementation, args);
@@ -68,8 +69,10 @@ function* lazyImplementation<TFirst, TSecond>(
   other: Iterable<TSecond>,
   comparator: Comparator<TFirst, TSecond>,
 ): Iterable<TFirst> {
+  let repeatableOther: ReadonlyArray<TSecond> | undefined;
   for (const value of data) {
-    for (const otherValue of other) {
+    repeatableOther ??= toReadonlyArray(other);
+    for (const otherValue of repeatableOther) {
       if (comparator(value, otherValue)) {
         yield value;
         break;

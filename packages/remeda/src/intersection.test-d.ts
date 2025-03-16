@@ -5,3 +5,9 @@ it("narrows the result type", () => {
 
   expectTypeOf(result).toEqualTypeOf<Array<string>>();
 });
+
+it("returns a polymorphic function type", () => {
+  expectTypeOf(intersection([1])).toEqualTypeOf<
+    <T>(data: Iterable<T>) => Array<number & T>
+  >();
+});

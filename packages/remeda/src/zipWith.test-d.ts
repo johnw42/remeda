@@ -5,17 +5,28 @@ test("data first typings", () => {
   const actual = zipWith(
     ["1", "2", "3"],
     ["a", "b", "c"],
-    (a, b) => `${a}${b}`,
+    (a, b, index, data) => {
+      expectTypeOf(index).toEqualTypeOf<number>();
+      expectTypeOf(data).toEqualTypeOf<
+        readonly [Array<string>, Array<string>]
+      >();
+
+      return `${a}${b}`;
+    },
   );
 
   expectTypeOf(actual).toEqualTypeOf<Array<string>>();
 });
 
 test("data second typings", () => {
-  const actual = zipWith((a: string, b: string) => `${a}${b}`)(
-    ["1", "2", "3"],
-    ["a", "b", "c"],
-  );
+  const actual = zipWith((a: string, b: string, index, data) => {
+    expectTypeOf(index).toEqualTypeOf<number>();
+    expectTypeOf(data).toEqualTypeOf<
+      readonly [ReadonlyArray<string>, ReadonlyArray<string>]
+    >();
+
+    return `${a}${b}`;
+  })(["1", "2", "3"], ["a", "b", "c"]);
 
   expectTypeOf(actual).toEqualTypeOf<Array<string>>();
 });
@@ -23,7 +34,14 @@ test("data second typings", () => {
 test("data second with initial arg typings", () => {
   const actual = pipe(
     ["1", "2", "3"],
-    zipWith(["a", "b", "c"], (a, b) => `${a}${b}`),
+    zipWith(["a", "b", "c"], (a, b, index, data) => {
+      expectTypeOf(index).toEqualTypeOf<number>();
+      expectTypeOf(data).toEqualTypeOf<
+        readonly [Array<string>, Array<string>]
+      >();
+
+      return `${a}${b}`;
+    }),
   );
 
   expectTypeOf(actual).toEqualTypeOf<Array<string>>();

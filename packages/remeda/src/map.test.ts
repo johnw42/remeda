@@ -71,7 +71,6 @@ describe("map", () => {
   });
 });
 
-// eslint-disable-next-line vitest/require-hook
 describeIterableArg("map", ({ wrap }) => {
   describe("data_first", () => {
     it("map", () => {

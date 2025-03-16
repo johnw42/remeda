@@ -2,7 +2,6 @@ import { findIndex } from "./findIndex";
 import { describeIterableArg } from "./internal/describeIterableArg";
 import { pipe } from "./pipe";
 
-// eslint-disable-next-line vitest/require-hook
 describeIterableArg("findIndex", ({ wrap }) => {
   describe("data first", () => {
     test("found", () => {

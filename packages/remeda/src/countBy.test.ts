@@ -2,7 +2,6 @@ import { countBy } from "./countBy";
 import { describeIterableArg } from "./internal/describeIterableArg";
 import { pipe } from "./pipe";
 
-// eslint-disable-next-line vitest/require-hook
 describeIterableArg("countBy", ({ wrap }) => {
   describe("dataFirst", () => {
     test("countBy", () => {

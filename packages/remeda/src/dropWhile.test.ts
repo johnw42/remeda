@@ -3,7 +3,6 @@ import { describeIterableArg } from "./internal/describeIterableArg";
 import { pipe } from "./pipe";
 import { take } from "./take";
 
-// eslint-disable-next-line vitest/require-hook
 describeIterableArg("dropWhile", ({ wrap }) => {
   describe("data first", () => {
     it("should return items starting from the first predicate failure", () => {
@@ -38,7 +37,11 @@ describeIterableArg("dropWhile", ({ wrap }) => {
       const predicate = vi.fn<(n: number) => boolean>((n) => n !== 3);
 
       expect(
-        pipe(wrap([1, 2, 3, 4, 5], 4), dropWhile(predicate), take(2)),
+        pipe(
+          wrap([1, 2, 3, 4, 5], { limit: 4 }),
+          dropWhile(predicate),
+          take(2),
+        ),
       ).toStrictEqual([3, 4]);
       expect(predicate).toHaveBeenCalledTimes(3);
     });

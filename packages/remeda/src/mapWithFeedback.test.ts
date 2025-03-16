@@ -5,7 +5,6 @@ import { mapWithFeedback } from "./mapWithFeedback";
 import { pipe } from "./pipe";
 import { take } from "./take";
 
-// eslint-disable-next-line vitest/require-hook
 describeIterableArg("mapWithFeedback", ({ wrap, wrappedArray }) => {
   describe("data first", () => {
     it("should return an array of successively accumulated values", () => {

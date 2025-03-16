@@ -1,22 +1,26 @@
 import { createLazyInvocationCounter } from "../test/lazyInvocationCounter";
 import { identity } from "./identity";
+import { describeIterableArg } from "./internal/describeIterableArg";
 import { pipe } from "./pipe";
 import { take } from "./take";
 import { uniqueBy } from "./uniqueBy";
 
-describe("uniqueBy", () => {
-  const people = [
-    { name: "John", age: 42 },
-    { name: "Jörn", age: 30 },
-    { name: "Sarah", age: 33 },
-    { name: "Kim", age: 22 },
-    { name: "Sarah", age: 38 },
-    { name: "John", age: 33 },
-    { name: "Emily", age: 42 },
-  ] as const;
+describeIterableArg("uniqueBy", ({ wrap }) => {
+  const people = wrap(
+    [
+      { name: "John", age: 42 },
+      { name: "Jörn", age: 30 },
+      { name: "Sarah", age: 33 },
+      { name: "Kim", age: 22 },
+      { name: "Sarah", age: 38 },
+      { name: "John", age: 33 },
+      { name: "Emily", age: 42 },
+    ] as const,
+    { multiple: true },
+  );
 
   it("handles uniq by identity", () => {
-    expect(uniqueBy([1, 2, 2, 5, 1, 6, 7], identity())).toStrictEqual([
+    expect(uniqueBy(wrap([1, 2, 2, 5, 1, 6, 7]), identity())).toStrictEqual([
       1, 2, 5, 6, 7,
     ]);
   });
@@ -54,7 +58,7 @@ describe("uniqueBy", () => {
     it("gets executed until target length is reached", () => {
       const counter = createLazyInvocationCounter();
       const result = pipe(
-        [1, 2, 2, 5, 1, 6, 7],
+        wrap([1, 2, 2, 5, 1, 6, 7]),
         counter.fn(),
         uniqueBy(identity()),
         take(3),
@@ -67,7 +71,7 @@ describe("uniqueBy", () => {
     it("get executed 3 times when take before uniqueBy", () => {
       const counter = createLazyInvocationCounter();
       const result = pipe(
-        [1, 2, 2, 5, 1, 6, 7],
+        wrap([1, 2, 2, 5, 1, 6, 7]),
         counter.fn(),
         take(3),
         uniqueBy(identity()),

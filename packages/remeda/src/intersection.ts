@@ -17,8 +17,8 @@ import doTransduce from "./internal/doTransduce";
  * @category Array
  */
 export function intersection<T, S>(
-  data: ReadonlyArray<T>,
-  other: ReadonlyArray<S>,
+  data: Iterable<T>,
+  other: Iterable<S>,
 ): Array<S & T>;
 
 /**
@@ -37,8 +37,8 @@ export function intersection<T, S>(
  * @category Array
  */
 export function intersection<S>(
-  other: ReadonlyArray<S>,
-): <T>(data: ReadonlyArray<T>) => Array<S & T>;
+  other: Iterable<S>,
+): <T>(data: Iterable<T>) => Array<S & T>;
 
 export function intersection(...args: ReadonlyArray<unknown>): unknown {
   return doTransduce(undefined, lazyImplementation, args);

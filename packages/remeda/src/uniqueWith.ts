@@ -28,7 +28,7 @@ export function uniqueWith<T extends IterableContainer>(
 export function uniqueWith<T>(
   data: Iterable<T>,
   isEquals: IsEquals<T>,
-): Iterable<T>;
+): Array<T>;
 
 /**
  * Returns a new array containing only one copy of each element in the original

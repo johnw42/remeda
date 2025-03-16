@@ -3,7 +3,6 @@ import { identity } from "./identity";
 import { describeIterableArg } from "./internal/describeIterableArg";
 import { pipe } from "./pipe";
 
-// eslint-disable-next-line vitest/require-hook
 describeIterableArg("dropFirstBy", ({ wrap }) => {
   describe("runtime (dataFirst)", () => {
     it("works", () => {

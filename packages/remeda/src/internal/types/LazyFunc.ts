@@ -66,9 +66,7 @@ export type Transducer<
   Result extends Array<unknown>,
 > = TransducerF<EagerTransducer<Data, Result>>;
 
-export type TransducerF<
-  F extends EagerTransducer<IterableElement<never>, Array<unknown>>,
-> = {
+export type TransducerF<F extends EagerTransducer<never, Array<unknown>>> = {
   // This type could be `F & {...}`, but using `&` causes type inference to fail.
   // See https://github.com/microsoft/TypeScript/issues/61417
   (...args: Parameters<F>): ReturnType<F>;

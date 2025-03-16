@@ -4,7 +4,6 @@ import { map } from "./map";
 import { pipe } from "./pipe";
 import { take } from "./take";
 
-// eslint-disable-next-line vitest/require-hook
 describeIterableArg("drop", ({ wrap }) => {
   describe("data first", () => {
     it("works on regular inputs", () => {

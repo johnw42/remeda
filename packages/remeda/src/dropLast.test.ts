@@ -1,7 +1,6 @@
 import { dropLast } from "./dropLast";
 import { describeIterableArg } from "./internal/describeIterableArg";
 
-// eslint-disable-next-line vitest/require-hook
 describeIterableArg("dropLast", ({ wrap }) => {
   test("empty array", () => {
     expect(dropLast(wrap([]), 2)).toStrictEqual([]);

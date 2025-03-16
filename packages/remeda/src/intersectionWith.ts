@@ -1,5 +1,6 @@
-import doTransduce from "./internal/doTransduce";
+import doTransduce, { type DoTransduceResult } from "./internal/doTransduce";
 import { toReadonlyArray } from "./internal/toReadonlyArray";
+import type { Transducer } from "./internal/types/LazyFunc";
 
 type Comparator<TFirst, TSecond> = (a: TFirst, b: TSecond) => boolean;
 
@@ -58,9 +59,11 @@ export function intersectionWith<TFirst, TSecond>(
    * in data last variant.
    */
   comparator: Comparator<TFirst, TSecond>,
-): (array: Iterable<TFirst>) => Array<TFirst>;
+): Transducer<Iterable<TFirst>, Array<TFirst>>;
 
-export function intersectionWith(...args: ReadonlyArray<unknown>): unknown {
+export function intersectionWith(
+  ...args: ReadonlyArray<unknown>
+): DoTransduceResult {
   return doTransduce(undefined, lazyImplementation, args);
 }
 

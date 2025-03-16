@@ -1,4 +1,5 @@
-import doTransduce from "./internal/doTransduce";
+import doTransduce, { type DoTransduceResult } from "./internal/doTransduce";
+import type { Transducer } from "./internal/types/LazyFunc";
 
 /**
  * Excludes the values from `other` array. The output maintains the same order
@@ -35,9 +36,9 @@ export function difference<T>(data: Iterable<T>, other: Iterable<T>): Array<T>;
  */
 export function difference<T>(
   other: Iterable<T>,
-): (data: Iterable<T>) => Array<T>;
+): Transducer<Iterable<T>, Array<T>>;
 
-export function difference(...args: ReadonlyArray<unknown>): unknown {
+export function difference(...args: ReadonlyArray<unknown>): DoTransduceResult {
   return doTransduce(undefined, lazyImplementation, args);
 }
 

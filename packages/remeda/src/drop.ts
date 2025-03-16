@@ -1,9 +1,4 @@
-import type {
-  IsInteger,
-  IsNegative,
-  IterableElement,
-  Subtract,
-} from "type-fest";
+import type { IsInteger, IsNegative, Subtract } from "type-fest";
 import type { CoercedArray } from "./internal/types/CoercedArray";
 import type { IterableContainer } from "./internal/types/IterableContainer";
 import type { NTuple } from "./internal/types/NTuple";
@@ -11,6 +6,7 @@ import type { TupleParts } from "./internal/types/TupleParts";
 import doTransduce from "./internal/doTransduce";
 import { isArray } from "./isArray";
 import { unsafeToArray } from "./internal/unsafeToArray";
+import type ToArray from "./internal/types/ToArray";
 
 type Drop<T extends Iterable<unknown>, N extends number> =
   // The extra brackets prevent the conditional from being distributed over union types.
@@ -62,7 +58,7 @@ type Drop<T extends Iterable<unknown>, N extends number> =
                 // consider that all items were removed from that part, leaving
                 // the suffix intact.
                 | [...Array<TupleParts<T>["item"]>, ...TupleParts<T>["suffix"]]
-    : Array<IterableElement<T>>;
+    : ToArray<T>;
 
 /**
  * Arrays with a fixed suffix will result in any number of items being dropped,

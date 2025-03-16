@@ -1,7 +1,7 @@
-import type { IterableElement } from "type-fest";
 import doTransduce from "./internal/doTransduce";
 import { unsafeToArray } from "./internal/unsafeToArray";
 import { isArray } from "./isArray";
+import type ToArray from "./internal/types/ToArray";
 
 /**
  * Returns the first `n` elements of `input`.
@@ -19,7 +19,7 @@ import { isArray } from "./isArray";
 export function take<T extends Iterable<unknown>>(
   input: T,
   n: number,
-): Array<IterableElement<T>>;
+): ToArray<T>;
 
 /**
  * Returns the first `n` elements of `array`.
@@ -35,7 +35,7 @@ export function take<T extends Iterable<unknown>>(
  */
 export function take(
   n: number,
-): <T extends Iterable<unknown>>(data: T) => Array<IterableElement<T>>;
+): <T extends Iterable<unknown>>(data: T) => ToArray<T>;
 
 export function take(...args: ReadonlyArray<unknown>): unknown {
   return doTransduce(takeImplementation, lazyImplementation, args);

@@ -7,6 +7,7 @@ import type {
   ArrayMethodTypePredicate,
 } from "./internal/types/ArrayMethodCallback";
 import type { Transducer } from "./internal/types/LazyFunc";
+import type ToArray from "./internal/types/ToArray";
 
 /**
  * Creates a shallow copy of a portion of a given array, filtered down to just
@@ -34,7 +35,7 @@ export function filter<
 export function filter<T extends Iterable<unknown>>(
   data: T,
   predicate: ArrayMethodCallback<T, boolean>,
-): Array<IterableElement<T>>;
+): ToArray<T>;
 
 /**
  * Creates a shallow copy of a portion of a given array, filtered down to just
@@ -60,7 +61,7 @@ export function filter<
 >(predicate: ArrayMethodTypePredicate<T, S>): Transducer<T, Array<S>>;
 export function filter<T extends Iterable<unknown>>(
   predicate: ArrayMethodCallback<T, boolean>,
-): Transducer<T, Array<IterableElement<T>>>;
+): Transducer<T, ToArray<T>>;
 
 export function filter(...args: ReadonlyArray<unknown>): DoTransduceResult {
   return doTransduce(filterImplementation, lazyImplementation, args);

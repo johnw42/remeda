@@ -1,3 +1,4 @@
+import type { Reducer } from "./internal/types/LazyFunc";
 import { isArray } from "./isArray";
 import { purry } from "./purry";
 
@@ -41,7 +42,7 @@ export function anyPass<T>(
  */
 export function anyPass<T>(
   fns: Iterable<(data: T) => boolean>,
-): (data: T) => boolean;
+): Reducer<Iterable<T>, boolean>;
 
 export function anyPass(...args: ReadonlyArray<unknown>): unknown {
   return purry(anyPassImplementation, args);

@@ -1,7 +1,8 @@
-import doTransduce from "./internal/doTransduce";
+import doTransduce, { type DoTransduceResult } from "./internal/doTransduce";
 import type { ArrayMethodCallback } from "./internal/types/ArrayMethodCallback";
 import type { Deduped } from "./internal/types/Deduped";
 import { mapCallback } from "./internal/mapCallback";
+import type { Transducer } from "./internal/types/LazyFunc";
 
 /**
  * Returns a new array containing only one copy of each element in the original
@@ -44,9 +45,9 @@ export function uniqueBy<T extends Iterable<unknown>>(
  */
 export function uniqueBy<T extends Iterable<unknown>>(
   keyFunction: ArrayMethodCallback<T>,
-): (data: T) => Deduped<T>;
+): Transducer<T, Deduped<T>>;
 
-export function uniqueBy(...args: ReadonlyArray<unknown>): unknown {
+export function uniqueBy(...args: ReadonlyArray<unknown>): DoTransduceResult {
   return doTransduce(undefined, lazyImplementation, args);
 }
 

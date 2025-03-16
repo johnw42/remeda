@@ -1,8 +1,8 @@
-import type { IterableElement } from "type-fest";
 import type { ArrayMethodCallback } from "./internal/types/ArrayMethodCallback";
 import { isArray } from "./isArray";
 import doTransduce from "./internal/doTransduce";
 import { mapCallback } from "./internal/mapCallback";
+import type ToArray from "./internal/types/ToArray";
 
 /**
  * Removes elements from the beginning of the array until the predicate returns false.
@@ -21,7 +21,7 @@ import { mapCallback } from "./internal/mapCallback";
 export function dropWhile<T extends Iterable<unknown>>(
   data: T,
   predicate: ArrayMethodCallback<T, boolean>,
-): Array<IterableElement<T>>;
+): ToArray<T>;
 
 /**
  * Removes elements from the beginning of the array until the predicate returns false.
@@ -38,7 +38,7 @@ export function dropWhile<T extends Iterable<unknown>>(
  */
 export function dropWhile<T extends Iterable<unknown>>(
   predicate: ArrayMethodCallback<T, boolean>,
-): (data: T) => Array<IterableElement<T>>;
+): (data: T) => ToArray<T>;
 
 export function dropWhile(...args: ReadonlyArray<unknown>): unknown {
   return doTransduce(dropWhileImplementation, lazyImplemention, args);

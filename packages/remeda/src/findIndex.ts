@@ -1,7 +1,8 @@
-import doReduce from "./internal/doReduce";
+import doReduce, { type DoReduceResult } from "./internal/doReduce";
 import type { ArrayMethodCallback } from "./internal/types/ArrayMethodCallback";
 import { mapCallback } from "./internal/mapCallback";
 import { isArray } from "./isArray";
+import type { Reducer } from "./internal/types/LazyFunc";
 
 /**
  * Returns the index of the first element in an array that satisfies the
@@ -56,9 +57,9 @@ export function findIndex<T extends Iterable<unknown>>(
  */
 export function findIndex<T extends Iterable<unknown>>(
   predicate: ArrayMethodCallback<T, boolean>,
-): (data: T) => number;
+): Reducer<T, number>;
 
-export function findIndex(...args: ReadonlyArray<unknown>): unknown {
+export function findIndex(...args: ReadonlyArray<unknown>): DoReduceResult {
   return doReduce(findIndexImplementation, args);
 }
 

@@ -1,6 +1,6 @@
 import type { NonEmptyArray } from "./NonEmptyArray";
 import type { IterableContainer } from "./IterableContainer";
-import type { IterableElement } from "type-fest";
+import type ToArray from "./ToArray";
 
 /**
  * The result of running a function that would dedupe an array (`unique`,
@@ -28,4 +28,4 @@ export type Deduped<T extends Iterable<unknown>> = T extends IterableContainer
           // well.
           NonEmptyArray<T[number]>
         : Array<T[number]>
-  : Array<IterableElement<T>>;
+  : ToArray<T>;

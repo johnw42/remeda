@@ -1,6 +1,6 @@
-import type { IterableElement } from "type-fest";
 import { toReadonlyArray } from "./internal/toReadonlyArray";
 import { purry } from "./purry";
+import type ToArray from "./internal/types/ToArray";
 
 /**
  * Removes last `n` elements from the `data`.
@@ -17,7 +17,7 @@ import { purry } from "./purry";
 export function dropLast<T extends Iterable<unknown>>(
   data: T,
   n: number,
-): Array<IterableElement<T>>;
+): ToArray<T>;
 
 /**
  * Removes last `n` elements from the `array`.
@@ -32,7 +32,7 @@ export function dropLast<T extends Iterable<unknown>>(
  */
 export function dropLast(
   n: number,
-): <T extends Iterable<unknown>>(array: T) => Array<IterableElement<T>>;
+): <T extends Iterable<unknown>>(array: T) => ToArray<T>;
 
 export function dropLast(...args: ReadonlyArray<unknown>): unknown {
   return purry(dropLastImplementation, args);

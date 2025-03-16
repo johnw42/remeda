@@ -1,6 +1,6 @@
-import type { IterableElement } from "type-fest";
 import { toReadonlyArray } from "./internal/toReadonlyArray";
 import type { ArrayMethodCallback } from "./internal/types/ArrayMethodCallback";
+import type ToArray from "./internal/types/ToArray";
 import { purry } from "./purry";
 
 /**
@@ -20,7 +20,7 @@ import { purry } from "./purry";
 export function dropLastWhile<T extends Iterable<unknown>>(
   data: T,
   predicate: ArrayMethodCallback<T, boolean>,
-): Array<IterableElement<T>>;
+): ToArray<T>;
 
 /**
  * Removes elements from the end of the array until the predicate returns false.
@@ -37,7 +37,7 @@ export function dropLastWhile<T extends Iterable<unknown>>(
  */
 export function dropLastWhile<T extends Iterable<unknown>>(
   predicate: ArrayMethodCallback<T, boolean>,
-): (data: T) => Array<IterableElement<T>>;
+): (data: T) => ToArray<T>;
 
 export function dropLastWhile(...args: ReadonlyArray<unknown>): unknown {
   return purry(dropLastWhileImplementation, args);

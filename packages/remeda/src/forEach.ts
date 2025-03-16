@@ -1,10 +1,11 @@
-import type { IterableElement, Writable } from "type-fest";
+import type { Writable } from "type-fest";
 import type { IterableContainer } from "./internal/types/IterableContainer";
 import doTransduce, { type DoTransduceResult } from "./internal/doTransduce";
 import { mapCallback } from "./internal/mapCallback";
 import { toReadonlyArray } from "./internal/toReadonlyArray";
 import type { ArrayMethodCallback } from "./internal/types/ArrayMethodCallback";
 import type { Transducer } from "./internal/types/LazyFunc";
+import type ToArray from "./internal/types/ToArray";
 
 /**
  * Executes a provided function once for each array element. Equivalent to
@@ -57,10 +58,7 @@ export function forEach<T extends Iterable<unknown>>(
  */
 export function forEach<T extends Iterable<unknown>>(
   callbackfn: ArrayMethodCallback<T, void>,
-): Transducer<
-  T,
-  T extends IterableContainer ? Writable<T> : Array<IterableElement<T>>
->;
+): Transducer<T, T extends IterableContainer ? Writable<T> : ToArray<T>>;
 
 export function forEach(...args: ReadonlyArray<unknown>): DoTransduceResult {
   return doTransduce(forEachImplementation, lazyImplementation, args);

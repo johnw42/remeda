@@ -1,6 +1,7 @@
 import type { IterableElement } from "type-fest";
-import doTransduce from "./internal/doTransduce";
+import doTransduce, { type DoTransduceResult } from "./internal/doTransduce";
 import type { Deduped } from "./internal/types/Deduped";
+import type { Transducer } from "./internal/types/LazyFunc";
 
 type IsEquals<T> = (a: T, b: T) => boolean;
 
@@ -47,9 +48,9 @@ export function uniqueWith<T extends Iterable<unknown>>(
  */
 export function uniqueWith<T extends Iterable<unknown>>(
   isEquals: IsEquals<IterableElement<T>>,
-): (data: T) => Deduped<T>;
+): Transducer<T, Deduped<T>>;
 
-export function uniqueWith(...args: ReadonlyArray<unknown>): unknown {
+export function uniqueWith(...args: ReadonlyArray<unknown>): DoTransduceResult {
   return doTransduce(undefined, lazyImplementation, args);
 }
 

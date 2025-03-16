@@ -1,4 +1,4 @@
-import type { Reducer } from "./internal/types/LazyFunc";
+import type { Reducer } from "./internal/types/LazyEffect";
 import { isArray } from "./isArray";
 import { purry } from "./purry";
 

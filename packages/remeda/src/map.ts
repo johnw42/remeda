@@ -3,7 +3,7 @@ import type { Mapped } from "./internal/types/Mapped";
 import { mapCallback } from "./internal/mapCallback";
 import { isArray } from "./isArray";
 import type { ArrayMethodCallback } from "./internal/types/ArrayMethodCallback";
-import type { Transducer } from "./internal/types/LazyFunc";
+import type { Transducer } from "./internal/types/LazyEffect";
 
 /**
  * Creates a new array populated with the results of calling a provided function

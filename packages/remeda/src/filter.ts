@@ -6,7 +6,7 @@ import type {
   ArrayMethodCallback,
   ArrayMethodTypePredicate,
 } from "./internal/types/ArrayMethodCallback";
-import type { Transducer } from "./internal/types/LazyFunc";
+import type { Transducer } from "./internal/types/LazyEffect";
 import type ToArray from "./internal/types/ToArray";
 
 /**

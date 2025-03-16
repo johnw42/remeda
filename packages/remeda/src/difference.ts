@@ -1,5 +1,5 @@
 import doTransduce, { type DoTransduceResult } from "./internal/doTransduce";
-import type { Transducer } from "./internal/types/LazyFunc";
+import type { Transducer } from "./internal/types/LazyEffect";
 
 /**
  * Excludes the values from `other` array. The output maintains the same order

@@ -4,7 +4,7 @@ import type {
   ArrayMethodCallback,
   ArrayMethodTypePredicate,
 } from "./internal/types/ArrayMethodCallback";
-import type { Reducer } from "./internal/types/LazyFunc";
+import type { Reducer } from "./internal/types/LazyEffect";
 import type { DoReduceResult } from "./internal/doReduce";
 import { toReadonlyArray } from "./internal/toReadonlyArray";
 

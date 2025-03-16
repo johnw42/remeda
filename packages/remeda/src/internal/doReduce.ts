@@ -3,7 +3,7 @@ import {
   type EagerReducer,
   type Reducer,
   type ReducerImpl,
-} from "./types/LazyFunc";
+} from "./types/LazyEffect";
 
 export default function doReduce<
   Data extends Iterable<unknown>,

@@ -2,7 +2,7 @@ import doReduce, { type DoReduceResult } from "./internal/doReduce";
 import type { ArrayMethodCallback } from "./internal/types/ArrayMethodCallback";
 import { mapCallback } from "./internal/mapCallback";
 import { isArray } from "./isArray";
-import type { Reducer } from "./internal/types/LazyFunc";
+import type { Reducer } from "./internal/types/LazyEffect";
 
 /**
  * Returns the index of the first element in an array that satisfies the

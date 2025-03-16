@@ -4,7 +4,7 @@ import doTransduce, { type DoTransduceResult } from "./internal/doTransduce";
 import { mapCallback } from "./internal/mapCallback";
 import { toReadonlyArray } from "./internal/toReadonlyArray";
 import type { ArrayMethodCallback } from "./internal/types/ArrayMethodCallback";
-import type { Transducer } from "./internal/types/LazyFunc";
+import type { Transducer } from "./internal/types/LazyEffect";
 import type ToArray from "./internal/types/ToArray";
 
 /**

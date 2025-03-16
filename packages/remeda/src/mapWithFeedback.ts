@@ -1,7 +1,7 @@
 import doTransduce, { type DoTransduceResult } from "./internal/doTransduce";
 import type { Mapped } from "./internal/types/Mapped";
 import type { ArrayMethodCallbackWithExtraArg } from "./internal/types/ArrayMethodCallback";
-import type { Transducer } from "./internal/types/LazyFunc";
+import type { Transducer } from "./internal/types/LazyEffect";
 import { mapCallback } from "./internal/mapCallback";
 
 /**

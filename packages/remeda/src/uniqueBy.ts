@@ -2,7 +2,7 @@ import doTransduce, { type DoTransduceResult } from "./internal/doTransduce";
 import type { ArrayMethodCallback } from "./internal/types/ArrayMethodCallback";
 import type { Deduped } from "./internal/types/Deduped";
 import { mapCallback } from "./internal/mapCallback";
-import type { Transducer } from "./internal/types/LazyFunc";
+import type { Transducer } from "./internal/types/LazyEffect";
 
 /**
  * Returns a new array containing only one copy of each element in the original

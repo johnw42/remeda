@@ -1,7 +1,7 @@
 import type { IterableElement } from "type-fest";
 import doTransduce, { type DoTransduceResult } from "./internal/doTransduce";
 import type { Deduped } from "./internal/types/Deduped";
-import type { Transducer } from "./internal/types/LazyFunc";
+import type { Transducer } from "./internal/types/LazyEffect";
 
 type IsEquals<T> = (a: T, b: T) => boolean;
 

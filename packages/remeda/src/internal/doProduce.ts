@@ -4,7 +4,7 @@ import {
   type EagerProducer,
   type Producer,
   type LazyProducerImpl,
-} from "./types/LazyFunc";
+} from "./types/LazyEffect";
 import { unsafeToArray } from "./unsafeToArray";
 
 export default function doProduce<

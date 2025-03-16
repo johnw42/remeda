@@ -5,7 +5,7 @@ import {
   type EagerTransducerImpl,
   type LazyTransducerImpl,
   type Transducer,
-} from "./types/LazyFunc";
+} from "./types/LazyEffect";
 import { unsafeToArray } from "./unsafeToArray";
 
 export default function doTransduce<

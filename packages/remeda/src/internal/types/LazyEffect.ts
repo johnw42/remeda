@@ -1,16 +1,16 @@
 import type { IterableElement } from "type-fest";
 
-// This file defines types related to three different kinds of lazy functions:
+// This file defines types related to three different kinds "effect" functions:
 // - Producers: functions that take a single value and return an iterable.
 // - Transducers: functions that take an iterable and return another iterable.
 // - Reducers: functions that take an iterable and return a single value.
 //
 // Each category contains a set of related types:
-// - Lazy*: A function that processes it arguments and/or produces its results lazily.
-// - Lazy*Impl: A function contining the lazy implementation of a function.
-// - Eager*Impl: A function contining the eager implementation of a function.
-// - *: A function that operaters eagerly and contains additional fields to support a lazy implementation.
-// - *F: A variant to * that accepts a function as a type parameter.
+// - Lazy*: An effect that processes it arguments and/or produces its results lazily.
+// - Lazy*Impl: A function contining the lazy implementation of an effect.
+// - Eager*Impl: A function contining the eager implementation of an effect.
+// - *: An eager effect that contains additional fields to support a lazy implementation.
+// - *F: A variant of * that accepts a function as a type parameter.
 
 export const lazyKind = Symbol("lazyKind");
 export const lazyImpl = Symbol("lazyImpl");

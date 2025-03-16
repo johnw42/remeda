@@ -1,6 +1,6 @@
 import doTransduce, { type DoTransduceResult } from "./internal/doTransduce";
 import { toReadonlyArray } from "./internal/toReadonlyArray";
-import type { Transducer } from "./internal/types/LazyFunc";
+import type { Transducer } from "./internal/types/LazyEffect";
 
 type Comparator<TFirst, TSecond> = (a: TFirst, b: TSecond) => boolean;
 

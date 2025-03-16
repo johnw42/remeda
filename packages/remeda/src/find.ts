@@ -6,7 +6,7 @@ import type {
 } from "./internal/types/ArrayMethodCallback";
 import { mapCallback } from "./internal/mapCallback";
 import { isArray } from "./isArray";
-import type { Reducer } from "./internal/types/LazyFunc";
+import type { Reducer } from "./internal/types/LazyEffect";
 
 /**
  * Returns the first element in the provided array that satisfies the provided

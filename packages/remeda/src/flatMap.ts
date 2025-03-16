@@ -3,7 +3,7 @@ import { toReadonlyArray } from "./internal/toReadonlyArray";
 import { mapCallback } from "./internal/mapCallback";
 import { isArray } from "./isArray";
 import type { ArrayMethodCallback } from "./internal/types/ArrayMethodCallback";
-import type { Transducer } from "./internal/types/LazyFunc";
+import type { Transducer } from "./internal/types/LazyEffect";
 
 /**
  * Returns a new array formed by applying a given callback function to each

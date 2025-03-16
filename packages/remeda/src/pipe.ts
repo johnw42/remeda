@@ -8,7 +8,7 @@ import {
   lazyKind,
   lazyImpl,
   type LazyEffect,
-} from "./internal/types/LazyFunc";
+} from "./internal/types/LazyEffect";
 import { isIterable } from "./isIterable";
 
 type EagerEffect = ((input: unknown) => unknown) & {

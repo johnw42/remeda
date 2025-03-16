@@ -102,4 +102,11 @@ describe("data-last", () => {
 
     expectTypeOf(result).toEqualTypeOf<Array<boolean | string>>();
   });
+
+  it("returns a polymorphic function", () => {
+    const func = take(2);
+
+    expectTypeOf(func([1])).toEqualTypeOf<Array<number>>();
+    expectTypeOf(func(["a"])).toEqualTypeOf<Array<string>>();
+  });
 });

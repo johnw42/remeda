@@ -1,27 +1,34 @@
+import type { IterableElement } from "type-fest";
 import doTransduce from "./internal/doTransduce";
 import type { IterableContainer } from "./internal/types/IterableContainer";
 import { unsafeToArray } from "./internal/unsafeToArray";
 import { isArray } from "./isArray";
 
-type Zipped<Left extends IterableContainer, Right extends IterableContainer> =
-  // If the array is empty the output is empty, no surprises
-  Left extends readonly []
-    ? []
-    : Right extends readonly []
+type Zipped<
+  Left extends Iterable<unknown>,
+  Right extends Iterable<unknown>,
+> = Left extends IterableContainer
+  ? Right extends IterableContainer
+    ? // If the array is empty the output is empty, no surprises
+      Left extends readonly []
       ? []
-      : // Are the two inputs both tuples with a non-rest first item?
-        Left extends readonly [infer LeftHead, ...infer LeftRest]
-        ? Right extends readonly [infer RightHead, ...infer RightRest]
-          ? // ...Then take that first item from both and recurse
-            [[LeftHead, RightHead], ...Zipped<LeftRest, RightRest>]
-          : // Is only one of the inputs a tuple (with a non-rest first item)?
-            // Then take that item, and match it with whatever the type of the other *array's* items are.
-            [[LeftHead, Right[number]], ...Zipped<LeftRest, Right>]
-        : Right extends readonly [infer RightHead, ...infer RightRest]
-          ? [[Left[number], RightHead], ...Zipped<Left, RightRest>]
-          : // Both inputs are not tuples (with a non-rest first item, they might be tuples with non-rest last item(s))
-            // So the output is just the "trivial" zip result.
-            Array<[Left[number], Right[number]]>;
+      : Right extends readonly []
+        ? []
+        : // Are the two inputs both tuples with a non-rest first item?
+          Left extends readonly [infer LeftHead, ...infer LeftRest]
+          ? Right extends readonly [infer RightHead, ...infer RightRest]
+            ? // ...Then take that first item from both and recurse
+              [[LeftHead, RightHead], ...Zipped<LeftRest, RightRest>]
+            : // Is only one of the inputs a tuple (with a non-rest first item)?
+              // Then take that item, and match it with whatever the type of the other *array's* items are.
+              [[LeftHead, Right[number]], ...Zipped<LeftRest, Right>]
+          : Right extends readonly [infer RightHead, ...infer RightRest]
+            ? [[Left[number], RightHead], ...Zipped<Left, RightRest>]
+            : // Both inputs are not tuples (with a non-rest first item, they might be tuples with non-rest last item(s))
+              // So the output is just the "trivial" zip result.
+              Array<[Left[number], Right[number]]>
+    : Array<[IterableElement<Left>, IterableElement<Right>]>
+  : Array<[IterableElement<Left>, IterableElement<Right>]>;
 
 /**
  * Creates a new list from two supplied lists by pairing up equally-positioned
@@ -38,14 +45,10 @@ type Zipped<Left extends IterableContainer, Right extends IterableContainer> =
  * @lazy
  * @category Array
  */
-export function zip<F extends IterableContainer, S extends IterableContainer>(
+export function zip<F extends Iterable<unknown>, S extends Iterable<unknown>>(
   first: F,
   second: S,
 ): Zipped<F, S>;
-export function zip<F, S>(
-  first: Iterable<F>,
-  second: Iterable<S>,
-): Array<[F, S]>;
 
 /**
  * Creates a new list from two supplied lists by pairing up equally-positioned
@@ -61,12 +64,9 @@ export function zip<F, S>(
  * @lazy
  * @category Array
  */
-export function zip<S extends IterableContainer>(
+export function zip<S extends Iterable<unknown>>(
   second: S,
-): <F extends IterableContainer>(first: F) => Zipped<F, S>;
-export function zip<S>(
-  second: Iterable<S>,
-): <F>(first: Iterable<F>) => Array<[F, S]>;
+): <F extends Iterable<unknown>>(first: F) => Zipped<F, S>;
 
 export function zip(...args: ReadonlyArray<unknown>): unknown {
   return doTransduce(zipImplementation, lazyImplementation, args);

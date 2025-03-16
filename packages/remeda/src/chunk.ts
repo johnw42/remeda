@@ -2,6 +2,7 @@ import type {
   IfNever,
   IntRange,
   IsNumericLiteral,
+  IterableElement,
   LessThan,
   Subtract,
   ValueOf,
@@ -23,7 +24,7 @@ import doTransduce from "./internal/doTransduce";
 type MAX_LITERAL_SIZE = 350;
 
 type Chunk<
-  T extends IterableContainer,
+  T extends Iterable<unknown>,
   N extends number,
 > = T extends readonly []
   ? []
@@ -187,19 +188,21 @@ type SuffixChunk<
  * This is the legacy type used when we don't know what N is. We can only adjust
  * our output based on if we know for sure that the array is empty or not.
  */
-type GenericChunk<T extends IterableContainer> = T extends
+type GenericChunk<T extends Iterable<unknown>> = T extends
   | readonly [...Array<unknown>, unknown]
   | readonly [unknown, ...Array<unknown>]
   ? NonEmptyArray<NonEmptyArray<T[number]>>
-  : Array<NonEmptyArray<T[number]>>;
+  : T extends IterableContainer<infer E>
+    ? Array<NonEmptyArray<E>>
+    : Iterable<NonEmptyArray<IterableElement<T>>>;
 
 /**
- * Split an array into groups the length of `size`. If `array` can't be split evenly, the final chunk will be the remaining elements.
+ * Split a sequence into groups the length of `size`. If `data` can't be split evenly, the final chunk will be the remaining elements.
  *
- * @param array - The array.
+ * @param data - The data.
  * @param size - The length of the chunk.
  * @signature
- *    R.chunk(array, size)
+ *    R.chunk(data, size)
  * @example
  *    R.chunk(['a', 'b', 'c', 'd'], 2) // => [['a', 'b'], ['c', 'd']]
  *    R.chunk(['a', 'b', 'c', 'd'], 3) // => [['a', 'b', 'c'], ['d']]
@@ -207,11 +210,10 @@ type GenericChunk<T extends IterableContainer> = T extends
  * @lazy
  * @category Array
  */
-export function chunk<T extends IterableContainer, N extends number>(
-  array: T,
+export function chunk<T extends Iterable<unknown>, N extends number>(
+  data: T,
   size: N,
 ): Chunk<T, N>;
-export function chunk<T>(data: Iterable<T>, size: number): Array<Array<T>>;
 
 /**
  * Split an array into groups the length of `size`. If `array` can't be split evenly, the final chunk will be the remaining elements.
@@ -228,9 +230,7 @@ export function chunk<T>(data: Iterable<T>, size: number): Array<Array<T>>;
  */
 export function chunk<N extends number>(
   size: N,
-): <T extends Iterable<unknown>>(
-  array: T,
-) => T extends IterableContainer ? Chunk<T, N> : Iterable<Array<T>>;
+): <T extends Iterable<unknown>>(array: T) => Chunk<T, N>;
 
 export function chunk(...args: ReadonlyArray<unknown>): unknown {
   return doTransduce(chunkImplementation, lazyImplementation, args);

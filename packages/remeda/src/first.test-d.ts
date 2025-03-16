@@ -111,3 +111,10 @@ test("readonly tuple with last", () => {
 
   expectTypeOf(result).toEqualTypeOf<number | string>();
 });
+
+it("returns a polymorphic function when called with no arguments", () => {
+  const func = first();
+
+  expectTypeOf(func([1])).toEqualTypeOf<number | undefined>();
+  expectTypeOf(func(["a"])).toEqualTypeOf<string | undefined>();
+});

@@ -117,9 +117,9 @@ export function drop<T extends Iterable<unknown>, N extends number>(
  * @lazy
  * @category Array
  */
-export function drop<N extends number, T extends Iterable<unknown>>(
+export function drop<N extends number>(
   n: N,
-): (data: T) => Drop<T, N>;
+): <T extends Iterable<unknown>>(data: T) => Drop<T, N>;
 
 export function drop(...args: ReadonlyArray<unknown>): unknown {
   return doTransduce(dropImplementation, lazyImplementation, args);

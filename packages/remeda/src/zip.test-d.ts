@@ -205,4 +205,18 @@ describe("dataLast", () => {
       [[number, string], ...Array<[string, number]>]
     >();
   });
+
+  it("returns a polymorphic function", () => {
+    const func = zip([] as ReadonlyArray<number>);
+
+    expectTypeOf(func([] as ReadonlyArray<string>)).toEqualTypeOf<
+      Array<[string, number]>
+    >();
+    expectTypeOf(func([] as Iterable<number>)).toEqualTypeOf<
+      Array<[number, number]>
+    >();
+    expectTypeOf(func([] as Iterable<string>)).toEqualTypeOf<
+      Array<[string, number]>
+    >();
+  });
 });

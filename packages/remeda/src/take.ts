@@ -1,6 +1,5 @@
 import type { IterableElement } from "type-fest";
-import doTransduce, { type DoTransduceResult } from "./internal/doTransduce";
-import type { Transducer } from "./internal/types/LazyFunc";
+import doTransduce from "./internal/doTransduce";
 import { unsafeToArray } from "./internal/unsafeToArray";
 import { isArray } from "./isArray";
 
@@ -17,7 +16,10 @@ import { isArray } from "./isArray";
  * @lazy
  * @category Array
  */
-export function take<T>(input: Iterable<T>, n: number): Array<T>;
+export function take<T extends Iterable<unknown>>(
+  input: T,
+  n: number,
+): Array<IterableElement<T>>;
 
 /**
  * Returns the first `n` elements of `array`.
@@ -31,11 +33,11 @@ export function take<T>(input: Iterable<T>, n: number): Array<T>;
  * @lazy
  * @category Array
  */
-export function take<T extends Iterable<unknown>>(
+export function take(
   n: number,
-): Transducer<T, Array<IterableElement<T>>>;
+): <T extends Iterable<unknown>>(data: T) => Array<IterableElement<T>>;
 
-export function take(...args: ReadonlyArray<unknown>): DoTransduceResult {
+export function take(...args: ReadonlyArray<unknown>): unknown {
   return doTransduce(takeImplementation, lazyImplementation, args);
 }
 

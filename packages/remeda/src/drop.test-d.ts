@@ -126,6 +126,13 @@ describe("data-first", () => {
 });
 
 describe("data-last", () => {
+  it("returns a polymorphic function", () => {
+    const func = drop(2);
+
+    expectTypeOf(func([1])).toEqualTypeOf<Array<number>>();
+    expectTypeOf(func(["a"])).toEqualTypeOf<Array<string>>();
+  });
+
   test("empty array", () => {
     const result = pipe([] as [], drop(2));
 

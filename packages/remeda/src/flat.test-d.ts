@@ -264,3 +264,10 @@ it("doesn't accept built-in 'infinite' numbers", () => {
   // @ts-expect-error [ts2345] - Infinity is typed as a non-literal number. - https://github.com/microsoft/TypeScript/blob/main/src/lib/es5.d.ts#L597
   flat([], Number.POSITIVE_INFINITY);
 });
+
+it("returns a polymorphic function when called with no arguments", () => {
+  const func = flat();
+
+  expectTypeOf(func([1])).toEqualTypeOf<Array<number>>();
+  expectTypeOf(func(["a"])).toEqualTypeOf<Array<string>>();
+});

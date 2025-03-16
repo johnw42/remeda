@@ -66,37 +66,6 @@ type FlatSimpleArrayItems<
     : T;
 }[IsDone extends true ? "done" : "recur"];
 
-// export type FlatSimpleArrayItems<
-//   T,
-//   Depth extends number,
-//   Iteration extends ReadonlyArray<unknown> = [],
-//   IsDone extends boolean = false,
-// > = {
-//   done: T;
-//   recur: T extends ReadonlyArray<unknown>
-//     ? FlatSimpleArrayItemsRecursive<T, Depth, Iteration>
-//     : T extends Iterable<infer E>
-//       ? // Handle the case where E is `string` or some other weird iterable type
-//         // that that is in iterable of itself.
-//         E extends Iterable<E>
-//         ? E
-//         : FlatSimpleArrayItemsRecursive<T, Depth, Iteration>
-//       : T;
-// }[IsDone extends true ? "done" : "recur"];
-
-// type FlatSimpleArrayItemsRecursive<
-//   T extends Iterable<unknown>,
-//   Depth extends number,
-//   Iteration extends ReadonlyArray<unknown> = [],
-// > = FlatSimpleArrayItems<
-//   IterableElement<T>,
-//   Depth,
-//   [...Iteration, unknown],
-//   // This trick allows us to continue 1 iteration more than the depth,
-//   // which is required to flatten the array up to depth.
-//   Iteration["length"] extends Depth ? true : false
-// >;
-
 /**
  * Creates a new array with all sub-array elements concatenated into it
  * recursively up to the specified depth. Equivalent to the built-in

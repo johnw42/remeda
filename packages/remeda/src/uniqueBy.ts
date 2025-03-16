@@ -24,10 +24,6 @@ export function uniqueBy<T extends Iterable<unknown>>(
   data: T,
   keyFunction: ArrayMethodCallback<T>,
 ): Deduped<T>;
-export function uniqueBy<T>(
-  data: Iterable<T>,
-  keyFunction: (item: T, index: number, data: ReadonlyArray<T>) => unknown,
-): Iterable<T>;
 
 /**
  * Returns a new array containing only one copy of each element in the original

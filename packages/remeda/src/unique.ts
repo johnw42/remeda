@@ -1,6 +1,5 @@
 import doTransduce from "./internal/doTransduce";
 import type { Deduped } from "./internal/types/Deduped";
-import type { IterableContainer } from "./internal/types/IterableContainer";
 
 /**
  * Returns a new array containing only one copy of each element in the original
@@ -15,8 +14,7 @@ import type { IterableContainer } from "./internal/types/IterableContainer";
  * @lazy
  * @category Array
  */
-export function unique<T extends IterableContainer>(data: T): Deduped<T>;
-export function unique<T>(data: Iterable<T>): Iterable<T>;
+export function unique<T extends Iterable<T>>(data: T): Deduped<T>;
 
 /**
  * Returns a new array containing only one copy of each element in the original
@@ -34,8 +32,7 @@ export function unique<T>(data: Iterable<T>): Iterable<T>;
  * @lazy
  * @category Array
  */
-export function unique(): <T extends IterableContainer>(data: T) => Deduped<T>;
-export function unique(): <T>(data: Iterable<T>) => Iterable<T>;
+export function unique(): <T extends Iterable<unknown>>(data: T) => Deduped<T>;
 
 export function unique(...args: ReadonlyArray<unknown>): unknown {
   return doTransduce(undefined, lazyImplementation, args);

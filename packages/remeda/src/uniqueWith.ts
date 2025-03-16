@@ -1,6 +1,6 @@
+import type { IterableElement } from "type-fest";
 import doTransduce from "./internal/doTransduce";
 import type { Deduped } from "./internal/types/Deduped";
-import type { IterableContainer } from "./internal/types/IterableContainer";
 
 type IsEquals<T> = (a: T, b: T) => boolean;
 
@@ -21,14 +21,10 @@ type IsEquals<T> = (a: T, b: T) => boolean;
  * @lazy
  * @category Array
  */
-export function uniqueWith<T extends IterableContainer>(
+export function uniqueWith<T extends Iterable<unknown>>(
   data: T,
-  isEquals: IsEquals<T[number]>,
+  isEquals: IsEquals<IterableElement<T>>,
 ): Deduped<T>;
-export function uniqueWith<T>(
-  data: Iterable<T>,
-  isEquals: IsEquals<T>,
-): Array<T>;
 
 /**
  * Returns a new array containing only one copy of each element in the original
@@ -49,12 +45,9 @@ export function uniqueWith<T>(
  * @lazy
  * @category Array
  */
-export function uniqueWith<T extends IterableContainer>(
-  isEquals: IsEquals<T[number]>,
+export function uniqueWith<T extends Iterable<unknown>>(
+  isEquals: IsEquals<IterableElement<T>>,
 ): (data: T) => Deduped<T>;
-export function uniqueWith<T>(
-  isEquals: IsEquals<T>,
-): (data: Iterable<T>) => Iterable<T>;
 
 export function uniqueWith(...args: ReadonlyArray<unknown>): unknown {
   return doTransduce(undefined, lazyImplementation, args);

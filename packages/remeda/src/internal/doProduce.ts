@@ -3,7 +3,7 @@ import {
   lazyKind,
   type EagerProducer,
   type Producer,
-  type ProducerImpl,
+  type LazyProducerImpl,
 } from "./types/LazyFunc";
 import { unsafeToArray } from "./unsafeToArray";
 
@@ -12,7 +12,7 @@ export default function doProduce<
   Rest extends ReadonlyArray<unknown>,
   Result extends Array<unknown>,
 >(
-  impl: ProducerImpl<Data, Rest, Result>,
+  impl: LazyProducerImpl<Data, Rest, Result>,
   args: ReadonlyArray<unknown>,
 ): DoProduceResult<Data, Result> {
   switch (impl.length - args.length) {

@@ -1,22 +1,26 @@
-import { purry } from "./purry";
+import doReduce, { type DoReduceResult } from "./internal/doReduce";
+import type AnyIterable from "./internal/types/AnyIterable";
+import type { Reducer } from "./internal/types/LazyEffect";
+import type ToArray from "./internal/types/ToArray";
 
-type Reverse<
-  T extends ReadonlyArray<unknown>,
-  R extends ReadonlyArray<unknown> = [],
-> = ReturnType<
-  T extends IsNoTuple<T>
-    ? () => [...T, ...R]
-    : T extends readonly [infer F, ...infer L]
-      ? () => Reverse<L, [F, ...R]>
-      : () => R
+type Reverse<T extends AnyIterable, R extends AnyIterable = []> = ReturnType<
+  T extends ReadonlyArray<unknown>
+    ? R extends ReadonlyArray<unknown>
+      ? T extends IsNoTuple<T>
+        ? () => [...T, ...R]
+        : T extends readonly [infer F, ...infer L]
+          ? () => Reverse<L, [F, ...R]>
+          : () => R
+      : () => ToArray<T>
+    : () => ToArray<T>
 >;
 
 type IsNoTuple<T> = T extends readonly [unknown, ...Array<unknown>] ? never : T;
 
 /**
- * Reverses array.
+ * Reverses a sequence.
  *
- * @param array - The array.
+ * @param data - The data.
  * @signature
  *    R.reverse(arr);
  * @example
@@ -24,27 +28,25 @@ type IsNoTuple<T> = T extends readonly [unknown, ...Array<unknown>] ? never : T;
  * @dataFirst
  * @category Array
  */
-export function reverse<T extends ReadonlyArray<unknown>>(array: T): Reverse<T>;
+export function reverse<T extends AnyIterable>(data: T): Reverse<T>;
 
 /**
- * Reverses array.
+ * Reverses a sequence.
  *
  * @signature
- *    R.reverse()(array);
+ *    R.reverse()(data);
  * @example
  *    R.reverse()([1, 2, 3]) // [3, 2, 1]
  * @dataLast
  * @category Array
  */
-export function reverse<T extends ReadonlyArray<unknown>>(): (
-  array: T,
-) => Reverse<T>;
+export function reverse<T extends AnyIterable>(): Reducer<T, Reverse<T>>;
 
-export function reverse(...args: ReadonlyArray<unknown>): unknown {
-  return purry(reverseImplementation, args);
+export function reverse(...args: ReadonlyArray<unknown>): DoReduceResult {
+  return doReduce(reverseImplementation, args);
 }
 
-function reverseImplementation<T>(array: ReadonlyArray<T>): Array<T> {
+function reverseImplementation<T>(array: Iterable<T>): Array<T> {
   // TODO [2025-05-01]: When node 18 reaches end-of-life bump target lib to ES2023+ and use `Array.prototype.toReversed` here.
   return [...array].reverse();
 }

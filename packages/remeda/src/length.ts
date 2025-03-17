@@ -1,6 +1,6 @@
-import { purry } from "./purry";
-
-type Enumerable<T> = ArrayLike<T> | Iterable<T>;
+import doReduce, { type DoReduceResult } from "./internal/doReduce";
+import { toReadonlyArray } from "./internal/toReadonlyArray";
+import type { Reducer } from "./internal/types/LazyEffect";
 
 /**
  * Counts values of the collection or iterable.
@@ -13,7 +13,7 @@ type Enumerable<T> = ArrayLike<T> | Iterable<T>;
  * @dataFirst
  * @category Array
  */
-export function length<T>(items: Enumerable<T>): number;
+export function length<T>(items: Iterable<T>): number;
 
 /**
  * Counts values of the collection or iterable.
@@ -25,11 +25,11 @@ export function length<T>(items: Enumerable<T>): number;
  * @dataLast
  * @category Array
  */
-export function length<T>(): (items: Enumerable<T>) => number;
+export function length<T>(): Reducer<Iterable<T>, number>;
 
-export function length(...args: ReadonlyArray<unknown>): unknown {
-  return purry(lengthImplementation, args);
+export function length(...args: ReadonlyArray<unknown>): DoReduceResult {
+  return doReduce(lengthImplementation, args);
 }
 
-const lengthImplementation = <T>(items: Enumerable<T>): number =>
-  "length" in items ? items.length : [...items].length;
+const lengthImplementation = <T>(items: Iterable<T>): number =>
+  toReadonlyArray(items).length;

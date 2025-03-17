@@ -1,4 +1,9 @@
-import { purry } from "./purry";
+import doReduce, { type DoReduceResult } from "./internal/doReduce";
+import { mapCallback } from "./internal/mapCallback";
+import type AnyIterable from "./internal/types/AnyIterable";
+import type { ArrayMethodCallbackWithExtraArg } from "./internal/types/ArrayMethodCallback";
+import type { Reducer } from "./internal/types/LazyEffect";
+import { isArray } from "./isArray";
 
 /**
  * Executes a user-supplied "reducer" callback function on each element of the
@@ -24,14 +29,9 @@ import { purry } from "./purry";
  * @dataFirst
  * @category Array
  */
-export function reduce<T, U>(
-  data: ReadonlyArray<T>,
-  callbackfn: (
-    previousValue: U,
-    currentValue: T,
-    currentIndex: number,
-    data: ReadonlyArray<T>,
-  ) => U,
+export function reduce<T extends AnyIterable, U>(
+  data: T,
+  callbackfn: ArrayMethodCallbackWithExtraArg<U, T, U>,
   initialValue: U,
 ): U;
 
@@ -58,29 +58,30 @@ export function reduce<T, U>(
  * @dataLast
  * @category Array
  */
-export function reduce<T, U>(
-  callbackfn: (
-    previousValue: U,
-    currentValue: T,
-    currentIndex: number,
-    data: ReadonlyArray<T>,
-  ) => U,
+export function reduce<T extends AnyIterable, U>(
+  callbackfn: ArrayMethodCallbackWithExtraArg<U, T, U>,
   initialValue: U,
-): (data: ReadonlyArray<T>) => U;
+): Reducer<T, U>;
 
-export function reduce(...args: ReadonlyArray<unknown>): unknown {
-  return purry(reduceImplementation, args);
+export function reduce(...args: ReadonlyArray<unknown>): DoReduceResult {
+  return doReduce(reduceImplementation, args);
 }
 
-const reduceImplementation = <T, U>(
-  data: ReadonlyArray<T>,
-  callbackfn: (
-    previousValue: U,
-    currentValue: T,
-    currentIndex: number,
-    data: ReadonlyArray<T>,
-  ) => U,
+function reduceImplementation<T, U>(
+  data: Iterable<T>,
+  callbackfn: ArrayMethodCallbackWithExtraArg<U, ReadonlyArray<T>, U>,
   initialValue: U,
-): U =>
-  // eslint-disable-next-line unicorn/no-array-reduce -- Our function wraps the built-in reduce.
-  data.reduce(callbackfn, initialValue);
+): U {
+  if (isArray(data)) {
+    // eslint-disable-next-line unicorn/no-array-reduce
+    return data.reduce(callbackfn, initialValue);
+  }
+
+  let accumulator = initialValue;
+  for (const [, reduced] of mapCallback(data, (itemArg, indexArg, dataArg) =>
+    callbackfn(accumulator, itemArg, indexArg, dataArg),
+  )) {
+    accumulator = reduced;
+  }
+  return accumulator;
+}

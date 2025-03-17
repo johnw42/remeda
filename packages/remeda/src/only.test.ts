@@ -1,31 +1,34 @@
+import { describeIterableArg } from "./internal/describeIterableArg";
 import { only } from "./only";
 import { pipe } from "./pipe";
 
-describe("dataFirst", () => {
-  test("empty array", () => {
-    expect(only([])).toBeUndefined();
+describeIterableArg("only", ({ wrap }) => {
+  describe("dataFirst", () => {
+    test("empty input", () => {
+      expect(only(wrap([]))).toBeUndefined();
+    });
+
+    test("length 1 input", () => {
+      expect(only(wrap([1]))).toBe(1);
+    });
+
+    test("length 2 input", () => {
+      expect(only(wrap([1, 2]))).toBeUndefined();
+    });
   });
 
-  test("length 1 array", () => {
-    expect(only([1])).toBe(1);
-  });
+  describe("data last", () => {
+    test("empty input", () => {
+      expect(pipe(wrap([]), only())).toBeUndefined();
+    });
 
-  test("length 2 array", () => {
-    expect(only([1, 2])).toBeUndefined();
-  });
-});
+    test("length 1 input", () => {
+      expect(pipe(wrap([1]), only())).toBe(1);
+    });
 
-describe("data last", () => {
-  test("empty array", () => {
-    expect(pipe([], only())).toBeUndefined();
-  });
-
-  test("length 1 array", () => {
-    expect(pipe([1], only())).toBe(1);
-  });
-
-  test("length 2 array", () => {
-    expect(pipe([1, 2], only())).toBeUndefined();
+    test("length 2 input", () => {
+      expect(pipe(wrap([1, 2]), only())).toBeUndefined();
+    });
   });
 });
 

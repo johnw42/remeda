@@ -1,7 +1,10 @@
-import type { IterableContainer } from "./internal/types/IterableContainer";
-import { purry } from "./purry";
+import type { IterableElement } from "type-fest";
+import type AnyIterable from "./internal/types/AnyIterable";
+import doReduce, { type DoReduceResult } from "./internal/doReduce";
+import type { Reducer } from "./internal/types/LazyEffect";
+import { isArray } from "./isArray";
 
-type Only<T extends IterableContainer> = T extends
+type Only<T extends AnyIterable> = T extends
   | readonly [...Array<unknown>, unknown, unknown]
   | readonly []
   | readonly [unknown, ...Array<unknown>, unknown]
@@ -9,14 +12,14 @@ type Only<T extends IterableContainer> = T extends
   ? undefined
   : T extends readonly [unknown]
     ? T[number]
-    : T[number] | undefined;
+    : IterableElement<T> | undefined;
 
 /**
- * Returns the first and only element of `array`, or undefined otherwise.
+ * Returns the first and only element of `data`, or undefined otherwise.
  *
- * @param array - The target array.
+ * @param data - The target data.
  * @signature
- *    R.only(array)
+ *    R.only(data)
  * @example
  *    R.only([]) // => undefined
  *    R.only([1]) // => 1
@@ -24,13 +27,13 @@ type Only<T extends IterableContainer> = T extends
  * @dataFirst
  * @category Array
  */
-export function only<T extends IterableContainer>(array: Readonly<T>): Only<T>;
+export function only<T extends AnyIterable>(data: T): Only<T>;
 
 /**
- * Returns the first and only element of `array`, or undefined otherwise.
+ * Returns the first and only element of `data`, or undefined otherwise.
  *
  * @signature
- *    R.only()(array)
+ *    R.only()(data)
  * @example
  *    R.pipe([], R.only()); // => undefined
  *    R.pipe([1], R.only()); // => 1
@@ -38,13 +41,26 @@ export function only<T extends IterableContainer>(array: Readonly<T>): Only<T>;
  * @dataLast
  * @category Array
  */
-export function only<T extends IterableContainer>(): (
-  array: Readonly<T>,
-) => Only<T>;
+export function only<T extends AnyIterable>(): Reducer<T, Only<T>>;
 
-export function only(...args: ReadonlyArray<unknown>): unknown {
-  return purry(onlyImplementation, args);
+export function only(...args: ReadonlyArray<unknown>): DoReduceResult {
+  return doReduce(onlyImplementation, args);
 }
 
-const onlyImplementation = <T>(array: ReadonlyArray<T>): T | undefined =>
-  array.length === 1 ? array[0] : undefined;
+function onlyImplementation<T>(data: Iterable<T>): T | undefined {
+  if (!isArray(data)) {
+    let isFirst = true;
+    let firstItem: T | undefined;
+    for (const item of data) {
+      if (isFirst) {
+        firstItem = item;
+      } else {
+        return undefined;
+      }
+      isFirst = false;
+    }
+    return firstItem;
+  }
+
+  return data.length === 1 ? data[0] : undefined;
+}

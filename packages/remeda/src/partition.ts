@@ -1,4 +1,13 @@
-import { purry } from "./purry";
+import type { IterableElement } from "type-fest";
+import type AnyIterable from "./internal/types/AnyIterable";
+import type {
+  ArrayMethodCallback,
+  ArrayMethodTypePredicate,
+} from "./internal/types/ArrayMethodCallback";
+import type { Reducer } from "./internal/types/LazyEffect";
+import type ToArray from "./internal/types/ToArray";
+import { mapCallback } from "./internal/mapCallback";
+import doReduce, { type DoReduceResult } from "./internal/doReduce";
 
 /**
  * Splits a collection into two groups, the first of which contains elements the
@@ -22,14 +31,14 @@ import { purry } from "./purry";
  * @dataFirst
  * @category Array
  */
-export function partition<T, S extends T>(
-  data: ReadonlyArray<T>,
-  predicate: (value: T, index: number, data: ReadonlyArray<T>) => value is S,
-): [Array<S>, Array<Exclude<T, S>>];
-export function partition<T>(
-  data: ReadonlyArray<T>,
-  predicate: (value: T, index: number, data: ReadonlyArray<T>) => boolean,
-): [Array<T>, Array<T>];
+export function partition<T extends AnyIterable, S extends IterableElement<T>>(
+  data: T,
+  predicate: ArrayMethodTypePredicate<T, S>,
+): [Array<S>, Array<Exclude<IterableElement<T>, S>>];
+export function partition<T extends AnyIterable>(
+  data: T,
+  predicate: ArrayMethodCallback<T, boolean>,
+): [ToArray<T>, ToArray<T>];
 
 /**
  * Splits a collection into two groups, the first of which contains elements the
@@ -52,24 +61,24 @@ export function partition<T>(
  * @dataLast
  * @category Array
  */
-export function partition<T, S extends T>(
-  predicate: (value: T, index: number, data: ReadonlyArray<T>) => value is S,
-): (data: ReadonlyArray<T>) => [Array<S>, Array<Exclude<T, S>>];
-export function partition<T>(
-  predicate: (value: T, index: number, data: ReadonlyArray<T>) => boolean,
-): (data: ReadonlyArray<T>) => [Array<T>, Array<T>];
+export function partition<T extends AnyIterable, S extends IterableElement<T>>(
+  predicate: ArrayMethodTypePredicate<T, S>,
+): Reducer<T, [Array<S>, Array<Exclude<IterableElement<T>, S>>]>;
+export function partition<T extends AnyIterable>(
+  predicate: ArrayMethodCallback<T, boolean>,
+): Reducer<T, [ToArray<T>, ToArray<T>]>;
 
-export function partition(...args: ReadonlyArray<unknown>): unknown {
-  return purry(partitionImplementation, args);
+export function partition(...args: ReadonlyArray<unknown>): DoReduceResult {
+  return doReduce(partitionImplementation, args);
 }
 
-const partitionImplementation = <T, S extends T>(
-  data: ReadonlyArray<T>,
-  predicate: (value: T, index: number, data: ReadonlyArray<T>) => value is S,
-): [Array<S>, Array<T>] => {
-  const ret: [Array<S>, Array<T>] = [[], []];
-  for (const [index, item] of data.entries()) {
-    if (predicate(item, index, data)) {
+const partitionImplementation = <T>(
+  data: Iterable<T>,
+  predicate: ArrayMethodCallback<ReadonlyArray<T>, boolean>,
+): [Array<T>, Array<T>] => {
+  const ret: [Array<T>, Array<T>] = [[], []];
+  for (const [item, flag] of mapCallback(data, predicate)) {
+    if (flag) {
       ret[0].push(item);
     } else {
       ret[1].push(item);

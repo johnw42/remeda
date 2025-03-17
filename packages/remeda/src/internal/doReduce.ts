@@ -7,7 +7,8 @@ import {
 } from "./types/LazyEffect";
 
 /**
- * This function is almost identical to {@link purry}, but it is used to make a reducer function compatible with {@link pipe}'s lazy optimization.
+ * This function is almost identical to {@link purry}, but it is used to make a
+ * reducer function compatible with {@link pipe}'s lazy optimization.
  */
 export default function doReduce<
   Data extends Iterable<unknown>,
@@ -32,6 +33,10 @@ export default function doReduce<
   }
 }
 
+/**
+ * This type is used to ensure that a data-last signature that returns a
+ * {@link Reducer} matches the type of the implementation.
+ */
 export type DoReduceResult<
   Data extends AnyIterable = AnyIterable,
   Result = unknown,

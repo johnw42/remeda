@@ -9,6 +9,13 @@ import {
 } from "./types/LazyEffect";
 import { unsafeToArray } from "./unsafeToArray";
 
+/**
+ * This function is similar to {@link purry}, but it is used to make a
+ * transducer function compatible with {@link pipe}'s lazy optimization.
+ *
+ * The `isDataFirst` parameter may be supplied to override the default heuristic
+ * used to distinguish between data-first and data-last signatures.
+ */
 export default function doTransduce<
   Data extends Iterable<unknown>,
   Rest extends ReadonlyArray<unknown>,
@@ -45,6 +52,10 @@ export default function doTransduce<
   } as const);
 }
 
+/**
+ * This type is used to ensure that a data-last signature that returns a
+ * {@link Transducer} matches the type of the implementation.
+ */
 export type DoTransduceResult<
   Data extends AnyIterable = AnyIterable,
   Result extends Array<unknown> = Array<unknown>,

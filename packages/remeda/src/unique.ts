@@ -8,9 +8,9 @@ import type ToIterable from "./internal/types/ToIterable";
  * Returns a new array containing only one copy of each element in the original
  * list. Elements are compared by reference using Set.
  *
- * @param data - The array to filter.
+ * @param data - The data to filter.
  * @signature
- *    R.unique(array)
+ *    R.unique(data)
  * @example
  *    R.unique([1, 2, 2, 5, 1, 6, 7]) // => [1, 2, 5, 6, 7]
  * @dataFirst
@@ -24,7 +24,7 @@ export function unique<T extends AnyIterable>(data: T): Deduped<T>;
  * list. Elements are compared by reference using Set.
  *
  * @signature
- *    R.unique()(array)
+ *    R.unique()(data)
  * @example
  *    R.pipe(
  *      [1, 2, 2, 5, 1, 6, 7], // only 4 iterations

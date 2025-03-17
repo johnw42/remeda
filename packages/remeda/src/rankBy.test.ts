@@ -33,7 +33,7 @@ describeIterableArg("rankBy", ({ wrap }) => {
 
   describe("data last", () => {
     it("works trivially with empty arrays", () => {
-      expect(rankBy(1, identity)(wrap([]))).toBe(0);
+      expect(rankBy(1, identity())(wrap([]))).toBe(0);
     });
 
     it("maintains the rank for items already in the array", () => {

@@ -1,3 +1,5 @@
+import { toReadonlyArray } from "./toReadonlyArray";
+
 /**
  * A binary search implementation that finds the index at which `predicate`
  * stops returning `true` and starts returning `false` (consistently) when run
@@ -13,9 +15,10 @@
  * O(N) time.
  */
 export function binarySearchCutoffIndex<T>(
-  array: ReadonlyArray<T>,
+  data: Iterable<T>,
   predicate: (value: T, index: number, data: ReadonlyArray<T>) => boolean,
 ): number {
+  const array = toReadonlyArray(data);
   let lowIndex = 0;
   let highIndex = array.length;
 

@@ -1,6 +1,5 @@
 import { purry } from "./purry";
 import { binarySearchCutoffIndex } from "./internal/binarySearchCutoffIndex";
-import { toReadonlyArray } from "./internal/toReadonlyArray";
 
 /**
  * Find the insertion position (index) of an item in an array with items sorted
@@ -49,5 +48,5 @@ export function sortedIndex(...args: ReadonlyArray<unknown>): unknown {
   return purry(sortedIndexImplementation, args);
 }
 
-const sortedIndexImplementation = <T>(array: Iterable<T>, item: T): number =>
-  binarySearchCutoffIndex(toReadonlyArray(array), (pivot) => pivot < item);
+const sortedIndexImplementation = <T>(data: Iterable<T>, item: T): number =>
+  binarySearchCutoffIndex(data, (pivot) => pivot < item);

@@ -18,21 +18,31 @@ export default function doProduce<
 >(
   impl: LazyProducerImpl<Data, Rest, Result>,
   args: ReadonlyArray<unknown>,
+  isDataFirst?: boolean,
 ): DoProduceResult<Data, Result> {
-  switch (impl.length - args.length) {
-    case 0:
-      return unsafeToArray(impl(...(args as [Data, ...Rest]))) as Result;
-    case 1: {
-      const dataLast: EagerProducer<Data, Result> = (data) =>
-        unsafeToArray(impl(data, ...(args as Rest)) as Result);
-      return Object.assign(dataLast, {
-        [lazyImpl]: (data: Data) => impl(data, ...(args as Rest)),
-        [lazyKind]: "producer",
-      } as const);
+  if (isDataFirst === undefined) {
+    switch (impl.length - args.length) {
+      case 0:
+        isDataFirst = true;
+        break;
+      case 1:
+        isDataFirst = false;
+        break;
+      default:
+        throw new Error("Wrong number of arguments");
     }
-    default:
-      throw new Error("Wrong number of arguments");
   }
+
+  if (isDataFirst) {
+    return unsafeToArray(impl(...(args as [Data, ...Rest]))) as Result;
+  }
+
+  const dataLast: EagerProducer<Data, Result> = (data) =>
+    unsafeToArray(impl(data, ...(args as Rest)) as Result);
+  return Object.assign(dataLast, {
+    [lazyImpl]: (data: Data) => impl(data, ...(args as Rest)),
+    [lazyKind]: "producer",
+  } as const);
 }
 
 /**

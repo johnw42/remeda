@@ -1,9 +1,11 @@
 import type { IterableElement } from "type-fest";
-import doTransduce from "./internal/doTransduce";
+import doTransduce, { type DoTransduceResult } from "./internal/doTransduce";
 import type { IterableContainer } from "./internal/types/IterableContainer";
 import { unsafeToArray } from "./internal/unsafeToArray";
 import { isArray } from "./isArray";
 import type AnyIterable from "./internal/types/AnyIterable";
+import type { lazyImpl, lazyKind } from "./internal/types/LazyEffect";
+import type ToIterable from "./internal/types/ToIterable";
 
 type Zipped<
   Left extends AnyIterable,
@@ -67,9 +69,16 @@ export function zip<F extends AnyIterable, S extends AnyIterable>(
  */
 export function zip<S extends AnyIterable>(
   second: S,
-): <F extends AnyIterable>(first: F) => Zipped<F, S>;
+): {
+  // Can't use `Transducer` here because the function type is polymorphic.
+  <F extends AnyIterable>(first: F): Zipped<F, S>;
+  readonly [lazyImpl]: <F extends AnyIterable>(
+    first: F,
+  ) => ToIterable<Zipped<F, S>>;
+  readonly [lazyKind]: "transducer";
+};
 
-export function zip(...args: ReadonlyArray<unknown>): unknown {
+export function zip(...args: ReadonlyArray<unknown>): DoTransduceResult {
   return doTransduce(zipImplementation, lazyImplementation, args);
 }
 

@@ -3,6 +3,30 @@ import { unsafeToArray } from "./internal/unsafeToArray";
 import { isArray } from "./isArray";
 import type ToArray from "./internal/types/ToArray";
 import type AnyIterable from "./internal/types/AnyIterable";
+import type { IsTuple } from "type-fest";
+
+type Take<T extends AnyIterable> =
+  T extends ReadonlyArray<unknown>
+    ? IsTuple<T> extends true
+      ? PartialTuple<T>
+      : ToArray<T>
+    : ToArray<T>;
+
+/**
+ * Converts a tuple type `T = [a,b,c,...]` to a union of tuple types `[] | [a] |
+ * [a,b] | [a,b,c] | [a,b,c,...]`. This is a different type than `Partial<T>`,
+ * which produces `[a?, b?, c?, ...]`, because `ToArray<Partial<T>>` is
+ * `Array<a|b|c|...|undefined>`, but `ToArray<PartialTuple<T>>` is
+ * `Array<a|b|c|...>`.
+ */
+type PartialTuple<T> = T extends readonly []
+  ? // base case
+    []
+  : // recursive case
+    T extends readonly [infer U, ...infer Rest]
+    ? [] | [U, ...PartialTuple<Rest>]
+    : // unreachable assuming T is a tuple type
+      never;
 
 /**
  * Returns the first `n` elements of `input`.
@@ -17,7 +41,7 @@ import type AnyIterable from "./internal/types/AnyIterable";
  * @lazy
  * @category Array
  */
-export function take<T extends AnyIterable>(input: T, n: number): ToArray<T>;
+export function take<T extends AnyIterable>(input: T, n: number): Take<T>;
 
 /**
  * Returns the first `n` elements of `array`.
@@ -31,7 +55,7 @@ export function take<T extends AnyIterable>(input: T, n: number): ToArray<T>;
  * @lazy
  * @category Array
  */
-export function take(n: number): <T extends AnyIterable>(data: T) => ToArray<T>;
+export function take(n: number): <T extends AnyIterable>(data: T) => Take<T>;
 
 export function take(...args: ReadonlyArray<unknown>): unknown {
   return doTransduce(takeImplementation, lazyImplementation, args);

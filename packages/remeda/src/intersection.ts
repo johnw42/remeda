@@ -1,4 +1,5 @@
-import doTransduce from "./internal/doTransduce";
+import doTransduce, { type DoTransduceResult } from "./internal/doTransduce";
+import type { lazyImpl, lazyKind } from "./internal/types/LazyEffect";
 
 /**
  * Returns a list of elements that exist in both array. The output maintains the
@@ -36,17 +37,21 @@ export function intersection<T, S>(
  * @lazy
  * @category Array
  */
-export function intersection<S>(
-  other: Iterable<S>,
-): <T>(data: Iterable<T>) => Array<S & T>;
+export function intersection<S>(other: Iterable<S>): {
+  <T>(data: Iterable<T>): Array<S & T>;
+  readonly [lazyImpl]: <T>(data: Iterable<T>) => Iterable<S & T>;
+  readonly [lazyKind]: "transducer";
+};
 
-export function intersection(...args: ReadonlyArray<unknown>): unknown {
+export function intersection(
+  ...args: ReadonlyArray<unknown>
+): DoTransduceResult {
   return doTransduce(undefined, lazyImplementation, args);
 }
 
 function* lazyImplementation<T, S>(
   data: Iterable<T>,
-  other: ReadonlyArray<S>,
+  other: Iterable<S>,
 ): Iterable<S & T> {
   // We need to build a more efficient data structure that would allow us to
   // keep track of the number of times we've seen a value in the other array.

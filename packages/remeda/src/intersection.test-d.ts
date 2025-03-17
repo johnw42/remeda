@@ -7,7 +7,7 @@ it("narrows the result type", () => {
 });
 
 it("returns a polymorphic function type", () => {
-  expectTypeOf(intersection([1])).toEqualTypeOf<
-    <T>(data: Iterable<T>) => Array<number & T>
-  >();
+  const func = intersection([1, 2, 3] as const);
+
+  expectTypeOf(func([2, 3, 4] as const)).toMatchTypeOf<Array<2 | 3>>();
 });

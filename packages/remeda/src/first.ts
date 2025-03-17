@@ -1,8 +1,9 @@
 import type { IterableElement } from "type-fest";
-import doReduce from "./internal/doReduce";
+import doReduce, { type DoReduceResult } from "./internal/doReduce";
 import type { IterableContainer } from "./internal/types/IterableContainer";
 import { isArray } from "./isArray";
 import type AnyIterable from "./internal/types/AnyIterable";
+import type { lazyKind } from "./internal/types/LazyEffect";
 
 type First<T extends AnyIterable> = [T] extends [IterableContainer]
   ? T extends []
@@ -47,9 +48,13 @@ export function first<T extends AnyIterable>(data: T): First<T>;
  * @lazy
  * @category Array
  */
-export function first(): <T extends AnyIterable>(data: T) => First<T>;
+export function first(): {
+  // Can't use `Reducer` here because the function type is polymorphic.
+  <T extends AnyIterable>(data: T): First<T>;
+  readonly [lazyKind]: "reducer";
+};
 
-export function first(...args: ReadonlyArray<unknown>): unknown {
+export function first(...args: ReadonlyArray<unknown>): DoReduceResult {
   return doReduce(firstImplementation, args);
 }
 

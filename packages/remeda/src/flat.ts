@@ -4,6 +4,8 @@ import { toReadonlyArray } from "./internal/toReadonlyArray";
 import doTransduce from "./internal/doTransduce";
 import { isArray } from "./isArray";
 import type AnyIterable from "./internal/types/AnyIterable";
+import type { lazyImpl, lazyKind } from "./internal/types/LazyEffect";
+import type ToIterable from "./internal/types/ToIterable";
 
 type FlatArray<T extends AnyIterable, Depth extends number> = FlatArrayInner<
   T extends IterableContainer ? T : ReadonlyArray<IterableElement<T>>,
@@ -110,7 +112,14 @@ export function flat<T extends AnyIterable, Depth extends number = 1>(
  */
 export function flat<Depth extends number = 1>(
   depth?: IsNumericLiteral<Depth> extends true ? Depth : never,
-): <T extends AnyIterable>(data: T) => FlatArray<T, Depth>;
+): {
+  // Can't use `Transducer` here because the function type is polymorphic.
+  <T extends AnyIterable>(data: T): FlatArray<T, Depth>;
+  readonly [lazyImpl]: <T>(
+    data: Iterable<T>,
+  ) => ToIterable<FlatArray<Iterable<T>, Depth>>;
+  readonly [lazyKind]: "transducer";
+};
 
 export function flat(
   dataOrDepth?: IterableContainer | number,

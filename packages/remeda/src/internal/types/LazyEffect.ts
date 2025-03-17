@@ -12,7 +12,6 @@ import type AnyIterable from "./AnyIterable";
 // - Lazy*Impl: A function contining the lazy implementation of an effect.
 // - Eager*Impl: A function contining the eager implementation of an effect.
 // - *: An eager effect that contains additional fields to support a lazy implementation.
-// - *F: A variant of * that accepts a function as a type parameter.
 
 export const lazyKind = Symbol("lazyKind");
 export const lazyImpl = Symbol("lazyImpl");
@@ -42,7 +41,7 @@ export type Producer<Data, Result extends Array<unknown>> = ProducerF<
   EagerProducer<Data, Result>
 >;
 
-export type ProducerF<F extends EagerProducer<never, Array<unknown>>> = {
+type ProducerF<F extends EagerProducer<never, Array<unknown>>> = {
   // This type could be `F & {...}`, but using `&` causes type inference to fail.
   // See https://github.com/microsoft/TypeScript/issues/61417
   (...args: Parameters<F>): ReturnType<F>;
@@ -79,7 +78,9 @@ export type Transducer<
   Result extends Array<unknown>,
 > = TransducerF<EagerTransducer<Data, Result>>;
 
-export type TransducerF<F extends EagerTransducer<never, Array<unknown>>> = {
+// This type only works for monomorphic functions. For polymorphic functions, we
+// need to inline the definition where it is used.  See `drop` for an example.
+type TransducerF<F extends EagerTransducer<never, Array<unknown>>> = {
   // This type could be `F & {...}`, but using `&` causes type inference to fail.
   // See https://github.com/microsoft/TypeScript/issues/61417
   (...args: Parameters<F>): ReturnType<F>;
@@ -103,10 +104,11 @@ export type Reducer<Data extends AnyIterable, Result> = ReducerF<
   EagerReducer<Data, Result>
 >;
 
-export type ReducerF<F extends EagerReducer<IterableElement<never>, unknown>> =
-  {
-    // This type could be `F & {...}`, but using `&` causes type inference to fail.
-    // See https://github.com/microsoft/TypeScript/issues/61417
-    (...args: Parameters<F>): ReturnType<F>;
-    readonly [lazyKind]: "reducer";
-  };
+// This type only works for monomorphic functions. For polymorphic functions, we
+// need to inline the definition where it is used.  See `first` for an example.
+type ReducerF<F extends EagerReducer<IterableElement<never>, unknown>> = {
+  // This type could be `F & {...}`, but using `&` causes type inference to fail.
+  // See https://github.com/microsoft/TypeScript/issues/61417
+  (...args: Parameters<F>): ReturnType<F>;
+  readonly [lazyKind]: "reducer";
+};

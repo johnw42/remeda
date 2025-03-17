@@ -1,11 +1,13 @@
-import type { Join } from "type-fest";
-import type ToArray from "./internal/types/ToArray";
+import type { Join as JoinArray } from "type-fest";
 import doReduce, { type DoReduceResult } from "./internal/doReduce";
 import type { Reducer } from "./internal/types/LazyEffect";
 import { toReadonlyArray } from "./internal/toReadonlyArray";
 
 // Copied from type-fest, from the Join type.
 type JoinableItem = bigint | boolean | number | string | null | undefined;
+
+type Join<T extends Iterable<JoinableItem>, Glue extends string> =
+  T extends ReadonlyArray<JoinableItem> ? JoinArray<T, Glue> : string;
 
 /**
  * Joins the elements of the array by: casting them to a string and
@@ -29,7 +31,7 @@ type JoinableItem = bigint | boolean | number | string | null | undefined;
 export function join<T extends Iterable<JoinableItem>, Glue extends string>(
   data: T,
   glue: Glue,
-): Join<ToArray<T>, Glue>;
+): Join<T, Glue>;
 
 /**
  * Joins the elements of the array by: casting them to a string and
@@ -51,7 +53,7 @@ export function join<T extends Iterable<JoinableItem>, Glue extends string>(
  */
 export function join<T extends Iterable<JoinableItem>, Glue extends string>(
   glue: Glue,
-): Reducer<T, Join<ToArray<T>, Glue>>;
+): Reducer<T, Join<T, Glue>>;
 
 export function join(...args: ReadonlyArray<unknown>): DoReduceResult {
   return doReduce(joinImplementation, args);

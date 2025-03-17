@@ -129,8 +129,12 @@ describe("data-last", () => {
   it("returns a polymorphic function", () => {
     const func = drop(2);
 
-    expectTypeOf(func([1])).toEqualTypeOf<Array<number>>();
-    expectTypeOf(func(["a"])).toEqualTypeOf<Array<string>>();
+    expectTypeOf(func([1])).toEqualTypeOf<[]>();
+    expectTypeOf(func(["a"])).toEqualTypeOf<[]>();
+    expectTypeOf(func([1] as Iterable<number>)).toEqualTypeOf<Array<number>>();
+    expectTypeOf(func(["a"] as Iterable<string>)).toEqualTypeOf<
+      Array<string>
+    >();
   });
 
   test("empty array", () => {

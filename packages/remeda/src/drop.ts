@@ -3,11 +3,12 @@ import type { CoercedArray } from "./internal/types/CoercedArray";
 import type { IterableContainer } from "./internal/types/IterableContainer";
 import type { NTuple } from "./internal/types/NTuple";
 import type { TupleParts } from "./internal/types/TupleParts";
-import doTransduce from "./internal/doTransduce";
+import doTransduce, { type DoTransduceResult } from "./internal/doTransduce";
 import { isArray } from "./isArray";
 import { unsafeToArray } from "./internal/unsafeToArray";
 import type ToArray from "./internal/types/ToArray";
 import type AnyIterable from "./internal/types/AnyIterable";
+import type { lazyImpl, lazyKind } from "./internal/types/LazyEffect";
 
 type Drop<T extends AnyIterable, N extends number> =
   // The extra brackets prevent the conditional from being distributed over union types.
@@ -116,9 +117,14 @@ export function drop<T extends AnyIterable, N extends number>(
  */
 export function drop<N extends number>(
   n: N,
-): <T extends AnyIterable>(data: T) => Drop<T, N>;
+): {
+  // Can't use `Transducer` here because the function type is polymorphic.
+  <T extends AnyIterable>(data: T): Drop<T, N>;
+  readonly [lazyImpl]: <T extends AnyIterable>(data: T) => Iterable<T>;
+  readonly [lazyKind]: "transducer";
+};
 
-export function drop(...args: ReadonlyArray<unknown>): unknown {
+export function drop(...args: ReadonlyArray<unknown>): DoTransduceResult {
   return doTransduce(dropImplementation, lazyImplementation, args);
 }
 

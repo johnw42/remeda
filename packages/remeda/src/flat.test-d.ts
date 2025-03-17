@@ -268,6 +268,6 @@ it("doesn't accept built-in 'infinite' numbers", () => {
 it("returns a polymorphic function when called with no arguments", () => {
   const func = flat();
 
-  expectTypeOf(func([1])).toEqualTypeOf<Array<number>>();
-  expectTypeOf(func(["a"])).toEqualTypeOf<Array<string>>();
+  expectTypeOf(func([1] as const)).toEqualTypeOf<[1]>();
+  expectTypeOf(func(["a"] as const)).toEqualTypeOf<["a"]>();
 });

@@ -6,6 +6,9 @@ import {
   type ReducerImpl,
 } from "./types/LazyEffect";
 
+/**
+ * This function is almost identical to {@link purry}, but it is used to make a reducer function compatible with {@link pipe}'s lazy optimization.
+ */
 export default function doReduce<
   Data extends Iterable<unknown>,
   Rest extends ReadonlyArray<unknown>,
@@ -13,7 +16,7 @@ export default function doReduce<
 >(
   impl: ReducerImpl<Data, Rest, Result>,
   args: ReadonlyArray<unknown>,
-): Result | Reducer<Data, Result> {
+): DoReduceResult<Data, Result> {
   switch (impl.length - args.length) {
     case 0:
       return impl(...(args as readonly [Data, ...Rest]));

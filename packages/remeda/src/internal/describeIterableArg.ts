@@ -62,6 +62,10 @@ class ArrayContentMatcher<T> extends AsymmetricMatcher<ReadonlyArray<T>> {
  */
 type WrapperFn = typeof toBasicIterable;
 
+type ExtraCases = Readonly<
+  Record<string, <T>(input: ReadonlyArray<T>) => Iterable<T>>
+>;
+
 /**
  * The body passed to `describeIterableArg`.
  */
@@ -91,19 +95,30 @@ type IterableArgInfo = {
  * arrays and generic iterables.
  */
 export function describeIterableArg(desc: string, body: BodyFn): void;
-export function describeIterableArg(body: BodyFn): void;
-
-export function describeIterableArg(...args: ReadonlyArray<unknown>): void {
-  let desc: string;
-  let body: BodyFn;
+export function describeIterableArg(
+  desc: string,
+  extra: ExtraCases,
+  body: BodyFn,
+): void;
+export function describeIterableArg(
+  ...args:
+    | readonly [desc: string, body: BodyFn]
+    | readonly [desc: string, extra: ExtraCases, body: BodyFn]
+): void {
   if (args.length === 2) {
-    [desc, body] = args as [string, BodyFn];
-    if (/\$what\b/u.exec(desc) === null) {
-      desc += " where type of data is $what";
-    }
+    describeIterableArgImpl(args[0], {}, args[1]);
   } else {
-    [body] = args as [BodyFn];
-    desc = "where type of data is $what";
+    describeIterableArgImpl(args[0], args[1], args[2]);
+  }
+}
+
+function describeIterableArgImpl(
+  desc: string,
+  extraCases: ExtraCases,
+  body: BodyFn,
+): void {
+  if (/\$what\b/u.exec(desc) === null) {
+    desc += " where type of data is $what";
   }
 
   describe.each`
@@ -111,4 +126,11 @@ export function describeIterableArg(...args: ReadonlyArray<unknown>): void {
     ${"array"}     | ${true}     | ${SameRefMatcher.for}      | ${identity()}
     ${"generator"} | ${false}    | ${ArrayContentMatcher.for} | ${toBasicIterable}
   `(desc, (info: IterableArgInfo) => body(info));
+
+  for (const [key, wrap] of Object.entries(extraCases)) {
+    describe.each`
+      what   | dataIsArray | wrappedArray               | wrap
+      ${key} | ${false}    | ${ArrayContentMatcher.for} | ${wrap}
+    `(desc, (info: IterableArgInfo) => body(info));
+  }
 }

@@ -1,9 +1,10 @@
 import type { IsNumericLiteral } from "type-fest";
-import type { IterableContainer } from "./internal/types/IterableContainer";
-import { purry } from "./purry";
+import type AnyIterable from "./internal/types/AnyIterable";
+import doReduce, { type DoReduceResult } from "./internal/doReduce";
+import type { Reducer } from "./internal/types/LazyEffect";
 
 type ArraySetRequired<
-  T extends IterableContainer,
+  T extends AnyIterable,
   Min extends number,
   Iteration extends ReadonlyArray<unknown> = [],
 > = number extends Min
@@ -64,11 +65,11 @@ type ArraySetRequired<
  * @dataFirst
  * @category Array
  */
-export function hasAtLeast<T extends IterableContainer, N extends number>(
-  data: IterableContainer | T,
+export function hasAtLeast<T extends AnyIterable, N extends number>(
+  data: Iterable<unknown> | T,
   minimum: IsNumericLiteral<N> extends true ? N : never,
 ): data is ArraySetRequired<T, N>;
-export function hasAtLeast(data: IterableContainer, minimum: number): boolean;
+export function hasAtLeast(data: AnyIterable, minimum: number): boolean;
 
 /**
  * Checks if the given array has at least the defined number of elements. When
@@ -96,18 +97,33 @@ export function hasAtLeast(data: IterableContainer, minimum: number): boolean;
  */
 export function hasAtLeast<N extends number>(
   minimum: IsNumericLiteral<N> extends true ? N : never,
-): <T extends IterableContainer>(
-  data: IterableContainer | T,
+): <T extends AnyIterable>(
+  data: Iterable<unknown> | T,
 ) => data is ArraySetRequired<T, N>;
-export function hasAtLeast(
-  minimum: number,
-): (data: IterableContainer) => boolean;
+export function hasAtLeast(minimum: number): Reducer<AnyIterable, boolean>;
 
-export function hasAtLeast(...args: ReadonlyArray<unknown>): unknown {
-  return purry(hasAtLeastImplementation, args);
+export function hasAtLeast(...args: ReadonlyArray<unknown>): DoReduceResult {
+  return doReduce(hasAtLeastImplementation, args);
 }
 
-const hasAtLeastImplementation = (
-  data: IterableContainer,
+function hasAtLeastImplementation(
+  data: Iterable<unknown>,
   minimum: number,
-): boolean => data.length >= minimum;
+): boolean {
+  if (Array.isArray(data)) {
+    return data.length >= minimum;
+  }
+  if (data instanceof Set || data instanceof Map) {
+    return data.size >= minimum;
+  }
+  if (minimum <= 0) {
+    return true;
+  }
+  let count = 0;
+  for (const _ of data) {
+    if (++count >= minimum) {
+      return true;
+    }
+  }
+  return false;
+}

@@ -4,6 +4,7 @@ import { mapCallback } from "./internal/mapCallback";
 import { isArray } from "./isArray";
 import type { ArrayMethodCallback } from "./internal/types/ArrayMethodCallback";
 import type { Transducer } from "./internal/types/LazyEffect";
+import type AnyIterable from "./internal/types/AnyIterable";
 
 /**
  * Returns a new array formed by applying a given callback function to each
@@ -51,7 +52,7 @@ export function flatMap<T extends Iterable<unknown>, U>(
  * @lazy
  * @category Array
  */
-export function flatMap<T extends Iterable<unknown>, U>(
+export function flatMap<T extends AnyIterable, U>(
   callbackfn: ArrayMethodCallback<T, ReadonlyArray<U> | U>,
 ): Transducer<T, Array<U>>;
 

@@ -21,7 +21,8 @@ describe("dataFirst", () => {
 // TODO(jrw)
 describe("dataLast", () => {
   it("flatMap", () => {
-    const result = flatMap((x: number) => [x * 2, x * 3])([1, 2]);
+    const func = flatMap((x: number) => [x * 2, x * 3]);
+    const result = func([1, 2]);
 
     expect(result).toStrictEqual([2, 3, 4, 6]);
   });

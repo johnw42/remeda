@@ -1,4 +1,5 @@
-import type { IterableContainer } from "./internal/types/IterableContainer";
+import type { IterableElement } from "type-fest";
+import type AnyIterable from "./internal/types/AnyIterable";
 import type { ReorderedArray } from "./internal/types/ReorderedArray";
 import { purry } from "./purry";
 
@@ -17,9 +18,9 @@ import { purry } from "./purry";
  * @dataFirst
  * @category Array
  */
-export function sort<T extends IterableContainer>(
+export function sort<T extends AnyIterable>(
   items: T,
-  cmp: (a: T[number], b: T[number]) => number,
+  cmp: (a: IterableElement<T>, b: IterableElement<T>) => number,
 ): ReorderedArray<T>;
 
 /**
@@ -36,17 +37,17 @@ export function sort<T extends IterableContainer>(
  * @dataLast
  * @category Array
  */
-export function sort<T extends IterableContainer>(
-  cmp: (a: T[number], b: T[number]) => number,
+export function sort<T extends AnyIterable>(
+  cmp: (a: IterableElement<T>, b: IterableElement<T>) => number,
 ): (items: T) => ReorderedArray<T>;
 
 export function sort(...args: ReadonlyArray<unknown>): unknown {
   return purry(sortImplementation, args);
 }
 
-function sortImplementation<T extends IterableContainer>(
+function sortImplementation<T extends AnyIterable>(
   items: T,
-  cmp: (a: T[number], b: T[number]) => number,
+  cmp: (a: IterableElement<T>, b: IterableElement<T>) => number,
 ): ReorderedArray<T> {
   const ret = [...items];
   ret.sort(cmp);

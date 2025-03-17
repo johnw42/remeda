@@ -1,6 +1,7 @@
+import type { IterableElement } from "type-fest";
 import { purryOrderRules, type OrderRule } from "./internal/purryOrderRules";
+import type AnyIterable from "./internal/types/AnyIterable";
 import type { CompareFunction } from "./internal/types/CompareFunction";
-import type { IterableContainer } from "./internal/types/IterableContainer";
 import type { NonEmptyArray } from "./internal/types/NonEmptyArray";
 import type { ReorderedArray } from "./internal/types/ReorderedArray";
 
@@ -34,8 +35,8 @@ import type { ReorderedArray } from "./internal/types/ReorderedArray";
  * @dataLast
  * @category Array
  */
-export function sortBy<T extends IterableContainer>(
-  ...sortRules: Readonly<NonEmptyArray<OrderRule<T[number]>>>
+export function sortBy<T extends AnyIterable>(
+  ...sortRules: Readonly<NonEmptyArray<OrderRule<IterableElement<T>>>>
 ): (array: T) => ReorderedArray<T>;
 
 /**
@@ -84,9 +85,9 @@ export function sortBy<T extends IterableContainer>(
  * @dataFirst
  * @category Array
  */
-export function sortBy<T extends IterableContainer>(
+export function sortBy<T extends AnyIterable>(
   array: T,
-  ...sortRules: Readonly<NonEmptyArray<OrderRule<T[number]>>>
+  ...sortRules: Readonly<NonEmptyArray<OrderRule<IterableElement<T>>>>
 ): ReorderedArray<T>;
 
 export function sortBy(...args: ReadonlyArray<unknown>): unknown {
@@ -94,7 +95,7 @@ export function sortBy(...args: ReadonlyArray<unknown>): unknown {
 }
 
 const sortByImplementation = <T>(
-  data: ReadonlyArray<T>,
+  data: Iterable<T>,
   compareFn: CompareFunction<T>,
 ): Array<T> =>
   // TODO [2025-05-01]: When node 18 reaches end-of-life bump target lib to ES2023+ and use `Array.prototype.toSorted` here.

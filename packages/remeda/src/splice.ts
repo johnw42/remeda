@@ -16,10 +16,10 @@ import { purry } from "./purry";
  * @category Array
  */
 export function splice<T>(
-  items: ReadonlyArray<T>,
+  items: Iterable<T>,
   start: number,
   deleteCount: number,
-  replacement: ReadonlyArray<T>,
+  replacement: Iterable<T>,
 ): Array<T>;
 
 /**
@@ -39,18 +39,18 @@ export function splice<T>(
 export function splice<T>(
   start: number,
   deleteCount: number,
-  replacement: ReadonlyArray<T>,
-): (items: ReadonlyArray<T>) => Array<T>;
+  replacement: Iterable<T>,
+): (items: Iterable<T>) => Array<T>;
 
 export function splice(...args: ReadonlyArray<unknown>): unknown {
   return purry(spliceImplementation, args);
 }
 
 function spliceImplementation<T>(
-  items: ReadonlyArray<T>,
+  items: Iterable<T>,
   start: number,
   deleteCount: number,
-  replacement: ReadonlyArray<T>,
+  replacement: Iterable<T>,
 ): Array<T> {
   // TODO [2025-05-01]: When node 18 reaches end-of-life bump target lib to ES2023+ and use `Array.prototype.toSpliced` here.
   const result = [...items];

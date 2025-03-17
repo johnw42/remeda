@@ -1,15 +1,19 @@
-import type { LastArrayElement } from "type-fest";
+import type { IterableElement, LastArrayElement } from "type-fest";
 import type { IterableContainer } from "./internal/types/IterableContainer";
-import { purry } from "./purry";
+import type AnyIterable from "./internal/types/AnyIterable";
+import { isArray } from "./isArray";
+import doReduce from "./internal/doReduce";
 
-type Last<T extends IterableContainer> = LastArrayElement<
-  T,
-  // Type-fest's LastArrayElement assumes a looser typescript configuration
-  // where `noUncheckedIndexedAccess` is disabled. To support the stricter
-  // configuration we assume we need to assign the "LastArrayElement" param to
-  // `undefined`, but only if the array isn't empty.
-  T extends readonly [] ? never : undefined
->;
+type Last<T extends AnyIterable> = T extends IterableContainer
+  ? LastArrayElement<
+      T,
+      // Type-fest's LastArrayElement assumes a looser typescript configuration
+      // where `noUncheckedIndexedAccess` is disabled. To support the stricter
+      // configuration we assume we need to assign the "LastArrayElement" param to
+      // `undefined`, but only if the array isn't empty.
+      T extends readonly [] ? never : undefined
+    >
+  : IterableElement<T>;
 
 /**
  * Gets the last element of `array`.
@@ -23,7 +27,7 @@ type Last<T extends IterableContainer> = LastArrayElement<
  * @dataFirst
  * @category Array
  */
-export function last<T extends IterableContainer>(data: T): Last<T>;
+export function last<T extends AnyIterable>(data: T): Last<T>;
 
 /**
  * Gets the last element of `array`.
@@ -40,11 +44,20 @@ export function last<T extends IterableContainer>(data: T): Last<T>;
  * @dataLast
  * @category Array
  */
-export function last(): <T extends IterableContainer>(data: T) => Last<T>;
+export function last(): <T extends AnyIterable>(data: T) => Last<T>;
 
 export function last(...args: ReadonlyArray<unknown>): unknown {
-  return purry(lastImplementation, args);
+  return doReduce(lastImplementation, args);
 }
 
-const lastImplementation = <T>(array: ReadonlyArray<T>): T | undefined =>
-  array.at(-1);
+function lastImplementation<T>(data: Iterable<T>): T | undefined {
+  if (isArray(data)) {
+    return data.at(-1);
+  }
+
+  let lastItem: T | undefined;
+  for (const value of data) {
+    lastItem = value;
+  }
+  return lastItem;
+}

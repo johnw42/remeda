@@ -1,15 +1,22 @@
+import type { IsInteger } from "type-fest";
+import { toReadonlyArray } from "./internal/toReadonlyArray";
+import type AnyIterable from "./internal/types/AnyIterable";
 import type { IterableContainer } from "./internal/types/IterableContainer";
+import type ToArray from "./internal/types/ToArray";
 import { purry } from "./purry";
 
-type Sampled<T extends IterableContainer, N extends number> =
-  // Check if N is generic (e.g. not '5' but 'number')
-  number extends N
-    ? SampledGeneric<T>
-    : // We check if the input tuple is shorter than N. We need to check this
+type Sampled<
+  T extends AnyIterable,
+  N extends number,
+> = T extends IterableContainer
+  ? IsInteger<N> extends true
+    ? // We check if the input tuple is shorter than N. We need to check this
       // outside the recursive loop because T changes inside that loop
       undefined extends T[N]
       ? T
-      : SampledLiteral<T, N>;
+      : SampledLiteral<T, N>
+    : SampledGeneric<T>
+  : ToArray<T>;
 
 type SampledGeneric<T extends IterableContainer> =
   // Stop the recursion when the array is empty
@@ -67,7 +74,7 @@ type SampledLiteral<
  * @dataFirst
  * @category Array
  */
-export function sample<T extends IterableContainer, N extends number = number>(
+export function sample<T extends AnyIterable, N extends number = number>(
   data: T,
   sampleSize: N,
 ): Sampled<T, N>;
@@ -92,7 +99,7 @@ export function sample<T extends IterableContainer, N extends number = number>(
  * @dataLast
  * @category Array
  */
-export function sample<T extends IterableContainer, N extends number = number>(
+export function sample<T extends AnyIterable, N extends number = number>(
   sampleSize: N,
 ): (data: T) => Sampled<T, N>;
 
@@ -101,7 +108,7 @@ export function sample(...args: ReadonlyArray<unknown>): unknown {
 }
 
 function sampleImplementation<T>(
-  data: ReadonlyArray<T>,
+  data: Iterable<T>,
   sampleSize: number,
 ): Array<T> {
   if (sampleSize <= 0) {
@@ -109,9 +116,15 @@ function sampleImplementation<T>(
     return [];
   }
 
-  if (sampleSize >= data.length) {
+  const array = toReadonlyArray(data);
+
+  if (sampleSize >= array.length) {
     // Trivial
-    return [...data];
+    return array === data
+      ? [...array]
+      : // This cast is safe because it only happens when toReadonlyArray has
+        // created a new array.
+        (array as Array<T>);
   }
 
   // We have 2 modes of sampling, depending on the size of the sample requested.
@@ -133,19 +146,19 @@ function sampleImplementation<T>(
   // than n/2, we run at O(klogk). For large sampleSize we need to iterate over
   // the full input array, but we don't need to sort the indices because we can
   // use the Set's 'has' method, so we effectively run at O(n).
-  const actualSampleSize = Math.min(sampleSize, data.length - sampleSize);
+  const actualSampleSize = Math.min(sampleSize, array.length - sampleSize);
 
   const sampleIndices = new Set<number>();
   while (sampleIndices.size < actualSampleSize) {
-    const randomIndex = Math.floor(Math.random() * data.length);
+    const randomIndex = Math.floor(Math.random() * array.length);
     sampleIndices.add(randomIndex);
   }
 
   if (sampleSize === actualSampleSize) {
     return [...sampleIndices]
       .sort((a, b) => a - b)
-      .map((index) => data[index]!);
+      .map((index) => array[index]!);
   }
 
-  return data.filter((_, index) => !sampleIndices.has(index));
+  return array.filter((_, index) => !sampleIndices.has(index));
 }

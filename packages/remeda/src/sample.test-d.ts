@@ -1,3 +1,4 @@
+import type { NonEmptyArray } from "./internal/types/NonEmptyArray";
 import { sample } from "./sample";
 
 describe("sampleSize 0", () => {
@@ -797,5 +798,19 @@ describe("non-const sampleSize", () => {
       // TODO: the typing isn't ideal here. I'm not even sure what the type here should be...
       Array<boolean | number | string>
     >();
+  });
+});
+
+describe("edge cases", () => {
+  test("non-integer sample sizes", () => {
+    const result = sample([1, 2, 3], 0.5);
+
+    expectTypeOf(result).toEqualTypeOf<Array<number>>();
+  });
+
+  it("returns a non-empty array", () => {
+    const [item] = sample([1] as NonEmptyArray<number>, 1);
+
+    expectTypeOf(item).toEqualTypeOf<number>();
   });
 });

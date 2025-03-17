@@ -17,7 +17,7 @@ import type ToIterable from "./internal/types/ToIterable";
  * @lazy
  * @category Array
  */
-export function unique<T extends Iterable<T>>(data: T): Deduped<T>;
+export function unique<T extends AnyIterable>(data: T): Deduped<T>;
 
 /**
  * Returns a new array containing only one copy of each element in the original

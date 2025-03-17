@@ -1,18 +1,19 @@
+import type { IterableElement } from "type-fest";
 import {
   purryOrderRulesWithArgument,
   type OrderRule,
 } from "./internal/purryOrderRules";
 import { quickSelect } from "./internal/quickSelect";
+import type AnyIterable from "./internal/types/AnyIterable";
 import type { CompareFunction } from "./internal/types/CompareFunction";
-import type { IterableContainer } from "./internal/types/IterableContainer";
 import type { NonEmptyArray } from "./internal/types/NonEmptyArray";
 
 /**
- * Retrieves the element that would be at the given index if the array were sorted according to specified rules. This function uses the *QuickSelect* algorithm running at an average complexity of *O(n)*. Semantically it is equivalent to `sortBy(data, ...rules).at(index)` which would run at *O(nlogn)*.
+ * Retrieves the element that would be at the given index if the input were sorted according to specified rules. This function uses the *QuickSelect* algorithm running at an average complexity of *O(n)*. Semantically it is equivalent to `sortBy(data, ...rules).at(index)` which would run at *O(nlogn)*.
  *
  * See also `firstBy` which provides an even more efficient algorithm and a stricter return type, but only for `index === 0`. See `takeFirstBy` to get all the elements up to and including `index`.
  *
- * @param data - The input array.
+ * @param data - The input.
  * @param index - The zero-based index for selecting the element in the sorted order. Negative indices count backwards from the end.
  * @param rules - A variadic array of order rules defining the sorting criteria. Each order rule is a projection function that extracts a comparable value from the data. Sorting is based on these extracted values using the native `<` and `>` operators. Earlier rules take precedence over later ones. Use the syntax `[projection, "desc"]` for descending order.
  * @returns The element at the specified index in the sorted order, or `undefined` if the index is out of bounds.
@@ -23,11 +24,11 @@ import type { NonEmptyArray } from "./internal/types/NonEmptyArray";
  * @dataFirst
  * @category Array
  */
-export function nthBy<T extends IterableContainer>(
+export function nthBy<T extends AnyIterable>(
   data: T,
   index: number,
-  ...rules: Readonly<NonEmptyArray<OrderRule<T[number]>>>
-): T[number] | undefined;
+  ...rules: Readonly<NonEmptyArray<OrderRule<IterableElement<T>>>>
+): IterableElement<T> | undefined;
 
 /**
  * Retrieves the element that would be at the given index if the array were sorted according to specified rules. This function uses the *QuickSelect* algorithm running at an average complexity of *O(n)*. Semantically it is equivalent to `sortBy(data, ...rules)[index]` which would run at *O(nlogn)*.
@@ -44,23 +45,23 @@ export function nthBy<T extends IterableContainer>(
  * @dataLast
  * @category Array
  */
-export function nthBy<T extends IterableContainer>(
+export function nthBy<T extends AnyIterable>(
   index: number,
-  ...rules: Readonly<NonEmptyArray<OrderRule<T[number]>>>
-): (data: T) => T[number] | undefined;
+  ...rules: Readonly<NonEmptyArray<OrderRule<IterableElement<T>>>>
+): (data: T) => IterableElement<T> | undefined;
 
 export function nthBy(...args: ReadonlyArray<unknown>): unknown {
   return purryOrderRulesWithArgument(nthByImplementation, args);
 }
 
 const nthByImplementation = <T>(
-  data: ReadonlyArray<T>,
+  data: Iterable<T>,
   compareFn: CompareFunction<T>,
   index: number,
 ): T | undefined =>
   quickSelect(
     data,
     // Allow negative indices gracefully
-    index >= 0 ? index : data.length + index,
+    index,
     compareFn,
   );

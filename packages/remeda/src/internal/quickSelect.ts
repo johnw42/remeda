@@ -20,21 +20,29 @@ import type { CompareFunction } from "./types/CompareFunction";
  * bounds.
  */
 export const quickSelect = <T>(
-  data: ReadonlyArray<T>,
+  data: Iterable<T>,
   index: number,
   compareFn: CompareFunction<T>,
-): T | undefined =>
-  index < 0 || index >= data.length
+): T | undefined => {
+  // We need to clone the input even if it is already an array because quickSelect mutates it in-place.
+  const array = [...data];
+
+  // Treat negative indices as counting from the end of the sorted array.
+  if (index < 0) {
+    index += array.length;
+  }
+
+  return index < 0 || index >= array.length
     ? // Quickselect doesn't work with out-of-bound indices
       undefined
     : quickSelectImplementation(
-        // We need to clone the array because quickSelect mutates it in-place.
-        [...data],
+        array,
         0 /* left */,
-        data.length - 1 /* right */,
+        array.length - 1 /* right */,
         index,
         compareFn,
       );
+};
 
 /**
  * The actual implementation, called recursively.

@@ -1,3 +1,4 @@
+import type { LiteralToPrimitiveDeep } from "type-fest";
 import {
   purryOrderRulesWithArgument,
   type OrderRule,
@@ -49,7 +50,7 @@ export function rankBy<T>(
 export function rankBy<T>(
   item: T,
   ...rules: Readonly<NonEmptyArray<OrderRule<T>>>
-): (data: ReadonlyArray<T>) => number;
+): (data: Iterable<LiteralToPrimitiveDeep<T>>) => number;
 
 export function rankBy(...args: ReadonlyArray<unknown>): unknown {
   return purryOrderRulesWithArgument(rankByImplementation, args);

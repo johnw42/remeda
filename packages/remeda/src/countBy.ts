@@ -2,6 +2,7 @@ import { purry } from "./purry";
 import type { ExactRecord } from "./internal/types/ExactRecord";
 import { toReadonlyArray } from "./internal/toReadonlyArray";
 import type { ArrayMethodCallback } from "./internal/types/ArrayMethodCallback";
+import type AnyIterable from "./internal/types/AnyIterable";
 
 /**
  * Categorize and count elements in an array using a defined callback function.
@@ -20,7 +21,7 @@ import type { ArrayMethodCallback } from "./internal/types/ArrayMethodCallback";
  * @dataFirst
  * @category Array
  */
-export function countBy<T extends Iterable<unknown>, K extends PropertyKey>(
+export function countBy<T extends AnyIterable, K extends PropertyKey>(
   data: T,
   categorizationFn: ArrayMethodCallback<T, K | undefined>,
 ): ExactRecord<K, number>;
@@ -41,7 +42,7 @@ export function countBy<T extends Iterable<unknown>, K extends PropertyKey>(
  * @dataLast
  * @category Array
  */
-export function countBy<T extends Iterable<unknown>, K extends PropertyKey>(
+export function countBy<T extends AnyIterable, K extends PropertyKey>(
   categorizationFn: ArrayMethodCallback<T, K | undefined>,
 ): (data: T) => ExactRecord<K, number>;
 

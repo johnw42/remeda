@@ -27,7 +27,7 @@ import type AnyIterable from "./internal/types/AnyIterable";
  * @lazy
  * @category Array
  */
-export function flatMap<T extends Iterable<unknown>, U>(
+export function flatMap<T extends AnyIterable, U>(
   data: T,
   callbackfn: ArrayMethodCallback<T, ReadonlyArray<U> | U>,
 ): Array<U>;

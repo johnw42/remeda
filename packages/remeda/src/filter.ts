@@ -8,6 +8,7 @@ import type {
 } from "./internal/types/ArrayMethodCallback";
 import type { Transducer } from "./internal/types/LazyEffect";
 import type ToArray from "./internal/types/ToArray";
+import type AnyIterable from "./internal/types/AnyIterable";
 
 /**
  * Creates a shallow copy of a portion of a given array, filtered down to just
@@ -28,11 +29,11 @@ import type ToArray from "./internal/types/ToArray";
  * @lazy
  * @category Array
  */
-export function filter<
-  T extends Iterable<unknown>,
-  S extends IterableElement<T>,
->(data: T, predicate: ArrayMethodTypePredicate<T, S>): Array<S>;
-export function filter<T extends Iterable<unknown>>(
+export function filter<T extends AnyIterable, S extends IterableElement<T>>(
+  data: T,
+  predicate: ArrayMethodTypePredicate<T, S>,
+): Array<S>;
+export function filter<T extends AnyIterable>(
   data: T,
   predicate: ArrayMethodCallback<T, boolean>,
 ): ToArray<T>;
@@ -55,11 +56,10 @@ export function filter<T extends Iterable<unknown>>(
  * @lazy
  * @category Array
  */
-export function filter<
-  T extends Iterable<unknown>,
-  S extends IterableElement<T>,
->(predicate: ArrayMethodTypePredicate<T, S>): Transducer<T, Array<S>>;
-export function filter<T extends Iterable<unknown>>(
+export function filter<T extends AnyIterable, S extends IterableElement<T>>(
+  predicate: ArrayMethodTypePredicate<T, S>,
+): Transducer<T, Array<S>>;
+export function filter<T extends AnyIterable>(
   predicate: ArrayMethodCallback<T, boolean>,
 ): Transducer<T, ToArray<T>>;
 

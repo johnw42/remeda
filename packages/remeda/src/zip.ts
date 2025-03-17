@@ -3,10 +3,11 @@ import doTransduce from "./internal/doTransduce";
 import type { IterableContainer } from "./internal/types/IterableContainer";
 import { unsafeToArray } from "./internal/unsafeToArray";
 import { isArray } from "./isArray";
+import type AnyIterable from "./internal/types/AnyIterable";
 
 type Zipped<
-  Left extends Iterable<unknown>,
-  Right extends Iterable<unknown>,
+  Left extends AnyIterable,
+  Right extends AnyIterable,
 > = Left extends IterableContainer
   ? Right extends IterableContainer
     ? // If the array is empty the output is empty, no surprises
@@ -45,7 +46,7 @@ type Zipped<
  * @lazy
  * @category Array
  */
-export function zip<F extends Iterable<unknown>, S extends Iterable<unknown>>(
+export function zip<F extends AnyIterable, S extends AnyIterable>(
   first: F,
   second: S,
 ): Zipped<F, S>;
@@ -64,9 +65,9 @@ export function zip<F extends Iterable<unknown>, S extends Iterable<unknown>>(
  * @lazy
  * @category Array
  */
-export function zip<S extends Iterable<unknown>>(
+export function zip<S extends AnyIterable>(
   second: S,
-): <F extends Iterable<unknown>>(first: F) => Zipped<F, S>;
+): <F extends AnyIterable>(first: F) => Zipped<F, S>;
 
 export function zip(...args: ReadonlyArray<unknown>): unknown {
   return doTransduce(zipImplementation, lazyImplementation, args);

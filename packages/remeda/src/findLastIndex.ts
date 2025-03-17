@@ -1,5 +1,6 @@
 import doReduce from "./internal/doReduce";
 import { toReadonlyArray } from "./internal/toReadonlyArray";
+import type AnyIterable from "./internal/types/AnyIterable";
 import type { ArrayMethodCallback } from "./internal/types/ArrayMethodCallback";
 
 /**
@@ -23,7 +24,7 @@ import type { ArrayMethodCallback } from "./internal/types/ArrayMethodCallback";
  * @dataFirst
  * @category Array
  */
-export function findLastIndex<T extends Iterable<unknown>>(
+export function findLastIndex<T extends AnyIterable>(
   data: T,
   predicate: ArrayMethodCallback<T, boolean>,
 ): number;
@@ -51,7 +52,7 @@ export function findLastIndex<T extends Iterable<unknown>>(
  * @dataLast
  * @category Array
  */
-export function findLastIndex<T extends Iterable<unknown>>(
+export function findLastIndex<T extends AnyIterable>(
   predicate: ArrayMethodCallback<T, boolean>,
 ): (array: T) => number;
 

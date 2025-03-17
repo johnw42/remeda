@@ -1,14 +1,15 @@
 import type { IterableElement } from "type-fest";
 import type { IterableContainer } from "./IterableContainer";
+import type AnyIterable from "./AnyIterable";
 
-export type ArrayMethodCallback<T extends Iterable<unknown>, R = unknown> = (
+export type ArrayMethodCallback<T extends AnyIterable, R = unknown> = (
   item: IterableElement<T>,
   index: number,
   data: ArrayMethodCallbackDataArg<T>,
 ) => R;
 
 export type ArrayMethodTypePredicate<
-  T extends Iterable<unknown>,
+  T extends AnyIterable,
   R extends IterableElement<T>,
 > = (
   item: IterableElement<T>,
@@ -18,7 +19,7 @@ export type ArrayMethodTypePredicate<
 
 export type ArrayMethodCallbackWithExtraArg<
   E,
-  T extends Iterable<unknown>,
+  T extends AnyIterable,
   R = unknown,
 > = (
   extra: E,
@@ -27,5 +28,5 @@ export type ArrayMethodCallbackWithExtraArg<
   data: ArrayMethodCallbackDataArg<T>,
 ) => R;
 
-type ArrayMethodCallbackDataArg<T extends Iterable<unknown>> =
+type ArrayMethodCallbackDataArg<T extends AnyIterable> =
   T extends IterableContainer ? T : ReadonlyArray<IterableElement<T>>;

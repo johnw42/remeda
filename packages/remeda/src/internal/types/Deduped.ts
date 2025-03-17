@@ -1,6 +1,7 @@
 import type { NonEmptyArray } from "./NonEmptyArray";
 import type { IterableContainer } from "./IterableContainer";
 import type ToArray from "./ToArray";
+import type AnyIterable from "./AnyIterable";
 
 /**
  * The result of running a function that would dedupe an array (`unique`,
@@ -16,7 +17,7 @@ import type ToArray from "./ToArray";
  * first), but to make this utility the most useful we kept it simple and
  * generic for now.
  */
-export type Deduped<T extends Iterable<unknown>> = T extends IterableContainer
+export type Deduped<T extends AnyIterable> = T extends IterableContainer
   ? T extends readonly []
     ? []
     : T extends readonly [infer Head, ...infer Rest]

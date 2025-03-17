@@ -3,6 +3,7 @@ import type { ArrayMethodCallback } from "./internal/types/ArrayMethodCallback";
 import type { Deduped } from "./internal/types/Deduped";
 import { mapCallback } from "./internal/mapCallback";
 import type { Transducer } from "./internal/types/LazyEffect";
+import type AnyIterable from "./internal/types/AnyIterable";
 
 /**
  * Returns a new array containing only one copy of each element in the original
@@ -21,7 +22,7 @@ import type { Transducer } from "./internal/types/LazyEffect";
  * @lazy
  * @category Array
  */
-export function uniqueBy<T extends Iterable<unknown>>(
+export function uniqueBy<T extends AnyIterable>(
   data: T,
   keyFunction: ArrayMethodCallback<T>,
 ): Deduped<T>;
@@ -43,7 +44,7 @@ export function uniqueBy<T extends Iterable<unknown>>(
  * @lazy
  * @category Array
  */
-export function uniqueBy<T extends Iterable<unknown>>(
+export function uniqueBy<T extends AnyIterable>(
   keyFunction: ArrayMethodCallback<T>,
 ): Transducer<T, Deduped<T>>;
 

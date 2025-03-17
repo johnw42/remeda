@@ -2,6 +2,7 @@ import doTransduce from "./internal/doTransduce";
 import { unsafeToArray } from "./internal/unsafeToArray";
 import { isArray } from "./isArray";
 import type ToArray from "./internal/types/ToArray";
+import type AnyIterable from "./internal/types/AnyIterable";
 
 /**
  * Returns the first `n` elements of `input`.
@@ -16,10 +17,7 @@ import type ToArray from "./internal/types/ToArray";
  * @lazy
  * @category Array
  */
-export function take<T extends Iterable<unknown>>(
-  input: T,
-  n: number,
-): ToArray<T>;
+export function take<T extends AnyIterable>(input: T, n: number): ToArray<T>;
 
 /**
  * Returns the first `n` elements of `array`.
@@ -33,9 +31,7 @@ export function take<T extends Iterable<unknown>>(
  * @lazy
  * @category Array
  */
-export function take(
-  n: number,
-): <T extends Iterable<unknown>>(data: T) => ToArray<T>;
+export function take(n: number): <T extends AnyIterable>(data: T) => ToArray<T>;
 
 export function take(...args: ReadonlyArray<unknown>): unknown {
   return doTransduce(takeImplementation, lazyImplementation, args);

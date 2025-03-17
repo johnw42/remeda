@@ -1,3 +1,4 @@
+import type AnyIterable from "./internal/types/AnyIterable";
 import type { NarrowedTo } from "./internal/types/NarrowedTo";
 
 /**
@@ -14,7 +15,7 @@ import type { NarrowedTo } from "./internal/types/NarrowedTo";
  * @category Guard
  */
 export function isIterable<T>(
-  data: Iterable<unknown> | T,
+  data: AnyIterable | T,
 ): data is NarrowedTo<T, Iterable<unknown>> {
   // Check for null and undefined to avoid errors when accessing Symbol.iterator
   return (

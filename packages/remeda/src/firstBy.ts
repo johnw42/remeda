@@ -5,8 +5,9 @@ import type { CompareFunction } from "./internal/types/CompareFunction";
 import type { IterableContainer } from "./internal/types/IterableContainer";
 import type { NonEmptyArray } from "./internal/types/NonEmptyArray";
 import { toReadonlyArray } from "./internal/toReadonlyArray";
+import type AnyIterable from "./internal/types/AnyIterable";
 
-type FirstBy<T extends Iterable<unknown>> = [T] extends [IterableContainer]
+type FirstBy<T extends AnyIterable> = [T] extends [IterableContainer]
   ?
       | T[number]
       | (T extends readonly [unknown, ...ReadonlyArray<unknown>]
@@ -40,7 +41,7 @@ type FirstBy<T extends Iterable<unknown>> = [T] extends [IterableContainer]
  * @dataLast
  * @category Array
  */
-export function firstBy<T extends Iterable<unknown>>(
+export function firstBy<T extends AnyIterable>(
   ...rules: Readonly<NonEmptyArray<OrderRule<IterableElement<T>>>>
 ): (data: T) => FirstBy<T>;
 
@@ -69,7 +70,7 @@ export function firstBy<T extends Iterable<unknown>>(
  * @dataFirst
  * @category Array
  */
-export function firstBy<T extends Iterable<unknown>>(
+export function firstBy<T extends AnyIterable>(
   data: T,
   ...rules: Readonly<NonEmptyArray<OrderRule<IterableElement<T>>>>
 ): FirstBy<T>;

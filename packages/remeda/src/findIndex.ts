@@ -3,6 +3,7 @@ import type { ArrayMethodCallback } from "./internal/types/ArrayMethodCallback";
 import { mapCallback } from "./internal/mapCallback";
 import { isArray } from "./isArray";
 import type { Reducer } from "./internal/types/LazyEffect";
+import type AnyIterable from "./internal/types/AnyIterable";
 
 /**
  * Returns the index of the first element in an array that satisfies the
@@ -26,7 +27,7 @@ import type { Reducer } from "./internal/types/LazyEffect";
  * @lazy
  * @category Array
  */
-export function findIndex<T extends Iterable<unknown>>(
+export function findIndex<T extends AnyIterable>(
   data: T,
   predicate: ArrayMethodCallback<T, boolean>,
 ): number;
@@ -55,7 +56,7 @@ export function findIndex<T extends Iterable<unknown>>(
  * @lazy
  * @category Array
  */
-export function findIndex<T extends Iterable<unknown>>(
+export function findIndex<T extends AnyIterable>(
   predicate: ArrayMethodCallback<T, boolean>,
 ): Reducer<T, number>;
 

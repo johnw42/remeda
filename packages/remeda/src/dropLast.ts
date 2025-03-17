@@ -1,6 +1,7 @@
 import { toReadonlyArray } from "./internal/toReadonlyArray";
 import { purry } from "./purry";
 import type ToArray from "./internal/types/ToArray";
+import type AnyIterable from "./internal/types/AnyIterable";
 
 /**
  * Removes last `n` elements from the `data`.
@@ -14,10 +15,7 @@ import type ToArray from "./internal/types/ToArray";
  * @dataFirst
  * @category Array
  */
-export function dropLast<T extends Iterable<unknown>>(
-  data: T,
-  n: number,
-): ToArray<T>;
+export function dropLast<T extends AnyIterable>(data: T, n: number): ToArray<T>;
 
 /**
  * Removes last `n` elements from the `array`.
@@ -32,7 +30,7 @@ export function dropLast<T extends Iterable<unknown>>(
  */
 export function dropLast(
   n: number,
-): <T extends Iterable<unknown>>(array: T) => ToArray<T>;
+): <T extends AnyIterable>(array: T) => ToArray<T>;
 
 export function dropLast(...args: ReadonlyArray<unknown>): unknown {
   return purry(dropLastImplementation, args);

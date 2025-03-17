@@ -1,4 +1,5 @@
 import doTransduce from "./internal/doTransduce";
+import type AnyIterable from "./internal/types/AnyIterable";
 import type { Deduped } from "./internal/types/Deduped";
 
 /**
@@ -32,7 +33,7 @@ export function unique<T extends Iterable<T>>(data: T): Deduped<T>;
  * @lazy
  * @category Array
  */
-export function unique(): <T extends Iterable<unknown>>(data: T) => Deduped<T>;
+export function unique(): <T extends AnyIterable>(data: T) => Deduped<T>;
 
 export function unique(...args: ReadonlyArray<unknown>): unknown {
   return doTransduce(undefined, lazyImplementation, args);

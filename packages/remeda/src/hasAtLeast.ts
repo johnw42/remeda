@@ -66,7 +66,7 @@ type ArraySetRequired<
  * @category Array
  */
 export function hasAtLeast<T extends AnyIterable, N extends number>(
-  data: Iterable<unknown> | T,
+  data: AnyIterable | T,
   minimum: IsNumericLiteral<N> extends true ? N : never,
 ): data is ArraySetRequired<T, N>;
 export function hasAtLeast(data: AnyIterable, minimum: number): boolean;
@@ -98,7 +98,7 @@ export function hasAtLeast(data: AnyIterable, minimum: number): boolean;
 export function hasAtLeast<N extends number>(
   minimum: IsNumericLiteral<N> extends true ? N : never,
 ): <T extends AnyIterable>(
-  data: Iterable<unknown> | T,
+  data: AnyIterable | T,
 ) => data is ArraySetRequired<T, N>;
 export function hasAtLeast(minimum: number): Reducer<AnyIterable, boolean>;
 
@@ -106,10 +106,7 @@ export function hasAtLeast(...args: ReadonlyArray<unknown>): DoReduceResult {
   return doReduce(hasAtLeastImplementation, args);
 }
 
-function hasAtLeastImplementation(
-  data: Iterable<unknown>,
-  minimum: number,
-): boolean {
+function hasAtLeastImplementation(data: AnyIterable, minimum: number): boolean {
   if (Array.isArray(data)) {
     return data.length >= minimum;
   }

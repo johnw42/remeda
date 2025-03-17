@@ -3,6 +3,7 @@ import { isArray } from "./isArray";
 import doTransduce from "./internal/doTransduce";
 import { mapCallback } from "./internal/mapCallback";
 import type ToArray from "./internal/types/ToArray";
+import type AnyIterable from "./internal/types/AnyIterable";
 
 /**
  * Removes elements from the beginning of the array until the predicate returns false.
@@ -18,7 +19,7 @@ import type ToArray from "./internal/types/ToArray";
  * @dataFirst
  * @category Array
  */
-export function dropWhile<T extends Iterable<unknown>>(
+export function dropWhile<T extends AnyIterable>(
   data: T,
   predicate: ArrayMethodCallback<T, boolean>,
 ): ToArray<T>;
@@ -36,7 +37,7 @@ export function dropWhile<T extends Iterable<unknown>>(
  * @dataLast
  * @category Array
  */
-export function dropWhile<T extends Iterable<unknown>>(
+export function dropWhile<T extends AnyIterable>(
   predicate: ArrayMethodCallback<T, boolean>,
 ): (data: T) => ToArray<T>;
 

@@ -1,3 +1,4 @@
+import type AnyIterable from "./types/AnyIterable";
 import {
   lazyImpl,
   lazyKind,
@@ -45,6 +46,6 @@ export default function doTransduce<
 }
 
 export type DoTransduceResult<
-  Data extends Iterable<unknown> = Iterable<unknown>,
+  Data extends AnyIterable = AnyIterable,
   Result extends Array<unknown> = Array<unknown>,
 > = Result | Transducer<Data, Result>;

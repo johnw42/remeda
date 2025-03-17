@@ -7,6 +7,7 @@ import type {
 import { mapCallback } from "./internal/mapCallback";
 import { isArray } from "./isArray";
 import type { Reducer } from "./internal/types/LazyEffect";
+import type AnyIterable from "./internal/types/AnyIterable";
 
 /**
  * Returns the first element in the provided array that satisfies the provided
@@ -35,11 +36,11 @@ import type { Reducer } from "./internal/types/LazyEffect";
  * @lazy
  * @category Array
  */
-export function find<T extends Iterable<unknown>, S extends IterableElement<T>>(
+export function find<T extends AnyIterable, S extends IterableElement<T>>(
   data: T,
   predicate: ArrayMethodTypePredicate<T, S>,
 ): S | undefined;
-export function find<T extends Iterable<unknown>>(
+export function find<T extends AnyIterable>(
   data: T,
   predicate: ArrayMethodCallback<T, boolean>,
 ): IterableElement<T> | undefined;
@@ -73,10 +74,10 @@ export function find<T extends Iterable<unknown>>(
  * @lazy
  * @category Array
  */
-export function find<T extends Iterable<unknown>, S extends IterableElement<T>>(
+export function find<T extends AnyIterable, S extends IterableElement<T>>(
   predicate: ArrayMethodTypePredicate<T, S>,
 ): Reducer<T, S | undefined>;
-export function find<T extends Iterable<unknown>>(
+export function find<T extends AnyIterable>(
   predicate: ArrayMethodCallback<T, boolean>,
 ): Reducer<T, IterableElement<T> | undefined>;
 

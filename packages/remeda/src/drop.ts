@@ -7,8 +7,9 @@ import doTransduce from "./internal/doTransduce";
 import { isArray } from "./isArray";
 import { unsafeToArray } from "./internal/unsafeToArray";
 import type ToArray from "./internal/types/ToArray";
+import type AnyIterable from "./internal/types/AnyIterable";
 
-type Drop<T extends Iterable<unknown>, N extends number> =
+type Drop<T extends AnyIterable, N extends number> =
   // The extra brackets prevent the conditional from being distributed over union types.
   // See https://github.com/microsoft/TypeScript/issues/31751
   [T] extends [IterableContainer]
@@ -96,7 +97,7 @@ type DropUpTo<
  * @lazy
  * @category Array
  */
-export function drop<T extends Iterable<unknown>, N extends number>(
+export function drop<T extends AnyIterable, N extends number>(
   array: T,
   n: N,
 ): Drop<T, N>;
@@ -115,7 +116,7 @@ export function drop<T extends Iterable<unknown>, N extends number>(
  */
 export function drop<N extends number>(
   n: N,
-): <T extends Iterable<unknown>>(data: T) => Drop<T, N>;
+): <T extends AnyIterable>(data: T) => Drop<T, N>;
 
 export function drop(...args: ReadonlyArray<unknown>): unknown {
   return doTransduce(dropImplementation, lazyImplementation, args);

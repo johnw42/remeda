@@ -2,10 +2,11 @@ import type { IterableElement } from "type-fest";
 import doTransduce from "./internal/doTransduce";
 import { isArray } from "./isArray";
 import type { IterableContainer } from "./internal/types/IterableContainer";
+import type AnyIterable from "./internal/types/AnyIterable";
 
 type ZippingFunction<
-  T1 extends Iterable<unknown> = Iterable<unknown>,
-  T2 extends Iterable<unknown> = Iterable<unknown>,
+  T1 extends AnyIterable = AnyIterable,
+  T2 extends AnyIterable = AnyIterable,
   Value = unknown,
 > = (
   first: IterableElement<T1>,
@@ -52,11 +53,10 @@ export function zipWith<TItem1, TItem2, Value>(
  * @lazy
  * @category Array
  */
-export function zipWith<
-  T1 extends Iterable<unknown>,
-  T2 extends Iterable<unknown>,
-  Value,
->(second: T2, fn: ZippingFunction<T1, T2, Value>): (first: T1) => Array<Value>;
+export function zipWith<T1 extends AnyIterable, T2 extends AnyIterable, Value>(
+  second: T2,
+  fn: ZippingFunction<T1, T2, Value>,
+): (first: T1) => Array<Value>;
 
 /**
  * Creates a new list from two supplied lists by calling the supplied function
@@ -73,11 +73,11 @@ export function zipWith<
  * @lazy
  * @category Array
  */
-export function zipWith<
-  T1 extends Iterable<unknown>,
-  T2 extends Iterable<unknown>,
-  Value,
->(first: T1, second: T2, fn: ZippingFunction<T1, T2, Value>): Array<Value>;
+export function zipWith<T1 extends AnyIterable, T2 extends AnyIterable, Value>(
+  first: T1,
+  second: T2,
+  fn: ZippingFunction<T1, T2, Value>,
+): Array<Value>;
 
 export function zipWith(...args: ReadonlyArray<unknown>): unknown {
   // Both iterables last.

@@ -3,11 +3,9 @@ import type { IterableContainer } from "./internal/types/IterableContainer";
 import { toReadonlyArray } from "./internal/toReadonlyArray";
 import doTransduce from "./internal/doTransduce";
 import { isArray } from "./isArray";
+import type AnyIterable from "./internal/types/AnyIterable";
 
-type FlatArray<
-  T extends Iterable<unknown>,
-  Depth extends number,
-> = FlatArrayInner<
+type FlatArray<T extends AnyIterable, Depth extends number> = FlatArrayInner<
   T extends IterableContainer ? T : ReadonlyArray<IterableElement<T>>,
   Depth
 >;
@@ -88,7 +86,7 @@ type FlatSimpleArrayItems<
  * @lazy
  * @category Array
  */
-export function flat<T extends Iterable<unknown>, Depth extends number = 1>(
+export function flat<T extends AnyIterable, Depth extends number = 1>(
   data: T,
   depth?: IsNumericLiteral<Depth> extends true ? Depth : never,
 ): FlatArray<T, Depth>;
@@ -112,7 +110,7 @@ export function flat<T extends Iterable<unknown>, Depth extends number = 1>(
  */
 export function flat<Depth extends number = 1>(
   depth?: IsNumericLiteral<Depth> extends true ? Depth : never,
-): <T extends Iterable<unknown>>(data: T) => FlatArray<T, Depth>;
+): <T extends AnyIterable>(data: T) => FlatArray<T, Depth>;
 
 export function flat(
   dataOrDepth?: IterableContainer | number,
@@ -127,14 +125,11 @@ export function flat(
 }
 
 const flatImplementation = (
-  data: Iterable<unknown>,
+  data: AnyIterable,
   depth?: number,
 ): Array<unknown> => toReadonlyArray(data).flat(depth);
 
-function* lazyImplementation(
-  data: Iterable<unknown>,
-  depth = 1,
-): Iterable<unknown> {
+function* lazyImplementation(data: AnyIterable, depth = 1): Iterable<unknown> {
   // Optimization for common case.
   if (depth === 1) {
     for (const value of data) {

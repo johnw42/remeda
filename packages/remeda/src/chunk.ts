@@ -14,6 +14,7 @@ import type { NTuple } from "./internal/types/NTuple";
 import type { TupleParts } from "./internal/types/TupleParts";
 import { isArray } from "./isArray";
 import doTransduce from "./internal/doTransduce";
+import type AnyIterable from "./internal/types/AnyIterable";
 
 // This prevents typescript from failing on complex arrays and large chunks. It
 // allows the typing to remain useful even when very large chunks are needed,
@@ -23,10 +24,7 @@ import doTransduce from "./internal/doTransduce";
 // See the type tests for an example.
 type MAX_LITERAL_SIZE = 350;
 
-type Chunk<
-  T extends Iterable<unknown>,
-  N extends number,
-> = T extends readonly []
+type Chunk<T extends AnyIterable, N extends number> = T extends readonly []
   ? []
   : IsNumericLiteral<N> extends true
     ? LessThan<N, 1> extends true
@@ -188,7 +186,7 @@ type SuffixChunk<
  * This is the legacy type used when we don't know what N is. We can only adjust
  * our output based on if we know for sure that the array is empty or not.
  */
-type GenericChunk<T extends Iterable<unknown>> = T extends
+type GenericChunk<T extends AnyIterable> = T extends
   | readonly [...Array<unknown>, unknown]
   | readonly [unknown, ...Array<unknown>]
   ? NonEmptyArray<NonEmptyArray<T[number]>>
@@ -210,7 +208,7 @@ type GenericChunk<T extends Iterable<unknown>> = T extends
  * @lazy
  * @category Array
  */
-export function chunk<T extends Iterable<unknown>, N extends number>(
+export function chunk<T extends AnyIterable, N extends number>(
   data: T,
   size: N,
 ): Chunk<T, N>;
@@ -230,7 +228,7 @@ export function chunk<T extends Iterable<unknown>, N extends number>(
  */
 export function chunk<N extends number>(
   size: N,
-): <T extends Iterable<unknown>>(array: T) => Chunk<T, N>;
+): <T extends AnyIterable>(array: T) => Chunk<T, N>;
 
 export function chunk(...args: ReadonlyArray<unknown>): unknown {
   return doTransduce(chunkImplementation, lazyImplementation, args);

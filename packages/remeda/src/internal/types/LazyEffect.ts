@@ -1,5 +1,6 @@
 import type { IterableElement } from "type-fest";
 import type ToIterable from "./ToIterable";
+import type AnyIterable from "./AnyIterable";
 
 // This file defines types related to three different kinds "effect" functions:
 // - Producers: functions that take a single value and return an iterable.
@@ -23,14 +24,14 @@ export type LazyEffect =
 
 // Producers
 
-export type LazyProducer<Data, Result extends Iterable<unknown>> = (
+export type LazyProducer<Data, Result extends AnyIterable> = (
   data: Data,
 ) => ToIterable<Result>;
 
 export type LazyProducerImpl<
   Data,
   Args extends ReadonlyArray<unknown>,
-  Result extends Iterable<unknown>,
+  Result extends AnyIterable,
 > = (data: Data, ...args: Args) => ToIterable<Result>;
 
 export type EagerProducer<Data, Result extends Array<unknown>> = (
@@ -52,29 +53,29 @@ export type ProducerF<F extends EagerProducer<never, Array<unknown>>> = {
 // Transducers
 
 export type LazyTransducer<
-  Data extends Iterable<unknown>,
-  Result extends Iterable<unknown>,
+  Data extends AnyIterable,
+  Result extends AnyIterable,
 > = (data: Data) => ToIterable<Result>;
 
 export type LazyTransducerImpl<
-  Data extends Iterable<unknown>,
+  Data extends AnyIterable,
   Args extends ReadonlyArray<unknown>,
-  Result extends Iterable<unknown>,
+  Result extends AnyIterable,
 > = (data: Data, ...args: Args) => ToIterable<Result>;
 
 export type EagerTransducerImpl<
-  Data extends Iterable<unknown>,
+  Data extends AnyIterable,
   Args extends ReadonlyArray<unknown>,
   Result extends Array<unknown>,
 > = (data: Data, ...args: Args) => Result;
 
 export type EagerTransducer<
-  Data extends Iterable<unknown>,
+  Data extends AnyIterable,
   Result extends Array<unknown>,
 > = (data: Data) => Result;
 
 export type Transducer<
-  Data extends Iterable<unknown>,
+  Data extends AnyIterable,
   Result extends Array<unknown>,
 > = TransducerF<EagerTransducer<Data, Result>>;
 
@@ -88,17 +89,17 @@ export type TransducerF<F extends EagerTransducer<never, Array<unknown>>> = {
 
 // Reducers
 
-export type EagerReducer<Data extends Iterable<unknown>, Result> = (
+export type EagerReducer<Data extends AnyIterable, Result> = (
   data: Data,
 ) => Result;
 
 export type ReducerImpl<
-  Data extends Iterable<unknown>,
+  Data extends AnyIterable,
   Args extends ReadonlyArray<unknown>,
   Result,
 > = (data: Data, ...args: Args) => Result;
 
-export type Reducer<Data extends Iterable<unknown>, Result> = ReducerF<
+export type Reducer<Data extends AnyIterable, Result> = ReducerF<
   EagerReducer<Data, Result>
 >;
 

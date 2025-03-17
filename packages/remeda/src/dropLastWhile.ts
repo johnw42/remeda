@@ -1,4 +1,5 @@
 import { toReadonlyArray } from "./internal/toReadonlyArray";
+import type AnyIterable from "./internal/types/AnyIterable";
 import type { ArrayMethodCallback } from "./internal/types/ArrayMethodCallback";
 import type ToArray from "./internal/types/ToArray";
 import { purry } from "./purry";
@@ -17,7 +18,7 @@ import { purry } from "./purry";
  * @dataFirst
  * @category Array
  */
-export function dropLastWhile<T extends Iterable<unknown>>(
+export function dropLastWhile<T extends AnyIterable>(
   data: T,
   predicate: ArrayMethodCallback<T, boolean>,
 ): ToArray<T>;
@@ -35,7 +36,7 @@ export function dropLastWhile<T extends Iterable<unknown>>(
  * @dataLast
  * @category Array
  */
-export function dropLastWhile<T extends Iterable<unknown>>(
+export function dropLastWhile<T extends AnyIterable>(
   predicate: ArrayMethodCallback<T, boolean>,
 ): (data: T) => ToArray<T>;
 

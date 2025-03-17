@@ -2,8 +2,9 @@ import type { IterableElement } from "type-fest";
 import doReduce from "./internal/doReduce";
 import type { IterableContainer } from "./internal/types/IterableContainer";
 import { isArray } from "./isArray";
+import type AnyIterable from "./internal/types/AnyIterable";
 
-type First<T extends Iterable<unknown>> = [T] extends [IterableContainer]
+type First<T extends AnyIterable> = [T] extends [IterableContainer]
   ? T extends []
     ? undefined
     : T extends readonly [unknown, ...Array<unknown>]
@@ -27,7 +28,7 @@ type First<T extends Iterable<unknown>> = [T] extends [IterableContainer]
  * @lazy
  * @category Array
  */
-export function first<T extends Iterable<unknown>>(data: T): First<T>;
+export function first<T extends AnyIterable>(data: T): First<T>;
 
 /**
  * Gets the first element of `array`.
@@ -46,7 +47,7 @@ export function first<T extends Iterable<unknown>>(data: T): First<T>;
  * @lazy
  * @category Array
  */
-export function first(): <T extends Iterable<unknown>>(data: T) => First<T>;
+export function first(): <T extends AnyIterable>(data: T) => First<T>;
 
 export function first(...args: ReadonlyArray<unknown>): unknown {
   return doReduce(firstImplementation, args);

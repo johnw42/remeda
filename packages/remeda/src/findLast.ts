@@ -7,6 +7,7 @@ import type {
 import type { Reducer } from "./internal/types/LazyEffect";
 import type { DoReduceResult } from "./internal/doReduce";
 import { toReadonlyArray } from "./internal/toReadonlyArray";
+import type AnyIterable from "./internal/types/AnyIterable";
 
 /**
  * Iterates the array in reverse order and returns the value of the first
@@ -34,11 +35,11 @@ import { toReadonlyArray } from "./internal/toReadonlyArray";
  * @dataFirst
  * @category Array
  */
-export function findLast<
-  T extends Iterable<unknown>,
-  S extends IterableElement<T>,
->(data: T, predicate: ArrayMethodTypePredicate<T, S>): S | undefined;
-export function findLast<T extends Iterable<unknown>>(
+export function findLast<T extends AnyIterable, S extends IterableElement<T>>(
+  data: T,
+  predicate: ArrayMethodTypePredicate<T, S>,
+): S | undefined;
+export function findLast<T extends AnyIterable>(
   data: T,
   predicate: ArrayMethodCallback<T, boolean>,
 ): IterableElement<T> | undefined;
@@ -71,11 +72,10 @@ export function findLast<T extends Iterable<unknown>>(
  * @dataLast
  * @category Array
  */
-export function findLast<
-  T extends Iterable<unknown>,
-  S extends IterableElement<T>,
->(predicate: ArrayMethodTypePredicate<T, S>): Reducer<T, S | undefined>;
-export function findLast<T extends Iterable<unknown>>(
+export function findLast<T extends AnyIterable, S extends IterableElement<T>>(
+  predicate: ArrayMethodTypePredicate<T, S>,
+): Reducer<T, S | undefined>;
+export function findLast<T extends AnyIterable>(
   predicate: ArrayMethodCallback<T, boolean>,
 ): Reducer<T, IterableElement<T> | undefined>;
 

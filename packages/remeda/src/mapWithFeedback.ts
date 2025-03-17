@@ -3,6 +3,7 @@ import type { Mapped } from "./internal/types/Mapped";
 import type { ArrayMethodCallbackWithExtraArg } from "./internal/types/ArrayMethodCallback";
 import type { Transducer } from "./internal/types/LazyEffect";
 import { mapCallback } from "./internal/mapCallback";
+import type AnyIterable from "./internal/types/AnyIterable";
 
 /**
  * Applies a function on each element of the array, using the result of the
@@ -27,7 +28,7 @@ import { mapCallback } from "./internal/mapCallback";
  * @lazy
  * @category Array
  */
-export function mapWithFeedback<T extends Iterable<unknown>, U>(
+export function mapWithFeedback<T extends AnyIterable, U>(
   data: T,
   callbackfn: ArrayMethodCallbackWithExtraArg<U, T, U>,
   initialValue: U,
@@ -54,7 +55,7 @@ export function mapWithFeedback<T extends Iterable<unknown>, U>(
  * @lazy
  * @category Array
  */
-export function mapWithFeedback<T extends Iterable<unknown>, U>(
+export function mapWithFeedback<T extends AnyIterable, U>(
   callbackfn: ArrayMethodCallbackWithExtraArg<U, T, U>,
   initialValue: U,
 ): Transducer<T, Mapped<T, U>>;

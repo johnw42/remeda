@@ -6,6 +6,7 @@ import { toReadonlyArray } from "./internal/toReadonlyArray";
 import type { ArrayMethodCallback } from "./internal/types/ArrayMethodCallback";
 import type { Transducer } from "./internal/types/LazyEffect";
 import type ToArray from "./internal/types/ToArray";
+import type AnyIterable from "./internal/types/AnyIterable";
 
 /**
  * Executes a provided function once for each array element. Equivalent to
@@ -28,7 +29,7 @@ import type ToArray from "./internal/types/ToArray";
  * @lazy
  * @category Array
  */
-export function forEach<T extends Iterable<unknown>>(
+export function forEach<T extends AnyIterable>(
   data: T,
   callbackfn: ArrayMethodCallback<T, void>,
 ): void;
@@ -56,7 +57,7 @@ export function forEach<T extends Iterable<unknown>>(
  * @lazy
  * @category Array
  */
-export function forEach<T extends Iterable<unknown>>(
+export function forEach<T extends AnyIterable>(
   callbackfn: ArrayMethodCallback<T, void>,
 ): Transducer<T, T extends IterableContainer ? Writable<T> : ToArray<T>>;
 

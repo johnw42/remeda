@@ -1,3 +1,4 @@
+import type AnyIterable from "./types/AnyIterable";
 import {
   lazyKind,
   type EagerReducer,
@@ -29,6 +30,6 @@ export default function doReduce<
 }
 
 export type DoReduceResult<
-  Data extends Iterable<unknown> = Iterable<unknown>,
+  Data extends AnyIterable = AnyIterable,
   Result = unknown,
 > = Result | Reducer<Data, Result>;

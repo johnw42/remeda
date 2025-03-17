@@ -1,5 +1,9 @@
+import type AnyIterable from "./internal/types/AnyIterable";
 import type { ExactRecord } from "./internal/types/ExactRecord";
-import { purry } from "./purry";
+import type { ArrayMethodCallback } from "./internal/types/ArrayMethodCallback";
+import type { Reducer } from "./internal/types/LazyEffect";
+import { mapCallback } from "./internal/mapCallback";
+import doReduce, { type DoReduceResult } from "./internal/doReduce";
 
 /**
  * Converts a list of objects into an object indexing the objects by the given
@@ -22,9 +26,9 @@ import { purry } from "./purry";
  * @dataFirst
  * @category Array
  */
-export function indexBy<T, K extends PropertyKey>(
-  data: ReadonlyArray<T>,
-  mapper: (item: T, index: number, data: ReadonlyArray<T>) => K,
+export function indexBy<T extends AnyIterable, K extends PropertyKey>(
+  data: T,
+  mapper: ArrayMethodCallback<T, K>,
 ): ExactRecord<K, T>;
 
 /**
@@ -50,22 +54,21 @@ export function indexBy<T, K extends PropertyKey>(
  * @dataLast
  * @category Array
  */
-export function indexBy<T, K extends PropertyKey>(
-  mapper: (item: T, index: number, data: ReadonlyArray<T>) => K,
-): (data: ReadonlyArray<T>) => ExactRecord<K, T>;
+export function indexBy<T extends AnyIterable, K extends PropertyKey>(
+  mapper: ArrayMethodCallback<T, K>,
+): Reducer<T, ExactRecord<K, T>>;
 
-export function indexBy(...args: ReadonlyArray<unknown>): unknown {
-  return purry(indexByImplementation, args);
+export function indexBy(...args: ReadonlyArray<unknown>): DoReduceResult {
+  return doReduce(indexByImplementation, args);
 }
 
 function indexByImplementation<T, K extends PropertyKey>(
-  data: ReadonlyArray<T>,
-  mapper: (item: T, index: number, data: ReadonlyArray<T>) => K,
+  data: Iterable<T>,
+  mapper: ArrayMethodCallback<ReadonlyArray<T>, K>,
 ): ExactRecord<K, T> {
   const out: Partial<Record<K, T>> = {};
 
-  for (const [index, item] of data.entries()) {
-    const key = mapper(item, index, data);
+  for (const [item, key] of mapCallback(data, mapper)) {
     out[key] = item;
   }
 

@@ -1,5 +1,7 @@
-import { purry } from "./purry";
 import { binarySearchCutoffIndex } from "./internal/binarySearchCutoffIndex";
+import { toReadonlyArray } from "./internal/toReadonlyArray";
+import doReduce, { type DoReduceResult } from "./internal/doReduce";
+import type { Reducer } from "./internal/types/LazyEffect";
 
 /**
  * Find the insertion position (index) of an item in an array with items sorted
@@ -35,7 +37,7 @@ import { binarySearchCutoffIndex } from "./internal/binarySearchCutoffIndex";
  * @category Array
  */
 export function sortedLastIndexBy<T>(
-  data: ReadonlyArray<T>,
+  data: Iterable<T>,
   item: T,
   valueFunction: (
     item: T,
@@ -84,14 +86,16 @@ export function sortedLastIndexBy<T>(
     index: number | undefined,
     data: ReadonlyArray<T>,
   ) => NonNullable<unknown>,
-): (data: ReadonlyArray<T>) => number;
+): Reducer<Iterable<T>, number>;
 
-export function sortedLastIndexBy(...args: ReadonlyArray<unknown>): unknown {
-  return purry(sortedLastIndexByImplementation, args);
+export function sortedLastIndexBy(
+  ...args: ReadonlyArray<unknown>
+): DoReduceResult {
+  return doReduce(sortedLastIndexByImplementation, args);
 }
 
 function sortedLastIndexByImplementation<T>(
-  array: ReadonlyArray<T>,
+  data: Iterable<T>,
   item: T,
   valueFunction: (
     item: T,
@@ -99,6 +103,7 @@ function sortedLastIndexByImplementation<T>(
     data: ReadonlyArray<T>,
   ) => NonNullable<unknown>,
 ): number {
+  const array = toReadonlyArray(data);
   const value = valueFunction(item, undefined /* index */, array);
   return binarySearchCutoffIndex(
     array,

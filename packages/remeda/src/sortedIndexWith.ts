@@ -1,5 +1,6 @@
-import { purry } from "./purry";
 import { binarySearchCutoffIndex } from "./internal/binarySearchCutoffIndex";
+import doReduce, { type DoReduceResult } from "./internal/doReduce";
+import type { Reducer } from "./internal/types/LazyEffect";
 
 /**
  * Performs a **binary search** for the index of the item at which the predicate
@@ -74,8 +75,10 @@ export function sortedIndexWith<T>(
  */
 export function sortedIndexWith<T>(
   predicate: (value: T, index: number, data: ReadonlyArray<T>) => boolean,
-): (data: Iterable<T>) => number;
+): Reducer<Iterable<T>, number>;
 
-export function sortedIndexWith(...args: ReadonlyArray<unknown>): unknown {
-  return purry(binarySearchCutoffIndex, args);
+export function sortedIndexWith(
+  ...args: ReadonlyArray<unknown>
+): DoReduceResult {
+  return doReduce(binarySearchCutoffIndex, args);
 }

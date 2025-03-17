@@ -1,5 +1,6 @@
-import { purry } from "./purry";
 import { binarySearchCutoffIndex } from "./internal/binarySearchCutoffIndex";
+import doReduce, { type DoReduceResult } from "./internal/doReduce";
+import type { Reducer } from "./internal/types/LazyEffect";
 
 /**
  * Find the insertion position (index) of an item in an array with items sorted
@@ -21,7 +22,7 @@ import { binarySearchCutoffIndex } from "./internal/binarySearchCutoffIndex";
  * @category Array
  * @see sortedIndex, sortedIndexBy, sortedIndexWith, sortedLastIndexBy
  */
-export function sortedLastIndex<T>(data: ReadonlyArray<T>, item: T): number;
+export function sortedLastIndex<T>(data: Iterable<T>, item: T): number;
 
 /**
  * Find the insertion position (index) of an item in an array with items sorted
@@ -42,18 +43,17 @@ export function sortedLastIndex<T>(data: ReadonlyArray<T>, item: T): number;
  * @category Array
  * @see sortedIndex, sortedIndexBy, sortedIndexWith, sortedLastIndexBy
  */
-export function sortedLastIndex<T>(item: T): (data: ReadonlyArray<T>) => number;
+export function sortedLastIndex<T>(item: T): Reducer<Iterable<T>, number>;
 
-export function sortedLastIndex(...args: ReadonlyArray<unknown>): unknown {
-  return purry(sortedLastIndexImplementation, args);
+export function sortedLastIndex(
+  ...args: ReadonlyArray<unknown>
+): DoReduceResult {
+  return doReduce(sortedLastIndexImplementation, args);
 }
 
-const sortedLastIndexImplementation = <T>(
-  array: ReadonlyArray<T>,
-  item: T,
-): number =>
+const sortedLastIndexImplementation = <T>(data: Iterable<T>, item: T): number =>
   binarySearchCutoffIndex(
-    array,
+    data,
     // The only difference between the regular implementation and the "last"
     // variation is that we consider the pivot with equality too, so that we
     // skip all equal values in addition to the lower ones.

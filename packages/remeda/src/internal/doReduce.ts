@@ -8,7 +8,8 @@ import {
 
 /**
  * This function is almost identical to {@link purry}, but it is used to make a
- * reducer function compatible with {@link pipe}'s lazy optimization.
+ * reducer function compatible with {@link pipe}'s lazy optimization,
+ * potentially avoiding the creation of temprary arrays.
  */
 export default function doReduce<
   Data extends Iterable<unknown>,

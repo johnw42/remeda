@@ -1,6 +1,7 @@
-import { purry } from "./purry";
 import { binarySearchCutoffIndex } from "./internal/binarySearchCutoffIndex";
 import { toReadonlyArray } from "./internal/toReadonlyArray";
+import type { Reducer } from "./internal/types/LazyEffect";
+import doReduce, { type DoReduceResult } from "./internal/doReduce";
 
 /**
  * Find the insertion position (index) of an item in an array with items sorted
@@ -83,10 +84,10 @@ export function sortedIndexBy<T>(
     index: number | undefined,
     data: ReadonlyArray<T>,
   ) => NonNullable<unknown>,
-): (data: Iterable<T>) => number;
+): Reducer<Iterable<T>, number>;
 
-export function sortedIndexBy(...args: ReadonlyArray<unknown>): unknown {
-  return purry(sortedIndexByImplementation, args);
+export function sortedIndexBy(...args: ReadonlyArray<unknown>): DoReduceResult {
+  return doReduce(sortedIndexByImplementation, args);
 }
 
 function sortedIndexByImplementation<T>(

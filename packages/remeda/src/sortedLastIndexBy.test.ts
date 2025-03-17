@@ -1,271 +1,312 @@
+import { describeIterableArg } from "./internal/describeIterableArg";
 import { sortedLastIndexBy } from "./sortedLastIndexBy";
 
-describe("runtime correctness", () => {
-  test("empty array", () => {
-    expect(sortedLastIndexBy([], { age: 21 }, ({ age }) => age)).toBe(0);
+describeIterableArg("sortedLastIndexBy", ({ wrap }) => {
+  describe("runtime correctness", () => {
+    test("empty array", () => {
+      expect(sortedLastIndexBy(wrap([]), { age: 21 }, ({ age }) => age)).toBe(
+        0,
+      );
+    });
+
+    describe("array with single item", () => {
+      test("item smaller than item in array", () => {
+        expect(
+          sortedLastIndexBy(wrap([{ age: 22 }]), { age: 21 }, ({ age }) => age),
+        ).toBe(0);
+      });
+
+      test("item larger than item in array", () => {
+        expect(
+          sortedLastIndexBy(wrap([{ age: 20 }]), { age: 21 }, ({ age }) => age),
+        ).toBe(1);
+      });
+
+      test("item in array", () => {
+        expect(
+          sortedLastIndexBy(wrap([{ age: 21 }]), { age: 21 }, ({ age }) => age),
+        ).toBe(1);
+      });
+    });
+
+    describe("array with multiple values", () => {
+      test("item smaller than all items in array", () => {
+        expect(
+          sortedLastIndexBy(
+            wrap([
+              { age: 21 },
+              { age: 22 },
+              { age: 23 },
+              { age: 24 },
+              { age: 25 },
+            ]),
+            { age: 20 },
+            ({ age }) => age,
+          ),
+        ).toBe(0);
+      });
+
+      test("item larger than all items in array", () => {
+        expect(
+          sortedLastIndexBy(
+            wrap([
+              { age: 21 },
+              { age: 22 },
+              { age: 23 },
+              { age: 24 },
+              { age: 25 },
+            ]),
+            { age: 26 },
+            ({ age }) => age,
+          ),
+        ).toBe(5);
+      });
+
+      test("item in array", () => {
+        expect(
+          sortedLastIndexBy(
+            wrap([
+              { age: 21 },
+              { age: 22 },
+              { age: 23 },
+              { age: 24 },
+              { age: 25 },
+            ]),
+            { age: 23 },
+            ({ age }) => age,
+          ),
+        ).toBe(3);
+      });
+    });
+
+    describe("array with duplicates", () => {
+      test("item smaller than all items in array", () => {
+        expect(
+          sortedLastIndexBy(
+            wrap([
+              { age: 21 },
+              { age: 21 },
+              { age: 21 },
+              { age: 21 },
+              { age: 21 },
+            ]),
+            { age: 20 },
+            ({ age }) => age,
+          ),
+        ).toBe(0);
+      });
+
+      test("item larger than all items in array", () => {
+        expect(
+          sortedLastIndexBy(
+            wrap([
+              { age: 21 },
+              { age: 21 },
+              { age: 21 },
+              { age: 21 },
+              { age: 21 },
+            ]),
+            { age: 22 },
+            ({ age }) => age,
+          ),
+        ).toBe(5);
+      });
+
+      test("item in array", () => {
+        expect(
+          sortedLastIndexBy(
+            wrap([
+              { age: 21 },
+              { age: 21 },
+              { age: 21 },
+              { age: 21 },
+              { age: 21 },
+            ]),
+            { age: 21 },
+            ({ age }) => age,
+          ),
+        ).toBe(5);
+      });
+    });
+
+    describe("string array", () => {
+      test("item smaller than all items in array", () => {
+        expect(
+          sortedLastIndexBy(
+            wrap([
+              { name: "a" },
+              { name: "b" },
+              { name: "c" },
+              { name: "d" },
+              { name: "e" },
+            ]),
+            { name: " " },
+            ({ name }) => name,
+          ),
+        ).toBe(0);
+      });
+
+      test("item larger than all items in array", () => {
+        expect(
+          sortedLastIndexBy(
+            wrap([
+              { name: "a" },
+              { name: "b" },
+              { name: "c" },
+              { name: "d" },
+              { name: "e" },
+            ]),
+            { name: "z" },
+            ({ name }) => name,
+          ),
+        ).toBe(5);
+      });
+
+      test("item in array", () => {
+        expect(
+          sortedLastIndexBy(
+            wrap([
+              { name: "a" },
+              { name: "b" },
+              { name: "c" },
+              { name: "d" },
+              { name: "e" },
+            ]),
+            { name: "c" },
+            ({ name }) => name,
+          ),
+        ).toBe(3);
+      });
+    });
   });
 
-  describe("array with single item", () => {
-    test("item smaller than item in array", () => {
-      expect(
-        sortedLastIndexBy([{ age: 22 }], { age: 21 }, ({ age }) => age),
-      ).toBe(0);
+  describe("binary search correctness via indexed", () => {
+    test("empty array", () => {
+      // The value function always gets called for the item with index `undefined`
+      expect(indicesSeen([], { age: 21 }, ({ age }) => age)).toStrictEqual([
+        undefined,
+      ]);
     });
 
-    test("item larger than item in array", () => {
+    test("before all", () => {
       expect(
-        sortedLastIndexBy([{ age: 20 }], { age: 21 }, ({ age }) => age),
-      ).toBe(1);
-    });
-
-    test("item in array", () => {
-      expect(
-        sortedLastIndexBy([{ age: 21 }], { age: 21 }, ({ age }) => age),
-      ).toBe(1);
-    });
-  });
-
-  describe("array with multiple values", () => {
-    test("item smaller than all items in array", () => {
-      expect(
-        sortedLastIndexBy(
-          [{ age: 21 }, { age: 22 }, { age: 23 }, { age: 24 }, { age: 25 }],
+        indicesSeen(
+          [
+            { age: 21 },
+            { age: 22 },
+            { age: 23 },
+            { age: 24 },
+            { age: 25 },
+            { age: 26 },
+            { age: 27 },
+            { age: 28 },
+            { age: 29 },
+            { age: 30 },
+            { age: 31 },
+            { age: 32 },
+            { age: 33 },
+            { age: 34 },
+            { age: 35 },
+            { age: 36 },
+          ],
           { age: 20 },
           ({ age }) => age,
         ),
-      ).toBe(0);
+      ).toStrictEqual([undefined, 8, 4, 2, 1, 0]);
     });
 
-    test("item larger than all items in array", () => {
+    test("after all", () => {
       expect(
-        sortedLastIndexBy(
-          [{ age: 21 }, { age: 22 }, { age: 23 }, { age: 24 }, { age: 25 }],
-          { age: 26 },
+        indicesSeen(
+          [
+            { age: 21 },
+            { age: 22 },
+            { age: 23 },
+            { age: 24 },
+            { age: 25 },
+            { age: 26 },
+            { age: 27 },
+            { age: 28 },
+            { age: 29 },
+            { age: 30 },
+            { age: 31 },
+            { age: 32 },
+            { age: 33 },
+            { age: 34 },
+            { age: 35 },
+            { age: 36 },
+          ],
+          { age: 40 },
           ({ age }) => age,
         ),
-      ).toBe(5);
+      ).toStrictEqual([undefined, 8, 12, 14, 15]);
     });
 
-    test("item in array", () => {
+    test("inside the array", () => {
       expect(
-        sortedLastIndexBy(
-          [{ age: 21 }, { age: 22 }, { age: 23 }, { age: 24 }, { age: 25 }],
-          { age: 23 },
+        indicesSeen(
+          [
+            { age: 21 },
+            { age: 22 },
+            { age: 23 },
+            { age: 24 },
+            { age: 25 },
+            { age: 26 },
+            { age: 27 },
+            { age: 28 },
+            { age: 29 },
+            { age: 30 },
+            { age: 31 },
+            { age: 32 },
+            { age: 33 },
+            { age: 34 },
+            { age: 35 },
+            { age: 36 },
+          ],
+          { age: 27 },
           ({ age }) => age,
         ),
-      ).toBe(3);
+      ).toStrictEqual([undefined, 8, 4, 6, 7]);
+    });
+
+    test("with duplicates", () => {
+      expect(
+        indicesSeen(
+          [
+            { age: 27 },
+            { age: 27 },
+            { age: 27 },
+            { age: 27 },
+            { age: 27 },
+            { age: 27 },
+            { age: 27 },
+            { age: 42 },
+            { age: 42 },
+            { age: 42 },
+            { age: 42 },
+            { age: 42 },
+            { age: 42 },
+            { age: 42 },
+            { age: 42 },
+            { age: 42 },
+          ],
+          { age: 27 },
+          ({ age }) => age,
+        ),
+      ).toStrictEqual([undefined, 8, 4, 6, 7]);
     });
   });
 
-  describe("array with duplicates", () => {
-    test("item smaller than all items in array", () => {
-      expect(
-        sortedLastIndexBy(
-          [{ age: 21 }, { age: 21 }, { age: 21 }, { age: 21 }, { age: 21 }],
-          { age: 20 },
-          ({ age }) => age,
-        ),
-      ).toBe(0);
+  function indicesSeen<T>(
+    items: Iterable<T>,
+    item: T,
+    valueFunction: (item: T) => NonNullable<unknown>,
+  ): ReadonlyArray<number | undefined> {
+    const indices: Array<number | undefined> = [];
+    sortedLastIndexBy(wrap(items), item, (pivot, index) => {
+      indices.push(index);
+      return valueFunction(pivot);
     });
-
-    test("item larger than all items in array", () => {
-      expect(
-        sortedLastIndexBy(
-          [{ age: 21 }, { age: 21 }, { age: 21 }, { age: 21 }, { age: 21 }],
-          { age: 22 },
-          ({ age }) => age,
-        ),
-      ).toBe(5);
-    });
-
-    test("item in array", () => {
-      expect(
-        sortedLastIndexBy(
-          [{ age: 21 }, { age: 21 }, { age: 21 }, { age: 21 }, { age: 21 }],
-          { age: 21 },
-          ({ age }) => age,
-        ),
-      ).toBe(5);
-    });
-  });
-
-  describe("string array", () => {
-    test("item smaller than all items in array", () => {
-      expect(
-        sortedLastIndexBy(
-          [
-            { name: "a" },
-            { name: "b" },
-            { name: "c" },
-            { name: "d" },
-            { name: "e" },
-          ],
-          { name: " " },
-          ({ name }) => name,
-        ),
-      ).toBe(0);
-    });
-
-    test("item larger than all items in array", () => {
-      expect(
-        sortedLastIndexBy(
-          [
-            { name: "a" },
-            { name: "b" },
-            { name: "c" },
-            { name: "d" },
-            { name: "e" },
-          ],
-          { name: "z" },
-          ({ name }) => name,
-        ),
-      ).toBe(5);
-    });
-
-    test("item in array", () => {
-      expect(
-        sortedLastIndexBy(
-          [
-            { name: "a" },
-            { name: "b" },
-            { name: "c" },
-            { name: "d" },
-            { name: "e" },
-          ],
-          { name: "c" },
-          ({ name }) => name,
-        ),
-      ).toBe(3);
-    });
-  });
+    return indices;
+  }
 });
-
-describe("binary search correctness via indexed", () => {
-  test("empty array", () => {
-    // The value function always gets called for the item with index `undefined`
-    expect(indicesSeen([], { age: 21 }, ({ age }) => age)).toStrictEqual([
-      undefined,
-    ]);
-  });
-
-  test("before all", () => {
-    expect(
-      indicesSeen(
-        [
-          { age: 21 },
-          { age: 22 },
-          { age: 23 },
-          { age: 24 },
-          { age: 25 },
-          { age: 26 },
-          { age: 27 },
-          { age: 28 },
-          { age: 29 },
-          { age: 30 },
-          { age: 31 },
-          { age: 32 },
-          { age: 33 },
-          { age: 34 },
-          { age: 35 },
-          { age: 36 },
-        ],
-        { age: 20 },
-        ({ age }) => age,
-      ),
-    ).toStrictEqual([undefined, 8, 4, 2, 1, 0]);
-  });
-
-  test("after all", () => {
-    expect(
-      indicesSeen(
-        [
-          { age: 21 },
-          { age: 22 },
-          { age: 23 },
-          { age: 24 },
-          { age: 25 },
-          { age: 26 },
-          { age: 27 },
-          { age: 28 },
-          { age: 29 },
-          { age: 30 },
-          { age: 31 },
-          { age: 32 },
-          { age: 33 },
-          { age: 34 },
-          { age: 35 },
-          { age: 36 },
-        ],
-        { age: 40 },
-        ({ age }) => age,
-      ),
-    ).toStrictEqual([undefined, 8, 12, 14, 15]);
-  });
-
-  test("inside the array", () => {
-    expect(
-      indicesSeen(
-        [
-          { age: 21 },
-          { age: 22 },
-          { age: 23 },
-          { age: 24 },
-          { age: 25 },
-          { age: 26 },
-          { age: 27 },
-          { age: 28 },
-          { age: 29 },
-          { age: 30 },
-          { age: 31 },
-          { age: 32 },
-          { age: 33 },
-          { age: 34 },
-          { age: 35 },
-          { age: 36 },
-        ],
-        { age: 27 },
-        ({ age }) => age,
-      ),
-    ).toStrictEqual([undefined, 8, 4, 6, 7]);
-  });
-
-  test("with duplicates", () => {
-    expect(
-      indicesSeen(
-        [
-          { age: 27 },
-          { age: 27 },
-          { age: 27 },
-          { age: 27 },
-          { age: 27 },
-          { age: 27 },
-          { age: 27 },
-          { age: 42 },
-          { age: 42 },
-          { age: 42 },
-          { age: 42 },
-          { age: 42 },
-          { age: 42 },
-          { age: 42 },
-          { age: 42 },
-          { age: 42 },
-        ],
-        { age: 27 },
-        ({ age }) => age,
-      ),
-    ).toStrictEqual([undefined, 8, 4, 6, 7]);
-  });
-});
-
-function indicesSeen<T>(
-  items: ReadonlyArray<T>,
-  item: T,
-  valueFunction: (item: T) => NonNullable<unknown>,
-): ReadonlyArray<number | undefined> {
-  const indices: Array<number | undefined> = [];
-  sortedLastIndexBy(items, item, (pivot, index) => {
-    indices.push(index);
-    return valueFunction(pivot);
-  });
-  return indices;
-}

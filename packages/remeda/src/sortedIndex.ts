@@ -1,5 +1,6 @@
-import { purry } from "./purry";
 import { binarySearchCutoffIndex } from "./internal/binarySearchCutoffIndex";
+import doReduce, { type DoReduceResult } from "./internal/doReduce";
+import type { Reducer } from "./internal/types/LazyEffect";
 
 /**
  * Find the insertion position (index) of an item in an array with items sorted
@@ -42,10 +43,10 @@ export function sortedIndex<T>(data: Iterable<T>, item: T): number;
  * @category Array
  * @see sortedIndexBy, sortedIndexWith, sortedLastIndex, sortedLastIndexBy
  */
-export function sortedIndex<T>(item: T): (data: Iterable<T>) => number;
+export function sortedIndex<T>(item: T): Reducer<Iterable<T>, number>;
 
-export function sortedIndex(...args: ReadonlyArray<unknown>): unknown {
-  return purry(sortedIndexImplementation, args);
+export function sortedIndex(...args: ReadonlyArray<unknown>): DoReduceResult {
+  return doReduce(sortedIndexImplementation, args);
 }
 
 const sortedIndexImplementation = <T>(data: Iterable<T>, item: T): number =>

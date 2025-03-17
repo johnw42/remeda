@@ -9,6 +9,7 @@ import type { DisjointUnionFields } from "./internal/types/DisjointUnionFields";
 import type { NonEmptyArray } from "./internal/types/NonEmptyArray";
 import type { TupleParts } from "./internal/types/TupleParts";
 import type AnyIterable from "./internal/types/AnyIterable";
+import doReduce from "./internal/doReduce";
 
 /**
  * Merge a tuple of object types, where props from later objects override earlier props.
@@ -56,7 +57,29 @@ export function mergeAll<T extends object>(
   objects: Readonly<NonEmptyArray<T>>,
 ): MergeUnion<T>;
 export function mergeAll<T extends Iterable<object>>(objects: T): MergeAll<T>;
-export function mergeAll(objects: Iterable<object>): object {
+
+/**
+ * Merges a list of objects into a single object.
+ *
+ * @returns A new object merged with all of the objects in the list. If the list is empty, an empty object is returned.
+ * @signature
+ *    R.mergeAll(objects)
+ * @example
+ *    R.mergeAll([{ a: 1, b: 1 }, { b: 2, c: 3 }, { d: 10 }]) // => { a: 1, b: 2, c: 3, d: 10 }
+ *    R.mergeAll([]) // => {}
+ * @dataLast
+ * @category Array
+ */
+export function mergeAll(): {
+  <T extends object>(objects: Readonly<NonEmptyArray<T>>): MergeUnion<T>;
+  <T extends Iterable<object>>(objects: T): MergeAll<T>;
+};
+
+export function mergeAll(...args: ReadonlyArray<unknown>): unknown {
+  return doReduce(mergeAllImplementation, args);
+}
+
+export function mergeAllImplementation(objects: Iterable<object>): object {
   let out = {};
 
   for (const item of objects) {

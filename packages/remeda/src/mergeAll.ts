@@ -1,19 +1,20 @@
 import type {
   EmptyObject,
+  IterableElement,
   Merge,
   SharedUnionFields,
   Simplify,
 } from "type-fest";
 import type { DisjointUnionFields } from "./internal/types/DisjointUnionFields";
-import type { IterableContainer } from "./internal/types/IterableContainer";
 import type { NonEmptyArray } from "./internal/types/NonEmptyArray";
 import type { TupleParts } from "./internal/types/TupleParts";
+import type AnyIterable from "./internal/types/AnyIterable";
 
 /**
  * Merge a tuple of object types, where props from later objects override earlier props.
  */
 type MergeTuple<
-  T extends IterableContainer,
+  T extends AnyIterable,
   Result = object, // no-op for the first iteration in the successive merges, also infers object as type by default if an empty tuple is used
 > = T extends readonly [infer Head, ...infer Rest]
   ? MergeTuple<Rest, Merge<Result, Head>>
@@ -30,13 +31,13 @@ type MergeUnion<T extends object> = Simplify<
   SharedUnionFields<T> & Partial<DisjointUnionFields<T>>
 >;
 
-type MergeAll<T extends IterableContainer<object>> =
+type MergeAll<T extends Iterable<object>> =
   // determine if it's a tuple or array
   TupleParts<T> extends { item: never }
     ? T extends readonly []
       ? EmptyObject
       : MergeTuple<T>
-    : MergeUnion<T[number]> | EmptyObject;
+    : MergeUnion<IterableElement<T>> | EmptyObject;
 
 /**
  * Merges a list of objects into a single object.
@@ -54,10 +55,8 @@ type MergeAll<T extends IterableContainer<object>> =
 export function mergeAll<T extends object>(
   objects: Readonly<NonEmptyArray<T>>,
 ): MergeUnion<T>;
-export function mergeAll<T extends IterableContainer<object>>(
-  objects: T,
-): MergeAll<T>;
-export function mergeAll(objects: ReadonlyArray<object>): object {
+export function mergeAll<T extends Iterable<object>>(objects: T): MergeAll<T>;
+export function mergeAll(objects: Iterable<object>): object {
   let out = {};
 
   for (const item of objects) {

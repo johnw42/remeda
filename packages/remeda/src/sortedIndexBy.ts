@@ -1,5 +1,6 @@
 import { purry } from "./purry";
 import { binarySearchCutoffIndex } from "./internal/binarySearchCutoffIndex";
+import { toReadonlyArray } from "./internal/toReadonlyArray";
 
 /**
  * Find the insertion position (index) of an item in an array with items sorted
@@ -35,7 +36,7 @@ import { binarySearchCutoffIndex } from "./internal/binarySearchCutoffIndex";
  * @category Array
  */
 export function sortedIndexBy<T>(
-  data: ReadonlyArray<T>,
+  data: Iterable<T>,
   item: T,
   valueFunction: (
     item: T,
@@ -82,14 +83,14 @@ export function sortedIndexBy<T>(
     index: number | undefined,
     data: ReadonlyArray<T>,
   ) => NonNullable<unknown>,
-): (data: ReadonlyArray<T>) => number;
+): (data: Iterable<T>) => number;
 
 export function sortedIndexBy(...args: ReadonlyArray<unknown>): unknown {
   return purry(sortedIndexByImplementation, args);
 }
 
 function sortedIndexByImplementation<T>(
-  data: ReadonlyArray<T>,
+  data: Iterable<T>,
   item: T,
   valueFunction: (
     item: T,
@@ -97,9 +98,10 @@ function sortedIndexByImplementation<T>(
     data: ReadonlyArray<T>,
   ) => NonNullable<unknown>,
 ): number {
-  const value = valueFunction(item, undefined /* index */, data);
+  const array = toReadonlyArray(data);
+  const value = valueFunction(item, undefined /* index */, array);
   return binarySearchCutoffIndex(
-    data,
-    (pivot, index) => valueFunction(pivot, index, data) < value,
+    array,
+    (pivot, index) => valueFunction(pivot, index, array) < value,
   );
 }

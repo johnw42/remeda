@@ -1,4 +1,5 @@
 import type { IterableElement } from "type-fest";
+import type ToIterable from "./ToIterable";
 
 // This file defines types related to three different kinds "effect" functions:
 // - Producers: functions that take a single value and return an iterable.
@@ -24,13 +25,13 @@ export type LazyEffect =
 
 export type LazyProducer<Data, Result extends Iterable<unknown>> = (
   data: Data,
-) => Iterable<IterableElement<Result>>;
+) => ToIterable<Result>;
 
 export type LazyProducerImpl<
   Data,
   Args extends ReadonlyArray<unknown>,
   Result extends Iterable<unknown>,
-> = (data: Data, ...args: Args) => Iterable<IterableElement<Result>>;
+> = (data: Data, ...args: Args) => ToIterable<Result>;
 
 export type EagerProducer<Data, Result extends Array<unknown>> = (
   data: Data,
@@ -53,13 +54,13 @@ export type ProducerF<F extends EagerProducer<never, Array<unknown>>> = {
 export type LazyTransducer<
   Data extends Iterable<unknown>,
   Result extends Iterable<unknown>,
-> = (data: Data) => Iterable<IterableElement<Result>>;
+> = (data: Data) => ToIterable<Result>;
 
 export type LazyTransducerImpl<
   Data extends Iterable<unknown>,
   Args extends ReadonlyArray<unknown>,
   Result extends Iterable<unknown>,
-> = (data: Data, ...args: Args) => Iterable<IterableElement<Result>>;
+> = (data: Data, ...args: Args) => ToIterable<Result>;
 
 export type EagerTransducerImpl<
   Data extends Iterable<unknown>,

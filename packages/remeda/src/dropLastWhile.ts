@@ -1,7 +1,7 @@
 import { toReadonlyArray } from "./internal/toReadonlyArray";
 import type AnyIterable from "./internal/types/AnyIterable";
 import type { ArrayMethodCallback } from "./internal/types/ArrayMethodCallback";
-import type ToArray from "./internal/types/ToArray";
+import type { ToArrayOrTuple } from "./internal/types/ToArray";
 import { purry } from "./purry";
 
 /**
@@ -21,7 +21,7 @@ import { purry } from "./purry";
 export function dropLastWhile<T extends AnyIterable>(
   data: T,
   predicate: ArrayMethodCallback<T, boolean>,
-): ToArray<T>;
+): ToArrayOrTuple<T>;
 
 /**
  * Removes elements from the end of the array until the predicate returns false.
@@ -38,7 +38,7 @@ export function dropLastWhile<T extends AnyIterable>(
  */
 export function dropLastWhile<T extends AnyIterable>(
   predicate: ArrayMethodCallback<T, boolean>,
-): (data: T) => ToArray<T>;
+): (data: T) => ToArrayOrTuple<T>;
 
 export function dropLastWhile(...args: ReadonlyArray<unknown>): unknown {
   return purry(dropLastWhileImplementation, args);

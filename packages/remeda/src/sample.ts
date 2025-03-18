@@ -2,8 +2,8 @@ import type { IsInteger } from "type-fest";
 import { toArray } from "./internal/toReadonlyArray";
 import type AnyIterable from "./internal/types/AnyIterable";
 import type { IterableContainer } from "./internal/types/IterableContainer";
-import type ToArray from "./internal/types/ToArray";
 import { purry } from "./purry";
+import type { ToArray } from "./internal/types/ToArray";
 
 type Sampled<
   T extends AnyIterable,

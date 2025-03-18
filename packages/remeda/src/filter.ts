@@ -7,8 +7,8 @@ import type {
   ArrayMethodTypePredicate,
 } from "./internal/types/ArrayMethodCallback";
 import type { Transducer } from "./internal/types/LazyEffect";
-import type ToArray from "./internal/types/ToArray";
 import type AnyIterable from "./internal/types/AnyIterable";
+import type { ToArray } from "./internal/types/ToArray";
 
 /**
  * Creates a shallow copy of a portion of a given array, filtered down to just

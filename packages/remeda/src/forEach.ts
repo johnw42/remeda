@@ -1,11 +1,9 @@
-import type { Writable } from "type-fest";
-import type { IterableContainer } from "./internal/types/IterableContainer";
 import doTransduce, { type DoTransduceResult } from "./internal/doTransduce";
 import { mapCallback } from "./internal/mapCallback";
 import { toReadonlyArray } from "./internal/toReadonlyArray";
 import type { ArrayMethodCallback } from "./internal/types/ArrayMethodCallback";
 import type { Transducer } from "./internal/types/LazyEffect";
-import type ToArray from "./internal/types/ToArray";
+import type { ToArrayOrTuple } from "./internal/types/ToArray";
 import type AnyIterable from "./internal/types/AnyIterable";
 
 /**
@@ -59,7 +57,7 @@ export function forEach<T extends AnyIterable>(
  */
 export function forEach<T extends AnyIterable>(
   callbackfn: ArrayMethodCallback<T, void>,
-): Transducer<T, T extends IterableContainer ? Writable<T> : ToArray<T>>;
+): Transducer<T, ToArrayOrTuple<T>>;
 
 export function forEach(...args: ReadonlyArray<unknown>): DoTransduceResult {
   return doTransduce(forEachImplementation, lazyImplementation, args);

@@ -1,7 +1,7 @@
 import doReduce, { type DoReduceResult } from "./internal/doReduce";
 import type AnyIterable from "./internal/types/AnyIterable";
 import type { Reducer } from "./internal/types/LazyEffect";
-import type ToArray from "./internal/types/ToArray";
+import type { ToArray } from "./internal/types/ToArray";
 
 type Reverse<T extends AnyIterable, R extends AnyIterable = []> = ReturnType<
   T extends ReadonlyArray<unknown>

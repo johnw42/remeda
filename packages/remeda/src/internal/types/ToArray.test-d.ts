@@ -1,18 +1,22 @@
 import type AnyIterable from "./AnyIterable";
-import type ToArray from "./ToArray";
+import type { ToArrayOrTuple } from "./ToArray";
 
-expectTypeOf<ToArray<AnyIterable>>().toEqualTypeOf<Array<unknown>>();
-expectTypeOf<ToArray<Iterable<unknown>>>().toEqualTypeOf<Array<unknown>>();
-expectTypeOf<ToArray<Iterable<number | string>>>().toEqualTypeOf<
+expectTypeOf<ToArrayOrTuple<AnyIterable>>().toEqualTypeOf<Array<unknown>>();
+expectTypeOf<ToArrayOrTuple<Iterable<unknown>>>().toEqualTypeOf<
+  Array<unknown>
+>();
+expectTypeOf<ToArrayOrTuple<Iterable<number | string>>>().toEqualTypeOf<
   Array<number | string>
 >();
-expectTypeOf<ToArray<ReadonlyArray<number | string>>>().toEqualTypeOf<
+expectTypeOf<ToArrayOrTuple<ReadonlyArray<number | string>>>().toEqualTypeOf<
   Array<number | string>
 >();
 expectTypeOf<
-  ToArray<ReadonlyArray<number> | ReadonlyArray<string>>
+  ToArrayOrTuple<ReadonlyArray<number> | ReadonlyArray<string>>
 >().toEqualTypeOf<Array<number> | Array<string>>();
-expectTypeOf<ToArray<[]>>().toEqualTypeOf<[]>();
-expectTypeOf<ToArray<ReadonlyArray<never>>>().toEqualTypeOf<Array<never>>();
-expectTypeOf<ToArray<readonly []>>().toEqualTypeOf<[]>();
-expectTypeOf<ToArray<readonly [1, 2, 3]>>().toEqualTypeOf<[1, 2, 3]>();
+expectTypeOf<ToArrayOrTuple<[]>>().toEqualTypeOf<[]>();
+expectTypeOf<ToArrayOrTuple<ReadonlyArray<never>>>().toEqualTypeOf<
+  Array<never>
+>();
+expectTypeOf<ToArrayOrTuple<readonly []>>().toEqualTypeOf<[]>();
+expectTypeOf<ToArrayOrTuple<readonly [1, 2, 3]>>().toEqualTypeOf<[1, 2, 3]>();

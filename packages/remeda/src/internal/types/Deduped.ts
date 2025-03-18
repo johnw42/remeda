@@ -1,7 +1,7 @@
 import type { NonEmptyArray } from "./NonEmptyArray";
 import type { IterableContainer } from "./IterableContainer";
-import type ToArray from "./ToArray";
 import type AnyIterable from "./AnyIterable";
+import type { ToArray } from "./ToArray";
 
 /**
  * The result of running a function that would dedupe an array (`unique`,

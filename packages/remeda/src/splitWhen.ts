@@ -3,7 +3,7 @@ import { toArray } from "./internal/toReadonlyArray";
 import type AnyIterable from "./internal/types/AnyIterable";
 import type { ArrayMethodCallback } from "./internal/types/ArrayMethodCallback";
 import type { Reducer } from "./internal/types/LazyEffect";
-import type { ToNonTupleArray } from "./internal/types/ToArray";
+import type { ToArray } from "./internal/types/ToArray";
 
 /**
  * Splits a given sequence at the first index where the given predicate returns true.
@@ -20,7 +20,7 @@ import type { ToNonTupleArray } from "./internal/types/ToArray";
 export function splitWhen<T extends AnyIterable>(
   data: T,
   predicate: ArrayMethodCallback<T, boolean>,
-): [ToNonTupleArray<T>, ToNonTupleArray<T>];
+): [ToArray<T>, ToArray<T>];
 
 /**
  * Splits a given sequence at an index where the given predicate returns true.
@@ -35,7 +35,7 @@ export function splitWhen<T extends AnyIterable>(
  */
 export function splitWhen<T extends AnyIterable>(
   predicate: ArrayMethodCallback<T, boolean>,
-): Reducer<T, [ToNonTupleArray<T>, ToNonTupleArray<T>]>;
+): Reducer<T, [ToArray<T>, ToArray<T>]>;
 
 export function splitWhen(...args: ReadonlyArray<unknown>): DoReduceResult {
   return doReduce(splitWhenImplementation, args);

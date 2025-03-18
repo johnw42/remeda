@@ -5,9 +5,9 @@ import type {
   ArrayMethodTypePredicate,
 } from "./internal/types/ArrayMethodCallback";
 import type { Reducer } from "./internal/types/LazyEffect";
-import type ToArray from "./internal/types/ToArray";
 import { mapCallback } from "./internal/mapCallback";
 import doReduce, { type DoReduceResult } from "./internal/doReduce";
+import type { ToArray } from "./internal/types/ToArray";
 
 /**
  * Splits a collection into two groups, the first of which contains elements the

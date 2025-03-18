@@ -6,7 +6,7 @@ import type { TupleParts } from "./internal/types/TupleParts";
 import doTransduce, { type DoTransduceResult } from "./internal/doTransduce";
 import { isArray } from "./isArray";
 import { unsafeToArray } from "./internal/unsafeToArray";
-import type ToArray from "./internal/types/ToArray";
+import type { ToArrayOrTuple } from "./internal/types/ToArray";
 import type AnyIterable from "./internal/types/AnyIterable";
 import type { lazyImpl, lazyKind } from "./internal/types/LazyEffect";
 
@@ -60,7 +60,7 @@ type Drop<T extends AnyIterable, N extends number> =
                 // consider that all items were removed from that part, leaving
                 // the suffix intact.
                 | [...Array<TupleParts<T>["item"]>, ...TupleParts<T>["suffix"]]
-    : ToArray<T>;
+    : ToArrayOrTuple<T>;
 
 /**
  * Arrays with a fixed suffix will result in any number of items being dropped,

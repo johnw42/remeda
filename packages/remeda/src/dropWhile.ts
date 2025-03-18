@@ -2,7 +2,7 @@ import type { ArrayMethodCallback } from "./internal/types/ArrayMethodCallback";
 import { isArray } from "./isArray";
 import doTransduce from "./internal/doTransduce";
 import { mapCallback } from "./internal/mapCallback";
-import type ToArray from "./internal/types/ToArray";
+import type { ToArrayOrTuple } from "./internal/types/ToArray";
 import type AnyIterable from "./internal/types/AnyIterable";
 
 /**
@@ -22,7 +22,7 @@ import type AnyIterable from "./internal/types/AnyIterable";
 export function dropWhile<T extends AnyIterable>(
   data: T,
   predicate: ArrayMethodCallback<T, boolean>,
-): ToArray<T>;
+): ToArrayOrTuple<T>;
 
 /**
  * Removes elements from the beginning of the array until the predicate returns false.
@@ -39,7 +39,7 @@ export function dropWhile<T extends AnyIterable>(
  */
 export function dropWhile<T extends AnyIterable>(
   predicate: ArrayMethodCallback<T, boolean>,
-): (data: T) => ToArray<T>;
+): (data: T) => ToArrayOrTuple<T>;
 
 export function dropWhile(...args: ReadonlyArray<unknown>): unknown {
   return doTransduce(dropWhileImplementation, lazyImplemention, args);

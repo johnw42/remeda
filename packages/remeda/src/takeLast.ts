@@ -1,6 +1,6 @@
 import { toReadonlyArray } from "./internal/toReadonlyArray";
 import type AnyIterable from "./internal/types/AnyIterable";
-import type { ToNonTupleArray } from "./internal/types/ToArray";
+import type { ToArray } from "./internal/types/ToArray";
 import { purry } from "./purry";
 
 /**
@@ -18,7 +18,7 @@ import { purry } from "./purry";
 export function takeLast<T extends AnyIterable>(
   array: T,
   n: number,
-): ToNonTupleArray<T>;
+): ToArray<T>;
 
 /**
  * Take the last `n` elements from the `array`.
@@ -33,7 +33,7 @@ export function takeLast<T extends AnyIterable>(
  */
 export function takeLast<T extends AnyIterable>(
   n: number,
-): (array: T) => ToNonTupleArray<T>;
+): (array: T) => ToArray<T>;
 
 export function takeLast(...args: ReadonlyArray<unknown>): unknown {
   return purry(takeLastImplementation, args);

@@ -1,9 +1,9 @@
 import doTransduce from "./internal/doTransduce";
 import { unsafeToArray } from "./internal/unsafeToArray";
 import { isArray } from "./isArray";
-import type ToArray from "./internal/types/ToArray";
 import type AnyIterable from "./internal/types/AnyIterable";
 import type { IsTuple } from "type-fest";
+import type { ToArray } from "./internal/types/ToArray";
 
 type Take<T extends AnyIterable> =
   T extends ReadonlyArray<unknown>

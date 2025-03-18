@@ -1,7 +1,8 @@
-import type { IterableContainer } from "./internal/types/IterableContainer";
-import { purry } from "./purry";
+import type { IterableElement } from "type-fest";
+import doReduce, { type DoReduceResult } from "./internal/doReduce";
+import type { lazyKind } from "./internal/types/LazyEffect";
 
-type Product<T extends IterableContainer<bigint> | IterableContainer<number>> =
+type Product<T extends Iterable<bigint> | Iterable<number>> =
   // Empty arrays would always result in a product of (a non-bigint) 1
   T extends readonly []
     ? 1
@@ -9,7 +10,7 @@ type Product<T extends IterableContainer<bigint> | IterableContainer<number>> =
       T extends readonly [bigint, ...ReadonlyArray<unknown>]
       ? bigint
       : // But an empty bigint array would result in a non-bigint 1.
-        T[number] extends bigint
+        IterableElement<T> extends bigint
         ? bigint | 1
         : // Non-bigint arrays are always handled correctly.
           number;
@@ -36,9 +37,9 @@ type Product<T extends IterableContainer<bigint> | IterableContainer<number>> =
  * @dataFirst
  * @category Number
  */
-export function product<
-  T extends IterableContainer<bigint> | IterableContainer<number>,
->(data: T): Product<T>;
+export function product<T extends Iterable<bigint> | Iterable<number>>(
+  data: T,
+): Product<T>;
 
 /**
  * Compute the product of the numbers in the array, or return 1 for an empty
@@ -61,24 +62,31 @@ export function product<
  * @dataLast
  * @category Number
  */
-export function product(): <
-  T extends IterableContainer<bigint> | IterableContainer<number>,
->(
-  data: T,
-) => Product<T>;
+export function product(): {
+  <T extends Iterable<bigint> | Iterable<number>>(data: T): Product<T>;
+  // Can't use `Reducer` here because the function type is polymorphic.
+  readonly [lazyKind]: "reducer";
+};
 
-export function product(...args: ReadonlyArray<unknown>): unknown {
-  return purry(productImplementation, args);
+export function product(...args: ReadonlyArray<unknown>): DoReduceResult {
+  return doReduce(productImplementation, args);
 }
 
-function productImplementation<
-  T extends IterableContainer<bigint> | IterableContainer<number>,
->(data: T): T[number] {
-  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- The rule differentiates 1 and 1n :(
-  let out = typeof data[0] === "bigint" ? 1n : 1;
+function productImplementation<T extends Iterable<bigint> | Iterable<number>>(
+  data: T,
+): IterableElement<T> {
+  let out: number | bigint = 1;
+  let isFirst = true;
   for (const value of data) {
+    if (isFirst) {
+      if (typeof value === "bigint") {
+        // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- The rule differentiates 1 and 1n :(
+        out = 1n;
+      }
+      isFirst = false;
+    }
     // @ts-expect-error [ts2365] -- Typescript can't infer that all elements will be a number of the same type.
     out *= value;
   }
-  return out;
+  return out as IterableElement<T>;
 }

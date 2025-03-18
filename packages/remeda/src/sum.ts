@@ -1,7 +1,8 @@
-import type { IterableContainer } from "./internal/types/IterableContainer";
-import { purry } from "./purry";
+import type { IterableElement } from "type-fest";
+import doReduce, { type DoReduceResult } from "./internal/doReduce";
+import type { lazyKind } from "./internal/types/LazyEffect";
 
-type Sum<T extends IterableContainer<bigint> | IterableContainer<number>> =
+type Sum<T extends Iterable<bigint> | Iterable<number>> =
   // Empty arrays would always result in a sum of (a non-bigint) 0.
   T extends readonly []
     ? 0
@@ -9,7 +10,7 @@ type Sum<T extends IterableContainer<bigint> | IterableContainer<number>> =
       T extends readonly [bigint, ...ReadonlyArray<unknown>]
       ? bigint
       : // But an empty bigint array would result in a non-bigint 0.
-        T[number] extends bigint
+        IterableElement<T> extends bigint
         ? bigint | 0
         : // Non-bigint arrays are always handled correctly.
           number;
@@ -35,9 +36,9 @@ type Sum<T extends IterableContainer<bigint> | IterableContainer<number>> =
  * @dataFirst
  * @category Number
  */
-export function sum<
-  T extends IterableContainer<bigint> | IterableContainer<number>,
->(data: T): Sum<T>;
+export function sum<T extends Iterable<bigint> | Iterable<number>>(
+  data: T,
+): Sum<T>;
 
 /**
  * Sums the numbers in the array, or return 0 for an empty array.
@@ -59,25 +60,31 @@ export function sum<
  * @dataLast
  * @category Number
  */
-export function sum(): <
-  T extends IterableContainer<bigint> | IterableContainer<number>,
->(
-  data: T,
-) => Sum<T>;
+export function sum(): {
+  <T extends Iterable<bigint> | Iterable<number>>(data: T): Sum<T>;
+  [lazyKind]: "reducer";
+};
 
-export function sum(...args: ReadonlyArray<unknown>): unknown {
-  return purry(sumImplementation, args);
+export function sum(...args: ReadonlyArray<unknown>): DoReduceResult {
+  return doReduce(sumImplementation, args);
 }
 
-function sumImplementation<
-  T extends IterableContainer<bigint> | IterableContainer<number>,
->(data: T): T[number] {
-  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- The rule differentiates 0 and 0n :(
-  let out = typeof data[0] === "bigint" ? 0n : 0;
+function sumImplementation<T extends Iterable<bigint> | Iterable<number>>(
+  data: T,
+): IterableElement<T> {
+  let out: number | bigint = 0;
+  let isFirst = true;
   for (const value of data) {
+    if (isFirst) {
+      if (typeof value === "bigint") {
+        // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- The rule differentiates 0 and 0n :(
+        out = 0n;
+      }
+      isFirst = false;
+    }
     // @ts-expect-error [ts2365] -- Typescript can't infer that all elements will be a number of the same type.
     // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
     out += value;
   }
-  return out;
+  return out as IterableElement<T>;
 }

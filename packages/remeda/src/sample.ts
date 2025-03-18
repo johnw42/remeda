@@ -1,5 +1,5 @@
 import type { IsInteger } from "type-fest";
-import { toReadonlyArray } from "./internal/toReadonlyArray";
+import { toArray } from "./internal/toReadonlyArray";
 import type AnyIterable from "./internal/types/AnyIterable";
 import type { IterableContainer } from "./internal/types/IterableContainer";
 import type ToArray from "./internal/types/ToArray";
@@ -116,15 +116,11 @@ function sampleImplementation<T>(
     return [];
   }
 
-  const array = toReadonlyArray(data);
+  const { array, isCopy } = toArray(data);
 
   if (sampleSize >= array.length) {
     // Trivial
-    return array === data
-      ? [...array]
-      : // This cast is safe because it only happens when toReadonlyArray has
-        // created a new array.
-        (array as Array<T>);
+    return isCopy ? array : [...array];
   }
 
   // We have 2 modes of sampling, depending on the size of the sample requested.

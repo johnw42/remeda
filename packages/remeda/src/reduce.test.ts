@@ -2,7 +2,7 @@ import { describeIterableArg } from "./internal/describeIterableArg";
 import { pipe } from "./pipe";
 import { reduce } from "./reduce";
 
-describeIterableArg("reduce", ({ wrap }) => {
+describeIterableArg("reduce", ({ wrap, arrayMethodDataParam }) => {
   describe("data first", () => {
     test("reduce", () => {
       expect(reduce(wrap([1, 2, 3, 4, 5]), (acc, x) => acc + x, 100)).toBe(115);
@@ -17,7 +17,7 @@ describeIterableArg("reduce", ({ wrap }) => {
           wrap(data),
           (acc, x, index, items) => {
             expect(index).toBe(i);
-            expect(items).toBe(data);
+            expect(items).toStrictEqual(arrayMethodDataParam(data));
 
             i += 1;
             return acc + x;

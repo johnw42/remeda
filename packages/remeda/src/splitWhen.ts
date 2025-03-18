@@ -1,47 +1,53 @@
-import { purry } from "./purry";
+import doReduce, { type DoReduceResult } from "./internal/doReduce";
+import { toArray } from "./internal/toReadonlyArray";
+import type AnyIterable from "./internal/types/AnyIterable";
+import type { ArrayMethodCallback } from "./internal/types/ArrayMethodCallback";
+import type { Reducer } from "./internal/types/LazyEffect";
+import type { ToNonTupleArray } from "./internal/types/ToArray";
 
 /**
- * Splits a given array at the first index where the given predicate returns true.
+ * Splits a given sequence at the first index where the given predicate returns true.
  *
- * @param data - The array to split.
+ * @param data - The sequence to split.
  * @param predicate - The predicate.
  * @signature
- *    R.splitWhen(array, fn)
+ *    R.splitWhen(data, fn)
  * @example
  *    R.splitWhen([1, 2, 3], x => x === 2) // => [[1], [2, 3]]
  * @dataFirst
  * @category Array
  */
-export function splitWhen<T>(
-  data: ReadonlyArray<T>,
-  predicate: (item: T, index: number, data: ReadonlyArray<T>) => boolean,
-): [Array<T>, Array<T>];
+export function splitWhen<T extends AnyIterable>(
+  data: T,
+  predicate: ArrayMethodCallback<T, boolean>,
+): [ToNonTupleArray<T>, ToNonTupleArray<T>];
 
 /**
- * Splits a given array at an index where the given predicate returns true.
+ * Splits a given sequence at an index where the given predicate returns true.
  *
  * @param predicate - The predicate.
  * @signature
- *    R.splitWhen(fn)(array)
+ *    R.splitWhen(fn)(data)
  * @example
  *    R.splitWhen(x => x === 2)([1, 2, 3]) // => [[1], [2, 3]]
  * @dataLast
  * @category Array
  */
-export function splitWhen<T>(
-  predicate: (item: T, index: number, data: ReadonlyArray<T>) => boolean,
-): (array: ReadonlyArray<T>) => [Array<T>, Array<T>];
+export function splitWhen<T extends AnyIterable>(
+  predicate: ArrayMethodCallback<T, boolean>,
+): Reducer<T, [ToNonTupleArray<T>, ToNonTupleArray<T>]>;
 
-export function splitWhen(...args: ReadonlyArray<unknown>): unknown {
-  return purry(splitWhenImplementation, args);
+export function splitWhen(...args: ReadonlyArray<unknown>): DoReduceResult {
+  return doReduce(splitWhenImplementation, args);
 }
 
 function splitWhenImplementation<T>(
-  data: ReadonlyArray<T>,
+  data: Iterable<T>,
   predicate: (item: T, index: number, data: ReadonlyArray<T>) => boolean,
 ): [Array<T>, Array<T>] {
-  const index = data.findIndex(predicate);
+  const { array, isCopy } = toArray(data);
+  const index = array.findIndex(predicate);
   return index === -1
-    ? [[...data], []]
-    : [data.slice(0, index), data.slice(index)];
+    ? [isCopy ? array : [...array], []]
+    : [array.slice(0, index), array.slice(index)];
 }

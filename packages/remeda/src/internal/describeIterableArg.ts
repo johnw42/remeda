@@ -4,8 +4,8 @@ import { toBasicIterable } from "./toBasicIterable";
 import { AsymmetricMatcher, equals } from "@vitest/expect";
 import { isObjectWithProps } from "./isObjectWithProps";
 
-class SameRefMatcher extends AsymmetricMatcher<unknown> {
-  public override asymmetricMatch(other: unknown): boolean {
+class SameRefMatcher<T> extends AsymmetricMatcher<ReadonlyArray<T>> {
+  public override asymmetricMatch(other: ReadonlyArray<T>): boolean {
     return this.sample === other;
   }
 
@@ -19,13 +19,16 @@ class SameRefMatcher extends AsymmetricMatcher<unknown> {
     return "SameRefMatcher.toAsymmetricMatcher";
   }
 
-  public static for(sample: unknown): SameRefMatcher {
-    return new SameRefMatcher(sample);
+  public static for<T>(sample: ReadonlyArray<T>): SameRefMatcher<T> {
+    return new SameRefMatcher<T>(sample);
   }
 }
 
 class ArrayContentMatcher<T> extends AsymmetricMatcher<ReadonlyArray<T>> {
-  public constructor(sample: Iterable<T>) {
+  public constructor(
+    sample: ReadonlyArray<T>,
+    private readonly checkLength: boolean,
+  ) {
     super([...sample]);
   }
 
@@ -37,8 +40,8 @@ class ArrayContentMatcher<T> extends AsymmetricMatcher<ReadonlyArray<T>> {
     const otherArray = [...(other as Iterable<T>)];
 
     return (
-      this.sample.length === otherArray.length &&
-      this.sample.every((v, i) => equals(v, otherArray[i]))
+      (!this.checkLength || this.sample.length === otherArray.length) &&
+      otherArray.every((v, i) => equals(v, this.sample[i]))
     );
   }
 
@@ -52,8 +55,12 @@ class ArrayContentMatcher<T> extends AsymmetricMatcher<ReadonlyArray<T>> {
     return "ArrayContentMatcher.toAsymmetricMatcher";
   }
 
-  public static for<T>(sample: Iterable<T>): ArrayContentMatcher<T> {
-    return new ArrayContentMatcher(sample);
+  public static exact<T>(sample: ReadonlyArray<T>): ArrayContentMatcher<T> {
+    return new ArrayContentMatcher(sample, true);
+  }
+
+  public static prefix<T>(sample: ReadonlyArray<T>): ArrayContentMatcher<T> {
+    return new ArrayContentMatcher(sample, false);
   }
 }
 
@@ -62,9 +69,7 @@ class ArrayContentMatcher<T> extends AsymmetricMatcher<ReadonlyArray<T>> {
  */
 type WrapperFn = typeof toBasicIterable;
 
-type ExtraCases = Readonly<
-  Record<string, <T>(input: ReadonlyArray<T>) => Iterable<T>>
->;
+type ExtraCases = Readonly<Record<string, WrapperFn>>;
 
 /**
  * The body passed to `describeIterableArg`.
@@ -77,17 +82,23 @@ type IterableArgInfo = {
    */
   readonly wrap: WrapperFn;
   /**
-   * A string describing the type of data being returned by `wrap`.
-   */
-  readonly what: string;
-  /**
    * True iff `wrap` returns the original array.
    */
   readonly dataIsArray: boolean;
   /**
-   * An asymmetric matcher that either checks if two arrays are the same reference or they have the same content.
+   * An asymmetric matcher that either checks if two arrays are the same
+   * reference or checks that they have the same content.
    */
-  readonly wrappedArray: <T>(a: Iterable<T>) => boolean;
+  readonly wrappedArray: <T>(
+    a: ReadonlyArray<T>,
+  ) => AsymmetricMatcher<ReadonlyArray<T>>;
+  /**
+   * An asymmetric matcher that either checks if an array method `data` parameter
+   * is same array as another, or that it starts with the same elements as the other.
+   */
+  readonly arrayMethodDataParam: <T>(
+    a: ReadonlyArray<T>,
+  ) => AsymmetricMatcher<ReadonlyArray<T>>;
 };
 
 /**
@@ -121,16 +132,39 @@ function describeIterableArgImpl(
     desc += " where type of data is $what";
   }
 
-  describe.each`
-    what           | dataIsArray | wrappedArray               | wrap
-    ${"array"}     | ${true}     | ${SameRefMatcher.for}      | ${identity()}
-    ${"generator"} | ${false}    | ${ArrayContentMatcher.for} | ${toBasicIterable}
-  `(desc, (info: IterableArgInfo) => body(info));
+  function expandDesc(what: string): string {
+    return desc.replace(/\$what\b/u, what);
+  }
 
-  for (const [key, wrap] of Object.entries(extraCases)) {
-    describe.each`
-      what   | dataIsArray | wrappedArray               | wrap
-      ${key} | ${false}    | ${ArrayContentMatcher.for} | ${wrap}
-    `(desc, (info: IterableArgInfo) => body(info));
+  describe(expandDesc("array"), () =>
+    body({
+      dataIsArray: true,
+      wrappedArray: SameRefMatcher.for,
+      arrayMethodDataParam: SameRefMatcher.for,
+      wrap: identity(),
+    }),
+  );
+
+  describe(expandDesc("array"), () =>
+    body({
+      dataIsArray: true,
+      wrappedArray: SameRefMatcher.for,
+      arrayMethodDataParam: SameRefMatcher.for,
+      wrap: identity(),
+    }),
+  );
+
+  for (const [key, wrap] of [
+    ["generator", toBasicIterable] as const,
+    ...Object.entries(extraCases),
+  ]) {
+    describe(expandDesc(key), () =>
+      body({
+        dataIsArray: true,
+        wrappedArray: ArrayContentMatcher.exact,
+        arrayMethodDataParam: ArrayContentMatcher.prefix,
+        wrap,
+      }),
+    );
   }
 }

@@ -1,17 +1,21 @@
+import { describeIterableArg } from "./internal/describeIterableArg";
 import { splitWhen } from "./splitWhen";
 
-it("should split array", () => {
-  expect(splitWhen([1, 2, 3, 1, 2, 3] as const, (x) => x === 2)).toStrictEqual([
-    [1],
-    [2, 3, 1, 2, 3],
-  ]);
-});
+describeIterableArg("splitWhen", ({ wrap }) => {
+  it("should split array", () => {
+    expect(
+      splitWhen(wrap([1, 2, 3, 1, 2, 3] as const), (x) => x === 2),
+    ).toStrictEqual([[1], [2, 3, 1, 2, 3]]);
+  });
 
-it("should with no matches", () => {
-  const n = 1232;
+  it("should work with no matches", () => {
+    const n = 1232;
 
-  expect(splitWhen([1, 2, 3, 1, 2, 3], (x) => x === n)).toStrictEqual([
-    [1, 2, 3, 1, 2, 3],
-    [],
-  ]);
+    const data = [1, 2, 3, 1, 2, 3];
+    const [before, after] = splitWhen(wrap(data), (x) => x === n);
+
+    expect(before).not.toBe(data);
+    expect(before).toStrictEqual(data);
+    expect(after).toStrictEqual([]);
+  });
 });

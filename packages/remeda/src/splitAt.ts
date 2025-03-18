@@ -1,4 +1,6 @@
-import { purry } from "./purry";
+import doReduce, { type DoReduceResult } from "./internal/doReduce";
+import { toReadonlyArray } from "./internal/toReadonlyArray";
+import type { Reducer } from "./internal/types/LazyEffect";
 
 /**
  * Splits a given array at a given index.
@@ -14,7 +16,7 @@ import { purry } from "./purry";
  * @category Array
  */
 export function splitAt<T>(
-  array: ReadonlyArray<T>,
+  array: Iterable<T>,
   index: number,
 ): [Array<T>, Array<T>];
 
@@ -32,16 +34,17 @@ export function splitAt<T>(
  */
 export function splitAt<T>(
   index: number,
-): (array: ReadonlyArray<T>) => [Array<T>, Array<T>];
+): Reducer<Iterable<T>, [Array<T>, Array<T>]>;
 
-export function splitAt(...args: ReadonlyArray<unknown>): unknown {
-  return purry(splitAtImplementation, args);
+export function splitAt(...args: ReadonlyArray<unknown>): DoReduceResult {
+  return doReduce(splitAtImplementation, args);
 }
 
 function splitAtImplementation<T>(
-  array: ReadonlyArray<T>,
+  data: Iterable<T>,
   index: number,
 ): [Array<T>, Array<T>] {
+  const array = toReadonlyArray(data);
   const effectiveIndex = Math.max(
     Math.min(index < 0 ? array.length + index : index, array.length),
     0,

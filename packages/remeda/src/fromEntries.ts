@@ -1,7 +1,8 @@
 import type { Simplify } from "type-fest";
 import type { IterableContainer } from "./internal/types/IterableContainer";
 import type { RemedaTypeError } from "./internal/types/RemedaTypeError";
-import { purry } from "./purry";
+import doReduce from "./internal/doReduce";
+import type AnyIterable from "./internal/types/AnyIterable";
 
 type FromEntriesError<Message extends string> = RemedaTypeError<
   "fromEntries",
@@ -109,7 +110,7 @@ type ValueForKey<
  * @dataFirst
  * @category Object
  */
-export function fromEntries<Entries extends IterableContainer<Entry>>(
+export function fromEntries<Entries extends Iterable<Entry>>(
   entries: Entries,
 ): Simplify<FromEntries<Entries>>;
 
@@ -139,10 +140,10 @@ export function fromEntries<Entries extends IterableContainer<Entry>>(
  * @dataLast
  * @category Object
  */
-export function fromEntries(): <Entries extends IterableContainer<Entry>>(
+export function fromEntries(): <Entries extends Iterable<Entry>>(
   entries: Entries,
 ) => Simplify<FromEntries<Entries>>;
 
 export function fromEntries(...args: ReadonlyArray<unknown>): unknown {
-  return purry(Object.fromEntries, args);
+  return doReduce(Object.fromEntries as (data: AnyIterable) => unknown, args);
 }

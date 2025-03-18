@@ -1,3 +1,4 @@
+import type AnyIterable from "./internal/types/AnyIterable";
 import type { IterableContainer } from "./internal/types/IterableContainer";
 
 /**
@@ -31,21 +32,24 @@ export function isEmpty<T extends string | undefined>(
   | ("" extends T ? "" : never)
   | (undefined extends T ? undefined : never);
 export function isEmpty(data: IterableContainer): data is [];
+export function isEmpty(data: AnyIterable): boolean;
 export function isEmpty<T extends object>(
   data: T,
 ): data is Record<keyof T, never>;
 
-export function isEmpty(data: object | string | undefined): boolean {
+export function isEmpty(
+  data: object | string | AnyIterable | undefined,
+): boolean {
   if (data === undefined) {
     return true;
   }
 
-  if (typeof data === "string") {
+  if (typeof data === "string" || Array.isArray(data)) {
     return data.length === 0;
   }
 
-  if (Array.isArray(data)) {
-    return data.length === 0;
+  if (Symbol.iterator in data) {
+    return data[Symbol.iterator]().next().done === true;
   }
 
   return Object.keys(data).length === 0;

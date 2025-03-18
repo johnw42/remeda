@@ -1,20 +1,22 @@
-import type { Simplify } from "type-fest";
+import type { IterableElement, Simplify } from "type-fest";
 import type { ExactRecord } from "./internal/types/ExactRecord";
-import type { IterableContainer } from "./internal/types/IterableContainer";
-import { purry } from "./purry";
+import type { ArrayMethodCallback } from "./internal/types/ArrayMethodCallback";
+import type AnyIterable from "./internal/types/AnyIterable";
+import { mapCallback } from "./internal/mapCallback";
+import doReduce from "./internal/doReduce";
 
 // Takes a union of literals and creates a union of records with the value V for
 // each key **separately**
 // @example ExactlyOneKey<"cat" | "dog", boolean> // { cat: boolean } | { dog: boolean }
 type ExactlyOneKey<T, V> = T extends PropertyKey ? Record<T, V> : never;
 
-type FromKeys<T extends IterableContainer, V> = T extends readonly []
+type FromKeys<T extends AnyIterable, V> = T extends readonly []
   ? // eslint-disable-next-line @typescript-eslint/no-empty-object-type -- We want to return an empty object type here, but it's not trivial to build that in Typescript, other fixer suggestions like Record<PropertyKey, never> or Record<PropertyKey, unknown> both break our type tests so they don't do what we need here. Because the result is mutable this might be the correct type after all...
     {}
   : T extends readonly [infer Head, ...infer Rest]
     ? ExactlyOneKey<Head, V> & FromKeys<Rest, V>
-    : T[number] extends PropertyKey
-      ? ExactRecord<T[number], V>
+    : IterableElement<T> extends PropertyKey
+      ? ExactRecord<IterableElement<T>, V>
       : never;
 
 /**
@@ -42,9 +44,9 @@ type FromKeys<T extends IterableContainer, V> = T extends readonly []
  * @dataFirst
  * @category Object
  */
-export function fromKeys<T extends IterableContainer<PropertyKey>, V>(
+export function fromKeys<T extends Iterable<PropertyKey>, V>(
   data: T,
-  mapper: (item: T[number], index: number, data: T) => V,
+  mapper: ArrayMethodCallback<T, V>,
 ): Simplify<FromKeys<T, V>>;
 
 /**
@@ -70,24 +72,23 @@ export function fromKeys<T extends IterableContainer<PropertyKey>, V>(
  * @dataLast
  * @category Object
  */
-export function fromKeys<T extends IterableContainer<PropertyKey>, V>(
-  mapper: (item: T[number], index: number, data: T) => V,
+export function fromKeys<T extends Iterable<PropertyKey>, V>(
+  mapper: ArrayMethodCallback<T, V>,
 ): (data: T) => Simplify<FromKeys<T, V>>;
 
 export function fromKeys(...args: ReadonlyArray<unknown>): unknown {
-  return purry(fromKeysImplementation, args);
+  return doReduce(fromKeysImplementation, args);
 }
 
-function fromKeysImplementation<T extends IterableContainer<PropertyKey>, V>(
-  data: T,
-  mapper: (item: T[number], index: number, data: T) => V,
-): FromKeys<T, V> {
-  const result: Partial<FromKeys<T, V>> = {};
+function fromKeysImplementation<K extends PropertyKey, V>(
+  data: Iterable<K>,
+  mapper: ArrayMethodCallback<Iterable<K>, V>,
+): FromKeys<Iterable<K>, V> {
+  const result: Partial<Record<K, V>> = {};
 
-  for (const [index, key] of data.entries()) {
-    // @ts-expect-error [ts7053] - There's no easy way to make Typescript aware that the items in T would be keys in the output object because it's type is built recursively and the "being an item of an array" property of a type is not "carried over" in the recursive type definition.
-    result[key] = mapper(key, index, data);
+  for (const [key, value] of mapCallback(data, mapper)) {
+    result[key] = value;
   }
 
-  return result as FromKeys<T, V>;
+  return result as FromKeys<Iterable<K>, V>;
 }

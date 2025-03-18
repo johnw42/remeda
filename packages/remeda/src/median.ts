@@ -1,9 +1,12 @@
+import doReduce from "./internal/doReduce";
 import type { IterableContainer } from "./internal/types/IterableContainer";
-import { purry } from "./purry";
 
-type Median<T extends IterableContainer<number>> =
-  | (T extends readonly [] ? never : number)
-  | (T extends readonly [unknown, ...Array<unknown>] ? never : undefined);
+type Median<T extends Iterable<number>> =
+  T extends IterableContainer<number>
+    ?
+        | (T extends readonly [] ? never : number)
+        | (T extends readonly [unknown, ...Array<unknown>] ? never : undefined)
+    : number | undefined;
 
 /**
  * Returns the median of the elements of an array.
@@ -25,7 +28,7 @@ type Median<T extends IterableContainer<number>> =
  * @dataFirst
  * @category Number
  */
-export function median<T extends IterableContainer<number>>(data: T): Median<T>;
+export function median<T extends Iterable<number>>(data: T): Median<T>;
 
 /**
  * Returns the median of the elements of an array.
@@ -46,25 +49,26 @@ export function median<T extends IterableContainer<number>>(data: T): Median<T>;
  * @dataLast
  * @category Number
  */
-export function median(): <T extends IterableContainer<number>>(
-  data: T,
-) => Median<T>;
+export function median(): <T extends Iterable<number>>(data: T) => Median<T>;
 
 export function median(...args: ReadonlyArray<unknown>): unknown {
-  return purry(medianImplementation, args);
+  return doReduce(medianImplementation, args);
 }
 
 const numberComparator = (a: number, b: number): number => a - b;
 
-function medianImplementation<T extends IterableContainer<number>>(
-  data: T,
-): T[number] | undefined {
-  if (data.length === 0) {
+function medianImplementation(data: Iterable<number>): number | undefined {
+  if (Array.isArray(data) && data.length === 0) {
+    return undefined;
+  }
+
+  const sortedData = [...data];
+  if (sortedData.length === 0) {
     return undefined;
   }
 
   // TODO [2025-05-01]: When node 18 reaches end-of-life bump target lib to ES2023+ and use `Array.prototype.toSorted` here.
-  const sortedData = [...data].sort(numberComparator);
+  sortedData.sort(numberComparator);
 
   // For odd length, return the middle element
   if (sortedData.length % 2 !== 0) {

@@ -27,3 +27,19 @@ test("returns false for a non-empty object", () => {
 test("returns true for undefined", () => {
   expect(isEmpty(undefined)).toBe(true);
 });
+
+test("returns true for an empty Map", () => {
+  expect(isEmpty(new Map())).toBe(true);
+});
+
+test("returns false for a non-empty Map", () => {
+  expect(isEmpty(new Map([[1, 2]]))).toBe(false);
+});
+
+test("returns true for an empty Set", () => {
+  expect(isEmpty(new Set())).toBe(true);
+});
+
+test("returns false for a non-empty Set", () => {
+  expect(isEmpty(new Set([1]))).toBe(false);
+});

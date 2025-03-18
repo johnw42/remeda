@@ -1,10 +1,13 @@
+import doReduce, { type DoReduceResult } from "./internal/doReduce";
 import type { IterableContainer } from "./internal/types/IterableContainer";
-import { purry } from "./purry";
-import { sum } from "./sum";
+import type { lazyKind } from "./internal/types/LazyEffect";
 
-type Mean<T extends IterableContainer<number>> =
-  | (T extends readonly [] ? never : number)
-  | (T extends readonly [unknown, ...Array<unknown>] ? never : undefined);
+type Mean<T extends Iterable<number>> =
+  T extends IterableContainer<number>
+    ?
+        | (T extends readonly [] ? never : number)
+        | (T extends readonly [unknown, ...Array<unknown>] ? never : undefined)
+    : number | undefined;
 
 /**
  * Returns the mean of the elements of an array.
@@ -26,7 +29,7 @@ type Mean<T extends IterableContainer<number>> =
  * @dataFirst
  * @category Number
  */
-export function mean<T extends IterableContainer<number>>(data: T): Mean<T>;
+export function mean<T extends Iterable<number>>(data: T): Mean<T>;
 
 /**
  * Returns the mean of the elements of an array.
@@ -47,20 +50,25 @@ export function mean<T extends IterableContainer<number>>(data: T): Mean<T>;
  * @dataLast
  * @category Number
  */
-export function mean(): <T extends IterableContainer<number>>(
-  data: T,
-) => Mean<T>;
+export function mean(): {
+  <T extends Iterable<number>>(data: T): Mean<T>;
+  [lazyKind]: "reducer";
+};
 
-export function mean(...args: ReadonlyArray<unknown>): unknown {
-  return purry(meanImplementation, args);
+export function mean(...args: ReadonlyArray<unknown>): DoReduceResult {
+  return doReduce(meanImplementation, args);
 }
 
-function meanImplementation<T extends IterableContainer<number>>(
-  data: T,
-): T[number] | undefined {
-  if (data.length === 0) {
-    return undefined;
+function meanImplementation(data: Iterable<number>): number | undefined {
+  let sum: number | undefined;
+  let count = 0;
+  for (const value of data) {
+    ++count;
+    if (sum === undefined) {
+      sum = value;
+    } else {
+      sum += value;
+    }
   }
-
-  return sum(data) / data.length;
+  return sum === undefined ? undefined : sum / count;
 }

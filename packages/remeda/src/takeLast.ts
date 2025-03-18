@@ -1,4 +1,6 @@
-import type { IterableContainer } from "./internal/types/IterableContainer";
+import { toReadonlyArray } from "./internal/toReadonlyArray";
+import type AnyIterable from "./internal/types/AnyIterable";
+import type { ToNonTupleArray } from "./internal/types/ToArray";
 import { purry } from "./purry";
 
 /**
@@ -13,10 +15,10 @@ import { purry } from "./purry";
  * @dataFirst
  * @category Array
  */
-export function takeLast<T extends IterableContainer>(
+export function takeLast<T extends AnyIterable>(
   array: T,
   n: number,
-): Array<T[number]>;
+): ToNonTupleArray<T>;
 
 /**
  * Take the last `n` elements from the `array`.
@@ -29,16 +31,15 @@ export function takeLast<T extends IterableContainer>(
  * @dataLast
  * @category Array
  */
-export function takeLast<T extends IterableContainer>(
+export function takeLast<T extends AnyIterable>(
   n: number,
-): (array: T) => Array<T[number]>;
+): (array: T) => ToNonTupleArray<T>;
 
 export function takeLast(...args: ReadonlyArray<unknown>): unknown {
   return purry(takeLastImplementation, args);
 }
 
-const takeLastImplementation = <T extends IterableContainer>(
-  array: T,
-  n: number,
-): Array<T[number]> =>
-  n > 0 ? array.slice(Math.max(0, array.length - n)) : [];
+function takeLastImplementation<T>(data: Iterable<T>, n: number): Array<T> {
+  const array = toReadonlyArray(data);
+  return n > 0 ? array.slice(Math.max(0, array.length - n)) : [];
+}

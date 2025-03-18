@@ -3,6 +3,7 @@ import {
   purryOrderRulesWithArgument,
   type OrderRule,
 } from "./internal/purryOrderRules";
+import { toArray } from "./internal/toReadonlyArray";
 import type { CompareFunction } from "./internal/types/CompareFunction";
 import type { NonEmptyArray } from "./internal/types/NonEmptyArray";
 
@@ -23,7 +24,7 @@ import type { NonEmptyArray } from "./internal/types/NonEmptyArray";
  * @category Array
  */
 export function takeFirstBy<T>(
-  data: ReadonlyArray<T>,
+  data: Iterable<T>,
   n: number,
   ...rules: Readonly<NonEmptyArray<OrderRule<T>>>
 ): Array<T>;
@@ -46,14 +47,14 @@ export function takeFirstBy<T>(
 export function takeFirstBy<T>(
   n: number,
   ...rules: Readonly<NonEmptyArray<OrderRule<T>>>
-): (data: ReadonlyArray<T>) => Array<T>;
+): (data: Iterable<T>) => Array<T>;
 
 export function takeFirstBy(...args: ReadonlyArray<unknown>): unknown {
   return purryOrderRulesWithArgument(takeFirstByImplementation, args);
 }
 
 function takeFirstByImplementation<T>(
-  data: ReadonlyArray<T>,
+  data: Iterable<T>,
   compareFn: CompareFunction<T>,
   n: number,
 ): Array<T> {
@@ -61,14 +62,16 @@ function takeFirstByImplementation<T>(
     return [];
   }
 
-  if (n >= data.length) {
-    return [...data];
+  const { array, isCopy } = toArray(data);
+
+  if (n >= array.length) {
+    return isCopy ? array : [...array];
   }
 
-  const heap = data.slice(0, n);
+  const heap = array.slice(0, n);
   heapify(heap, compareFn);
 
-  const rest = data.slice(n);
+  const rest = array.slice(n);
   for (const item of rest) {
     heapMaybeInsert(heap, compareFn, item);
   }

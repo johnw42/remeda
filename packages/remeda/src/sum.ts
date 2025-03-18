@@ -69,22 +69,18 @@ export function sum(...args: ReadonlyArray<unknown>): DoReduceResult {
   return doReduce(sumImplementation, args);
 }
 
-function sumImplementation<T extends Iterable<bigint> | Iterable<number>>(
-  data: T,
-): IterableElement<T> {
-  let out: number | bigint = 0;
-  let isFirst = true;
+function sumImplementation(
+  data: Iterable<bigint> | Iterable<number>,
+): bigint | number {
+  let out: number | bigint | undefined;
   for (const value of data) {
-    if (isFirst) {
-      if (typeof value === "bigint") {
-        // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- The rule differentiates 0 and 0n :(
-        out = 0n;
-      }
-      isFirst = false;
+    if (out === undefined) {
+      out = value;
+    } else {
+      // @ts-expect-error [ts2365] -- Typescript can't infer that all elements will be a number of the same type.
+      // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+      out += value;
     }
-    // @ts-expect-error [ts2365] -- Typescript can't infer that all elements will be a number of the same type.
-    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-    out += value;
   }
-  return out as IterableElement<T>;
+  return out ?? 0;
 }

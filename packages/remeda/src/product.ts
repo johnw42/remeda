@@ -72,21 +72,17 @@ export function product(...args: ReadonlyArray<unknown>): DoReduceResult {
   return doReduce(productImplementation, args);
 }
 
-function productImplementation<T extends Iterable<bigint> | Iterable<number>>(
-  data: T,
-): IterableElement<T> {
-  let out: number | bigint = 1;
-  let isFirst = true;
+function productImplementation(
+  data: Iterable<bigint> | Iterable<number>,
+): bigint | number {
+  let out: number | bigint | undefined;
   for (const value of data) {
-    if (isFirst) {
-      if (typeof value === "bigint") {
-        // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- The rule differentiates 1 and 1n :(
-        out = 1n;
-      }
-      isFirst = false;
+    if (out === undefined) {
+      out = value;
+    } else {
+      // @ts-expect-error [ts2365] -- Typescript can't infer that all elements will be a number of the same type.
+      out *= value;
     }
-    // @ts-expect-error [ts2365] -- Typescript can't infer that all elements will be a number of the same type.
-    out *= value;
   }
-  return out as IterableElement<T>;
+  return out ?? 1;
 }

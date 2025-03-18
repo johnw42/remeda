@@ -1,8 +1,11 @@
-import { purry } from "./purry";
-import type { IterableContainer } from "./internal/types/IterableContainer";
+import type AnyIterable from "./internal/types/AnyIterable";
+import type { ArrayMethodCallback } from "./internal/types/ArrayMethodCallback";
+import type { Reducer } from "./internal/types/LazyEffect";
+import doReduce, { type DoReduceResult } from "./internal/doReduce";
+import { mapCallback } from "./internal/mapCallback";
 
 type SumBy<
-  T extends IterableContainer,
+  T extends AnyIterable,
   U extends bigint | number,
 > = T extends readonly []
   ? 0
@@ -37,12 +40,12 @@ type SumBy<
  * @dataLast
  * @category Array
  */
-export function sumBy<T extends IterableContainer>(
-  callbackfn: (value: T[number], index: number, data: T) => number,
-): (items: T) => SumBy<T, number>;
-export function sumBy<T extends IterableContainer>(
-  callbackfn: (value: T[number], index: number, data: T) => bigint,
-): (items: T) => SumBy<T, bigint>;
+export function sumBy<T extends AnyIterable>(
+  callbackfn: ArrayMethodCallback<T, number>,
+): Reducer<T, SumBy<T, number>>;
+export function sumBy<T extends AnyIterable>(
+  callbackfn: ArrayMethodCallback<T, bigint>,
+): Reducer<T, SumBy<T, bigint>>;
 
 /**
  * Returns the sum of the elements of an array using the provided mapper.
@@ -72,44 +75,32 @@ export function sumBy<T extends IterableContainer>(
  * @category Array
  */
 
-export function sumBy<T extends IterableContainer>(
+export function sumBy<T extends AnyIterable>(
   data: T,
-  callbackfn: (value: T[number], index: number, data: T) => number,
+  callbackfn: ArrayMethodCallback<T, number>,
 ): SumBy<T, number>;
-export function sumBy<T extends IterableContainer>(
+export function sumBy<T extends AnyIterable>(
   data: T,
-  callbackfn: (value: T[number], index: number, data: T) => bigint,
+  callbackfn: ArrayMethodCallback<T, bigint>,
 ): SumBy<T, bigint>;
 
-export function sumBy(...args: ReadonlyArray<unknown>): unknown {
-  return purry(sumByImplementation, args);
+export function sumBy(...args: ReadonlyArray<unknown>): DoReduceResult {
+  return doReduce(sumByImplementation, args);
 }
 
 const sumByImplementation = <T>(
-  array: ReadonlyArray<T>,
-  callbackfn: (
-    value: T,
-    index: number,
-    data: ReadonlyArray<T>,
-  ) => bigint | number,
+  data: Iterable<T>,
+  callbackfn: ArrayMethodCallback<ReadonlyArray<T>, bigint | number>,
 ): bigint | number => {
-  const iter = array.entries();
-
-  const firstEntry = iter.next();
-  if (firstEntry.done ?? false) {
-    return 0;
+  let sum: number | bigint | undefined;
+  for (const [, summand] of mapCallback(data, callbackfn)) {
+    if (sum === undefined) {
+      sum = summand;
+    } else {
+      // @ts-expect-error [ts2365] -- Typescript can't infer that all elements will be a number of the same type.
+      // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+      sum += summand;
+    }
   }
-
-  const {
-    value: [, firstValue],
-  } = firstEntry;
-  let sum = callbackfn(firstValue, 0, array);
-  for (const [index, item] of iter) {
-    const summand = callbackfn(item, index, array);
-
-    // @ts-expect-error [ts2365] -- Typescript can't infer that all elements will be a number of the same type.
-    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-    sum += summand;
-  }
-  return sum;
+  return sum ?? 0;
 };

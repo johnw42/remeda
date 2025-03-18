@@ -1,11 +1,16 @@
-import type { EagerReducer, ReducerImpl } from "./types/LazyFunc";
+import type { EagerReducer, LazyReducerImpl } from "./types/LazyFunc";
 
+/**
+ * This function is almost identical to {@link purry}, but it is used to make a
+ * reducer function compatible with {@link pipe}'s lazy optimization,
+ * potentially avoiding the creation of temporary arrays.
+ */
 export default function doReduce<
   Data,
   Rest extends ReadonlyArray<unknown>,
   Result,
 >(
-  impl: ReducerImpl<Data, Rest, Result>,
+  impl: LazyReducerImpl<Data, Rest, Result>,
   args: ReadonlyArray<unknown>,
 ): unknown {
   switch (impl.length - args.length) {

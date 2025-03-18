@@ -289,6 +289,7 @@ function* lazyImplementation<T>(
     for (const item of data) {
       yield [item];
     }
+    return;
   }
 
   let nextChunk: Array<T> = [];

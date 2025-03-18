@@ -31,7 +31,7 @@ describe("pipe", () => {
       unique(),
     );
 
-    //expect(counter.count).toHaveBeenCalledTimes(3);
+    expect(counter.count).toHaveBeenCalledTimes(3);
     expect(result).toStrictEqual([1, 2]);
   });
 });

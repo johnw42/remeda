@@ -245,7 +245,9 @@ function chunkImplementation<T>(
   }
 
   if (size < 1) {
-    throw new RangeError(`chunk: Invalid chunk size '${size.toString()}'`);
+    throw new RangeError(
+      `chunk: A chunk size of '${size.toString()}' would result in an infinite array'`,
+    );
   }
 
   if (data.length === 0) {

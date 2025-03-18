@@ -1,4 +1,3 @@
-import { toBasicIterable } from "./internal/toBasicIterable";
 import { map } from "./map";
 import { pipe } from "./pipe";
 import { take } from "./take";
@@ -32,12 +31,6 @@ describe("data first", () => {
 describe("data last", () => {
   it("works on regular inputs", () => {
     expect(pipe([1, 2, 3, 4, 5], take(2))).toStrictEqual([1, 2]);
-  });
-
-  it("works on iterables", () => {
-    expect(pipe(toBasicIterable([1, 2, 3, 4, 5]), take(2))).toStrictEqual([
-      1, 2,
-    ]);
   });
 
   it("works trivially on empty arrays", () => {

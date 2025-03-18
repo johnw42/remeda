@@ -176,7 +176,7 @@ describe("data-last", () => {
   });
 
   test("union of arrays", () => {
-    const result = drop([] as Array<boolean> | Array<string>, 2);
+    const result = pipe([] as Array<boolean> | Array<string>, drop(2));
 
     expectTypeOf(result).toEqualTypeOf<Array<boolean | string>>();
   });
